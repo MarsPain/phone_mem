@@ -1,0 +1,35 @@
+# Agent Working Map
+
+This repository is currently a small Python project plus architecture documents for smartphone Agent Memory. The product goal is a local-first phone memory system that manages user memory in smartphone contexts with Agent-style lifecycle control, then exposes scoped memory views to broader Agent applications.
+
+## Start Here
+
+- Human onboarding: [README.md](README.md)
+- Architecture map: [ARCHITECTURE.md](ARCHITECTURE.md)
+- Documentation index: [docs/README.md](docs/README.md)
+- Canonical design: [docs/DESIGN.md](docs/DESIGN.md)
+- Deep memory design: [docs/design-docs/smartphone-agent-memory.md](docs/design-docs/smartphone-agent-memory.md)
+- PDF review: [docs/references/source-review.md](docs/references/source-review.md)
+
+## Commands
+
+```bash
+uv run python main.py
+uv run python scripts/validate_docs.py
+uv run python -m unittest discover -s tests
+```
+
+## Repository Rules
+
+- Keep root docs concise. Put detailed decisions under `docs/`.
+- Update code and affected docs in the same change set.
+- Treat [docs/DESIGN.md](docs/DESIGN.md), [docs/DATA.md](docs/DATA.md), and [docs/SECURITY.md](docs/SECURITY.md) as canonical for architecture, data, and safety constraints.
+- Preserve the core product framing: memory is managed as an agentic phone subsystem, while external agents consume governed views rather than the raw global store.
+- Use [docs/PLANS.md](docs/PLANS.md) and `docs/exec-plans/` for execution lifecycle.
+- Run the docs validator before claiming documentation work is complete.
+
+## Current Implementation State
+
+- `main.py` is only a placeholder.
+- No production memory runtime exists yet.
+- The current useful system of record is the documentation set under `docs/`.
