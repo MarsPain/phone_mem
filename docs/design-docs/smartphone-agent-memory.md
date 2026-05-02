@@ -10,6 +10,8 @@ The system is a local-first OS-level Personal Memory Service for smartphone agen
 
 Apps and agents do not own the global memory store. They receive scoped projections through service APIs.
 
+The current implementation track is a Python reference version running on the development machine. It proves the service contract and lifecycle invariants before the later React Native, TypeScript, and on-device SQLite mobile runtime.
+
 ## Key Corrections To The Source Design
 
 - The source of truth is privacy-partitioned. Sensitive memory is device-only; personal memory may sync as client-encrypted data; only low-risk derived memory may be cloud-indexed.
@@ -47,7 +49,7 @@ The canonical data event schema remains in [../DATA.md](../DATA.md). Security an
 
 ## MVP Boundary
 
-The MVP proves the local service boundary:
+The MVP proves the local service boundary as the Stage 1 Python reference implementation:
 
 - text and app-event ingestion;
 - local SQLite-backed episodic store;

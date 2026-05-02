@@ -7,6 +7,8 @@ Type: execution
 
 Expose the MVP `PersonalMemoryService` facade and verify complete record, search, explain, correct, delete, grant, revoke, and audit behavior.
 
+This subplan belongs to Stage 1: the Python reference implementation. The facade should be a testable service contract for later mobile parity, not a production phone runtime or SDK surface.
+
 ## Scope
 
 - Orchestrating service facade in `phone_mem/personal_memory_service/service.py`.

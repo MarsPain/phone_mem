@@ -7,6 +7,8 @@ Type: execution
 
 Persist local memory events in SQLite and enforce the first permission, memory view, tombstone, and audit invariants.
 
+This subplan belongs to Stage 1: the Python reference implementation. SQLite is used to prove local service behavior, not to define the final mobile runtime storage boundary.
+
 ## Scope
 
 - SQLite schema for canonical events, entities, event-entity links, permissions, tombstones, and audit records.

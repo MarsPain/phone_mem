@@ -4,6 +4,8 @@
 
 This document defines how authorized phone-context signals become durable memory and how memory moves through validation, retrieval, context assembly, consolidation, correction, and deletion.
 
+The current implementation track should make this lifecycle executable in the Stage 1 Python reference service. Mobile OS integration, passive sensing adapters, and production phone runtime behavior belong to later stages.
+
 ## End-To-End Flow
 
 1. Ingest authorized input from system assistant text, app events, or future multimodal adapters.

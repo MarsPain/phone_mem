@@ -7,6 +7,8 @@ Type: execution
 
 Implement governed local retrieval and runtime-neutral context bundle assembly for MVP Agent Memory use cases.
 
+This subplan belongs to Stage 1: the Python reference implementation. It should emit model-runtime-neutral bundles without adding phone runtime adapters or prompt execution.
+
 ## Scope
 
 - Deterministic lexical and metadata retrieval over authorized local events.

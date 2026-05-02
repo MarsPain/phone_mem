@@ -12,4 +12,10 @@ Status: tech-debt
 
 ## Target Stage
 
-Resolve before Stage 3 SDK ecosystem access and Stage 4 cloud consolidation.
+Resolve each risk before the roadmap stage that introduces the relevant capability:
+
+- embedding replacement and semantic promotion risks before Stage 3 retrieval, context, and semantic-layer expansion;
+- procedural automation safety before Stage 4 runtime-agent integration or any autonomous action work;
+- cloud sync conflict resolution before Stage 6 private compute, sync, and consolidation;
+- multimodal consent UX before Stage 7 multimodal expansion;
+- SDK and third-party access risks before Stage 5 SDK and app views.

@@ -4,6 +4,8 @@
 
 The Personal Memory Service is the local source of truth for smartphone Agent Memory. It owns durable memory events, lifecycle state, local projections, governance checks, audit records, and service APIs. Model runtimes and apps consume service outputs; they do not read the canonical store directly.
 
+The current repository implementation should realize this service first as a deterministic Python reference package. The production phone runtime is a later mobile track that should mirror the same operations and invariants.
+
 ## Responsibilities
 
 - Persist canonical memory events defined in [../DATA.md](../DATA.md).
@@ -13,9 +15,9 @@ The Personal Memory Service is the local source of truth for smartphone Agent Me
 - Create and propagate tombstones for deletion.
 - Expose runtime-neutral operations for record, search, explain, correct, delete, grant, revoke, and audit.
 
-## MVP Module Boundary
+## Python Reference MVP Module Boundary
 
-The MVP package should grow around these modules from [../BACKEND.md](../BACKEND.md):
+The Stage 1 Python reference MVP package should grow around these modules from [../BACKEND.md](../BACKEND.md):
 
 - `personal_memory_service/events.py`: typed event and selector models.
 - `personal_memory_service/constructor.py`: candidate-to-event normalization, privacy classification, confidence, and lineage preparation.

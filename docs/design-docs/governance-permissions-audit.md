@@ -4,6 +4,8 @@
 
 Governance makes memory usable without turning the phone into an unbounded surveillance store. It defines who can read or write memory, what view they receive, how usage is audited, and how users can inspect, correct, reject, or delete memory.
 
+The current implementation track should prove these governance rules in the Python reference service. Mobile permission UX, OS-level affordances, and third-party SDK access are later-stage surfaces over the same policy boundary.
+
 ## Trust Boundaries
 
 The detailed security model is in [../SECURITY.md](../SECURITY.md). The governance design applies those boundaries to service behavior:

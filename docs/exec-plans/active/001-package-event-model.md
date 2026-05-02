@@ -7,6 +7,8 @@ Type: execution
 
 Create the initial Python package structure and canonical event model needed by the local Personal Memory Service.
 
+This subplan belongs to Stage 1: the Python reference implementation. It should not introduce mobile runtime, OS integration, or model-provider dependencies.
+
 ## Scope
 
 - Add the `phone_mem/` package skeleton.
