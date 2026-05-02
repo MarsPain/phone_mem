@@ -1,10 +1,56 @@
-# Backend
+# Backend And Runtime Strategy
 
 ## Current State
 
-The repository currently contains only a placeholder Python entrypoint. The backend should grow around a local Personal Memory Service before introducing model-runtime integrations, cloud sync, or third-party SDK access.
+The repository currently contains only a placeholder Python entrypoint. The first implementation track should grow around a deterministic Python reference implementation of the Personal Memory Service before introducing model-runtime integrations, cloud sync, or third-party SDK access.
 
-## Suggested Python Package Boundaries
+The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
+
+## Runtime Tracks
+
+### Track 1: Python Reference Implementation
+
+Use Python on the development machine as the executable specification for the memory core:
+
+- canonical event model;
+- local SQLite persistence;
+- permission-scoped retrieval;
+- audit records;
+- correction and deletion tombstones;
+- context bundle assembly;
+- deterministic lifecycle tests.
+
+This track should optimize for correctness, testability, and architecture feedback. It should not depend on iOS or Android runtime assumptions.
+
+### Track 2: Real Mobile Runtime Prototype
+
+Use React Native, TypeScript, and on-device SQLite for the first iPhone and Android runtime prototype. In this stage, "service" means an app-internal local service module with clear APIs, not a background daemon.
+
+The TypeScript mobile runtime should mirror the Python reference boundaries:
+
+```text
+mobile/
+├── memory_core/
+│   ├── events.ts
+│   ├── constructor.ts
+│   ├── lifecycle.ts
+│   └── service.ts
+├── governance/
+│   ├── permissions.ts
+│   ├── audit.ts
+│   └── views.ts
+├── storage/
+│   └── sqlite.ts
+├── retrieval/
+│   └── local_retrieval.ts
+├── context/
+│   └── assembler.ts
+└── ui/
+```
+
+If later stages require deeper platform integration, performance-sensitive or system-facing modules can move into Swift, Kotlin, Kotlin Multiplatform, or Rust native modules without changing the Personal Memory Service contract.
+
+## Reference Python Package Boundaries
 
 ```text
 phone_mem/
@@ -38,6 +84,9 @@ phone_mem/
 ## Implementation Rules
 
 - Start with SQLite and deterministic Python interfaces before adding vector database or cloud dependencies.
+- Treat Python as the reference implementation and test oracle, not the final phone runtime.
+- Keep Python and TypeScript API contracts aligned around the same domain operations: record, search, explain, correct, delete, grant, revoke, audit, and build context.
+- Avoid Python-only architectural assumptions that would fight iOS or Android app lifecycles.
 - Keep event construction separate from storage so ingestion can be tested without persistence.
 - Keep permission filtering inside the retrieval path before ranking output is returned to callers.
 - Keep context assembly separate from model execution. The service emits context bundles; runtime adapters execute prompts.

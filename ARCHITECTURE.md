@@ -27,4 +27,4 @@
 
 ## Current Code State
 
-The runtime is not implemented yet. `main.py` is a placeholder, and the first engineering milestone should create the local Personal Memory Service described in [docs/exec-plans/active/mvp-local-memory-core.md](docs/exec-plans/active/mvp-local-memory-core.md).
+The runtime is not implemented yet. `main.py` is a placeholder, and the first engineering milestone should create the Python reference Personal Memory Service described in [docs/exec-plans/active/mvp-local-memory-core.md](docs/exec-plans/active/mvp-local-memory-core.md). The first real iPhone and Android runtime should mirror that service boundary in React Native, TypeScript, and on-device SQLite.

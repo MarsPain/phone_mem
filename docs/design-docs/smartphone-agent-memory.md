@@ -28,7 +28,7 @@ Apps and agents do not own the global memory store. They receive scoped projecti
 - [retrieval-and-context-assembly.md](retrieval-and-context-assembly.md): governed retrieval, ranking, snippet shaping, context budgets, and runtime-neutral bundles.
 - [governance-permissions-audit.md](governance-permissions-audit.md): memory views, grants, audit, explanations, correction, deletion, and abuse controls.
 
-The canonical data event schema remains in [../DATA.md](../DATA.md). Security and privacy rules remain in [../SECURITY.md](../SECURITY.md). Python package boundaries remain in [../BACKEND.md](../BACKEND.md).
+The canonical data event schema remains in [../DATA.md](../DATA.md). Security and privacy rules remain in [../SECURITY.md](../SECURITY.md). Implementation and runtime strategy remain in [../BACKEND.md](../BACKEND.md).
 
 ## Bounded Contexts
 

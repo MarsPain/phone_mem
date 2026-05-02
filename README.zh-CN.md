@@ -25,4 +25,4 @@ uv run python -m unittest discover -s tests
 
 ## 当前阶段
 
-项目处于架构落地前的文档化阶段。短期目标是先实现 OS 级 Personal Memory Service 的本地 MVP：统一事件抽象、本地记忆服务、权限视图、审计/删除、基础检索，以及与端侧模型运行时解耦的上下文组装边界。
+项目处于架构落地前的文档化阶段。短期目标是先实现 Personal Memory Service 的 Python 参考版本：统一事件抽象、本地记忆服务、权限视图、审计/删除、基础检索，以及与模型运行时解耦的上下文组装边界。第一版真实手机 runtime 后续应在 iPhone 和 Android 上用 React Native、TypeScript 和端侧 SQLite 镜像这些边界。

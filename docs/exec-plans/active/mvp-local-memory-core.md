@@ -5,7 +5,9 @@ Type: umbrella
 
 ## Goal
 
-Implement a local-only Personal Memory Service that proves the service boundary before adding model-runtime integration, cloud sync, multimodal sensing, or third-party ecosystem access.
+Implement a local-only Python reference Personal Memory Service that proves the service boundary before adding the real mobile runtime, model-runtime integration, cloud sync, multimodal sensing, or third-party ecosystem access.
+
+This plan is the executable specification track. It is not the final iOS or Android runtime. The future mobile runtime should mirror the same domain operations and invariants in React Native, TypeScript, and on-device SQLite.
 
 ## Scope
 
@@ -41,6 +43,7 @@ Implement a local-only Personal Memory Service that proves the service boundary 
 - Cloud sync.
 - Always-on sensors.
 - Production mobile SDK packaging.
+- React Native or TypeScript mobile runtime implementation.
 - Learned forgetting.
 - Graph database.
 - Runtime-specific KV-cache optimization.

@@ -5,7 +5,7 @@
 - [DESIGN.md](DESIGN.md): canonical system architecture.
 - [DATA.md](DATA.md): memory event schema, retention, sync, and lifecycle.
 - [SECURITY.md](SECURITY.md): privacy, trust boundaries, access control, and abuse controls.
-- [BACKEND.md](BACKEND.md): implementation boundaries for the Python prototype and future services.
+- [BACKEND.md](BACKEND.md): implementation and runtime strategy for the Python reference core and future mobile runtime.
 - [PRODUCT_SENSE.md](PRODUCT_SENSE.md): user value, risks, and product principles.
 - [ROADMAP.md](ROADMAP.md): staged delivery plan.
 - [PLANS.md](PLANS.md): execution plan index.
