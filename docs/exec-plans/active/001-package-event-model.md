@@ -143,7 +143,7 @@ git commit -m "feat: add phone_mem package skeleton"
 - Create: `phone_mem/personal_memory_service/events.py`
 - Modify: `tests/test_event_models.py`
 
-- [ ] **Step 1: Extend tests for valid canonical events**
+- [x] **Step 1: Extend tests for valid canonical events**
 
 Replace `tests/test_event_models.py` with:
 
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run the focused tests to verify they fail**
+- [x] **Step 2: Run the focused tests to verify they fail**
 
 Run:
 
@@ -236,7 +236,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: import failure for `phone_mem.personal_memory_service.events`.
 
-- [ ] **Step 3: Implement enums, value objects, and serialization**
+- [x] **Step 3: Implement enums, value objects, and serialization**
 
 Create `phone_mem/personal_memory_service/events.py`:
 
@@ -510,7 +510,7 @@ __all__ = [
 ]
 ```
 
-- [ ] **Step 4: Run focused tests to verify they pass**
+- [x] **Step 4: Run focused tests to verify they pass**
 
 Run:
 
@@ -520,7 +520,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit canonical event value models**
+- [x] **Step 5: Commit canonical event value models**
 
 Run:
 
