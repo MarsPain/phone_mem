@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from phone_mem.personal_memory_service.constructor import MemoryCandidate, MemoryConstructor
 from phone_mem.personal_memory_service.events import (
     Actor,
     AuditOperation,
@@ -34,6 +35,8 @@ __all__ = [
     "Lineage",
     "MemoryEvent",
     "MemoryEventValidationError",
+    "MemoryCandidate",
+    "MemoryConstructor",
     "MemoryLayer",
     "MemorySelector",
     "Modality",

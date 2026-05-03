@@ -830,7 +830,7 @@ git commit -m "feat: add memory selector and audit models"
 - Create: `phone_mem/personal_memory_service/constructor.py`
 - Create: `tests/test_memory_constructor.py`
 
-- [ ] **Step 1: Write constructor tests**
+- [x] **Step 1: Write constructor tests**
 
 Create `tests/test_memory_constructor.py`:
 
@@ -913,7 +913,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run constructor tests to verify they fail**
+- [x] **Step 2: Run constructor tests to verify they fail**
 
 Run:
 
@@ -923,7 +923,7 @@ uv run python -m unittest tests.test_memory_constructor
 
 Expected: import failure for `phone_mem.personal_memory_service.constructor`.
 
-- [ ] **Step 3: Implement deterministic constructor**
+- [x] **Step 3: Implement deterministic constructor**
 
 Create `phone_mem/personal_memory_service/constructor.py`:
 
@@ -1076,7 +1076,7 @@ and:
     "MemoryConstructor",
 ```
 
-- [ ] **Step 4: Run constructor tests to verify they pass**
+- [x] **Step 4: Run constructor tests to verify they pass**
 
 Run:
 
@@ -1086,7 +1086,7 @@ uv run python -m unittest tests.test_memory_constructor
 
 Expected: `OK`.
 
-- [ ] **Step 5: Run event model tests to catch export regressions**
+- [x] **Step 5: Run event model tests to catch export regressions**
 
 Run:
 
@@ -1096,7 +1096,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: `OK`.
 
-- [ ] **Step 6: Commit memory constructor**
+- [x] **Step 6: Commit memory constructor**
 
 Run:
 
