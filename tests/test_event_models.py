@@ -71,6 +71,57 @@ class MemoryEventModelTest(unittest.TestCase):
         self.assertEqual(data["lineage"]["parents"], [])
         self.assertEqual(data["lifecycle"]["state"], "active")
 
+    def test_blank_event_id_is_rejected(self) -> None:
+        created_at = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
+
+        with self.assertRaisesRegex(Exception, "event_id is required"):
+            MemoryEvent(
+                event_id=" ",
+                created_at=created_at,
+                valid_time=ValidTime(start=created_at),
+                event_type=EventType.USER_UTTERANCE,
+                memory_layer=MemoryLayer.EPISODIC,
+                semantic_description="User prefers morning planning sessions.",
+                entities=[],
+                relations=[],
+                source=EventSource(
+                    app="system_assistant",
+                    actor=Actor.USER,
+                    modality=[Modality.TEXT],
+                    attribution=Attribution.USER_STATED,
+                ),
+                privacy=Privacy(level=PrivacyLevel.PERSONAL),
+                quality=Quality(confidence=0.95, importance=0.7, freshness_half_life_days=30),
+                lineage=Lineage(),
+                lifecycle=Lifecycle(),
+            )
+
+    def test_sensitive_memory_cannot_leave_device_by_default(self) -> None:
+        with self.assertRaisesRegex(Exception, "sensitive memory must use device_only processing"):
+            Privacy(
+                level=PrivacyLevel.SENSITIVE,
+                processing_policy=ProcessingPolicy.CLIENT_ENCRYPTED_SYNC,
+            )
+
+    def test_quality_scores_are_bounded(self) -> None:
+        with self.assertRaisesRegex(Exception, "quality.confidence must be between 0 and 1"):
+            Quality(confidence=1.1, importance=0.5, freshness_half_life_days=30)
+
+        with self.assertRaisesRegex(Exception, "quality.importance must be between 0 and 1"):
+            Quality(confidence=0.9, importance=-0.1, freshness_half_life_days=30)
+
+    def test_mark_deleted_requires_reason_and_timestamp(self) -> None:
+        deleted_at = datetime(2026, 5, 2, 10, 0, tzinfo=UTC)
+        lifecycle = Lifecycle().mark_deleted(deleted_at=deleted_at, reason="user requested deletion")
+
+        self.assertEqual(lifecycle.state, LifecycleState.DELETED)
+        self.assertEqual(lifecycle.deleted_at, deleted_at)
+        self.assertEqual(lifecycle.delete_reason, "user requested deletion")
+
+    def test_deleted_lifecycle_requires_deleted_at(self) -> None:
+        with self.assertRaisesRegex(Exception, "deleted lifecycle requires deleted_at"):
+            Lifecycle(state=LifecycleState.DELETED, delete_reason="missing timestamp")
+
 
 if __name__ == "__main__":
     unittest.main()

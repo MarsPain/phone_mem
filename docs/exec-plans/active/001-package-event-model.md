@@ -535,7 +535,7 @@ git commit -m "feat: add canonical memory event models"
 - Modify: `phone_mem/personal_memory_service/events.py`
 - Modify: `tests/test_event_models.py`
 
-- [ ] **Step 1: Add tests for invalid fields and lifecycle transitions**
+- [x] **Step 1: Add tests for invalid fields and lifecycle transitions**
 
 Append these tests inside `MemoryEventModelTest` in `tests/test_event_models.py`:
 
@@ -592,7 +592,7 @@ Append these tests inside `MemoryEventModelTest` in `tests/test_event_models.py`
             Lifecycle(state=LifecycleState.DELETED, delete_reason="missing timestamp")
 ```
 
-- [ ] **Step 2: Run focused tests to verify they fail**
+- [x] **Step 2: Run focused tests to verify they fail**
 
 Run:
 
@@ -602,7 +602,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: failure with `AttributeError: 'Lifecycle' object has no attribute 'mark_deleted'`.
 
-- [ ] **Step 3: Implement lifecycle transition helper**
+- [x] **Step 3: Implement lifecycle transition helper**
 
 Add this method to the `Lifecycle` class in `phone_mem/personal_memory_service/events.py`:
 
@@ -617,7 +617,7 @@ Add this method to the `Lifecycle` class in `phone_mem/personal_memory_service/e
         )
 ```
 
-- [ ] **Step 4: Run focused tests to verify they pass**
+- [x] **Step 4: Run focused tests to verify they pass**
 
 Run:
 
@@ -627,7 +627,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit validation and lifecycle helpers**
+- [x] **Step 5: Commit validation and lifecycle helpers**
 
 Run:
 

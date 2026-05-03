@@ -175,6 +175,15 @@ class Lifecycle:
         if self.state != LifecycleState.DELETED and self.delete_reason is not None:
             raise MemoryEventValidationError("delete_reason is only valid for deleted lifecycle state")
 
+    def mark_deleted(self, *, deleted_at: datetime, reason: str) -> Lifecycle:
+        if not reason.strip():
+            raise MemoryEventValidationError("delete reason is required")
+        return Lifecycle(
+            state=LifecycleState.DELETED,
+            deleted_at=deleted_at,
+            delete_reason=reason,
+        )
+
     def to_dict(self) -> dict[str, str | None]:
         return {
             "state": self.state.value,
