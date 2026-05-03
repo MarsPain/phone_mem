@@ -66,7 +66,7 @@ No other production files should be touched during 001 unless a test exposes a n
 - Create: `phone_mem/personal_memory_service/__init__.py`
 - Test: `tests/test_event_models.py`
 
-- [ ] **Step 1: Write the failing package import test**
+- [x] **Step 1: Write the failing package import test**
 
 Add `tests/test_event_models.py` with this initial content:
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run the focused test to verify it fails**
+- [x] **Step 2: Run the focused test to verify it fails**
 
 Run:
 
@@ -99,7 +99,7 @@ uv run python -m unittest tests.test_event_models.PackageImportTest
 
 Expected: `ModuleNotFoundError: No module named 'phone_mem'`.
 
-- [ ] **Step 3: Create the package markers**
+- [x] **Step 3: Create the package markers**
 
 Create `phone_mem/__init__.py`:
 
@@ -117,7 +117,7 @@ from __future__ import annotations
 __all__: list[str] = []
 ```
 
-- [ ] **Step 4: Run the focused test to verify it passes**
+- [x] **Step 4: Run the focused test to verify it passes**
 
 Run:
 
@@ -127,7 +127,7 @@ uv run python -m unittest tests.test_event_models.PackageImportTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit the package skeleton**
+- [x] **Step 5: Commit the package skeleton**
 
 Run:
 
