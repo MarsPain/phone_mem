@@ -584,7 +584,7 @@ git commit -m "feat: add lifecycle updates and tombstones"
 - Modify: `phone_mem/personal_memory_service/storage.py`
 - Create: `tests/test_governance.py`
 
-- [ ] **Step 1: Write permission service tests**
+- [x] **Step 1: Write permission service tests**
 
 Create `tests/test_governance.py`:
 
@@ -661,7 +661,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run permission tests to verify they fail**
+- [x] **Step 2: Run permission tests to verify they fail**
 
 Run:
 
@@ -671,7 +671,7 @@ uv run python -m unittest tests.test_governance.PermissionServiceTest
 
 Expected: import failure for `phone_mem.governance.permissions`.
 
-- [ ] **Step 3: Implement permission models and service**
+- [x] **Step 3: Implement permission models and service**
 
 Implement in `phone_mem/governance/permissions.py`:
 
@@ -705,7 +705,7 @@ class PermissionDecision:
 
 `PermissionService.grant` persists a grant through `SQLiteMemoryStore.insert_permission_grant`. `can_access` loads caller grants, ignores expired/revoked grants, checks operation, layer, privacy, app, entity intersection, event valid time, and processing policy. Empty scope lists mean "not constrained" for that dimension.
 
-- [ ] **Step 4: Run permission tests to verify they pass**
+- [x] **Step 4: Run permission tests to verify they pass**
 
 Run:
 
@@ -715,7 +715,7 @@ uv run python -m unittest tests.test_governance.PermissionServiceTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit permission service**
+- [x] **Step 5: Commit permission service**
 
 Run:
 

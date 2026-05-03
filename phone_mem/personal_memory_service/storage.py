@@ -6,6 +6,7 @@ import json
 import sqlite3
 from typing import Any
 
+from phone_mem.governance.permissions import PermissionGrant, PermissionScope
 from phone_mem.personal_memory_service.events import (
     Actor,
     Attribution,
@@ -243,6 +244,55 @@ class SQLiteMemoryStore:
             for row in rows
         ]
 
+    def insert_permission_grant(self, grant: PermissionGrant) -> None:
+        operation = grant.scope.operations[0].value if grant.scope.operations else "*"
+        self.connection.execute(
+            """
+            insert into permissions (
+                grant_id, caller, operation, scope_json, granted_at, expires_at, revoked_at
+            ) values (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                grant.grant_id,
+                grant.caller,
+                operation,
+                json.dumps(grant.scope.to_dict(), sort_keys=True),
+                grant.granted_at.isoformat(),
+                grant.expires_at.isoformat(),
+                grant.revoked_at.isoformat() if grant.revoked_at is not None else None,
+            ),
+        )
+        self.connection.commit()
+
+    def update_permission_grant(self, grant: PermissionGrant) -> None:
+        self.connection.execute(
+            """
+            update permissions
+            set scope_json = ?, granted_at = ?, expires_at = ?, revoked_at = ?
+            where grant_id = ?
+            """,
+            (
+                json.dumps(grant.scope.to_dict(), sort_keys=True),
+                grant.granted_at.isoformat(),
+                grant.expires_at.isoformat(),
+                grant.revoked_at.isoformat() if grant.revoked_at is not None else None,
+                grant.grant_id,
+            ),
+        )
+        self.connection.commit()
+
+    def list_permission_grants(self, caller: str | None = None) -> list[PermissionGrant]:
+        if caller is None:
+            rows = self.connection.execute(
+                "select * from permissions order by granted_at, grant_id"
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                "select * from permissions where caller = ? order by granted_at, grant_id",
+                (caller,),
+            ).fetchall()
+        return [self._permission_grant_from_row(row) for row in rows]
+
     def _event_from_dict(self, data: dict[str, Any]) -> MemoryEvent:
         return MemoryEvent(
             event_id=data["event_id"],
@@ -314,6 +364,20 @@ class SQLiteMemoryStore:
             time_end=(
                 datetime.fromisoformat(data["time_end"])
                 if data.get("time_end") is not None
+                else None
+            ),
+        )
+
+    def _permission_grant_from_row(self, row: sqlite3.Row) -> PermissionGrant:
+        return PermissionGrant(
+            grant_id=row["grant_id"],
+            caller=row["caller"],
+            scope=PermissionScope.from_dict(json.loads(row["scope_json"])),
+            granted_at=datetime.fromisoformat(row["granted_at"]),
+            expires_at=datetime.fromisoformat(row["expires_at"]),
+            revoked_at=(
+                datetime.fromisoformat(row["revoked_at"])
+                if row["revoked_at"] is not None
                 else None
             ),
         )
