@@ -1110,7 +1110,7 @@ git commit -m "feat: add deterministic memory constructor"
 **Files:**
 - Modify: `docs/exec-plans/active/001-package-event-model.md`
 
-- [ ] **Step 1: Run the full unit test suite**
+- [x] **Step 1: Run the full unit test suite**
 
 Run:
 
@@ -1120,7 +1120,7 @@ uv run python -m unittest discover -s tests
 
 Expected: all tests pass, including `tests.test_docs_validation`, `tests.test_event_models`, and `tests.test_memory_constructor`.
 
-- [ ] **Step 2: Run documentation validation**
+- [x] **Step 2: Run documentation validation**
 
 Run:
 
@@ -1130,7 +1130,7 @@ uv run python scripts/validate_docs.py
 
 Expected: `Documentation validation passed.`
 
-- [ ] **Step 3: Review implementation against Stage 001 acceptance**
+- [x] **Step 3: Review implementation against Stage 001 acceptance**
 
 Confirm these outcomes before closing 001:
 
@@ -1140,7 +1140,7 @@ Confirm these outcomes before closing 001:
 - Event construction has no import from `sqlite3`, retrieval, context assembly, runtime adapters, or model providers.
 - `main.py` remains a placeholder.
 
-- [ ] **Step 4: Commit final plan checkbox updates**
+- [x] **Step 4: Commit final plan checkbox updates**
 
 Run:
 
