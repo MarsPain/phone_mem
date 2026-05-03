@@ -274,7 +274,7 @@ git commit -m "feat: add SQLite memory schema bootstrap"
 - Modify: `phone_mem/personal_memory_service/storage.py`
 - Modify: `tests/test_storage.py`
 
-- [ ] **Step 1: Add event persistence tests**
+- [x] **Step 1: Add event persistence tests**
 
 Append to `tests/test_storage.py`:
 
@@ -364,7 +364,7 @@ class SQLiteEventPersistenceTest(unittest.TestCase):
         self.assertEqual([event.event_id for event in results], ["event-1"])
 ```
 
-- [ ] **Step 2: Run event persistence tests to verify they fail**
+- [x] **Step 2: Run event persistence tests to verify they fail**
 
 Run:
 
@@ -374,7 +374,7 @@ uv run python -m unittest tests.test_storage.SQLiteEventPersistenceTest
 
 Expected: `AttributeError` for `insert_event` or `get_event`.
 
-- [ ] **Step 3: Implement event persistence and rehydration**
+- [x] **Step 3: Implement event persistence and rehydration**
 
 Update `SQLiteMemoryStore` with these methods:
 
@@ -461,7 +461,7 @@ Update `SQLiteMemoryStore` with these methods:
 
 Also import the event value objects needed by `_event_from_dict` and implement `_event_from_dict` by reconstructing `MemoryEvent` from the canonical dictionary produced by `MemoryEvent.to_dict()`.
 
-- [ ] **Step 4: Run event persistence tests to verify they pass**
+- [x] **Step 4: Run event persistence tests to verify they pass**
 
 Run:
 
@@ -471,7 +471,7 @@ uv run python -m unittest tests.test_storage.SQLiteEventPersistenceTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit event persistence**
+- [x] **Step 5: Commit event persistence**
 
 Run:
 

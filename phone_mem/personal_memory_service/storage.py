@@ -1,7 +1,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
+import json
 import sqlite3
+from typing import Any
+
+from phone_mem.personal_memory_service.events import (
+    Actor,
+    Attribution,
+    EventSource,
+    EventType,
+    Lifecycle,
+    LifecycleState,
+    Lineage,
+    MemoryEvent,
+    MemoryLayer,
+    MemorySelector,
+    Modality,
+    Privacy,
+    PrivacyLevel,
+    ProcessingPolicy,
+    Quality,
+    ValidTime,
+)
 
 
 class StorageError(RuntimeError):
@@ -78,3 +100,136 @@ class SQLiteMemoryStore:
             """
         )
         self.connection.commit()
+
+    def insert_event(self, event: MemoryEvent) -> None:
+        data = event.to_dict()
+        self.connection.execute(
+            """
+            insert into memory_events (
+                event_id, created_at, valid_start, valid_end, event_type,
+                memory_layer, semantic_description, source_app, privacy_level,
+                processing_policy, lifecycle_state, event_json
+            ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event.event_id,
+                event.created_at.isoformat(),
+                event.valid_time.start.isoformat(),
+                event.valid_time.end.isoformat() if event.valid_time.end else None,
+                event.event_type.value,
+                event.memory_layer.value,
+                event.semantic_description,
+                event.source.app,
+                event.privacy.level.value,
+                event.privacy.processing_policy.value,
+                event.lifecycle.state.value,
+                json.dumps(data, sort_keys=True),
+            ),
+        )
+        for entity in event.entities:
+            self.connection.execute("insert or ignore into entities(entity) values (?)", (entity,))
+            self.connection.execute(
+                "insert or ignore into event_entities(event_id, entity) values (?, ?)",
+                (event.event_id, entity),
+            )
+        self.connection.commit()
+
+    def get_event(self, event_id: str) -> MemoryEvent | None:
+        row = self.connection.execute(
+            "select event_json from memory_events where event_id = ?",
+            (event_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._event_from_dict(json.loads(row["event_json"]))
+
+    def query_events(self, selector: MemorySelector | None = None) -> list[MemoryEvent]:
+        selector = selector or MemorySelector()
+        sql = ["select distinct e.event_json from memory_events e"]
+        params: list[str] = []
+        if selector.entities:
+            sql.append("join event_entities ee on ee.event_id = e.event_id")
+
+        where: list[str] = []
+        if selector.event_ids:
+            where.append(f"e.event_id in ({self._placeholders(selector.event_ids)})")
+            params.extend(selector.event_ids)
+        if selector.app is not None:
+            where.append("e.source_app = ?")
+            params.append(selector.app)
+        if selector.entities:
+            where.append(f"ee.entity in ({self._placeholders(selector.entities)})")
+            params.extend(selector.entities)
+        if selector.memory_layers:
+            where.append(f"e.memory_layer in ({self._placeholders(selector.memory_layers)})")
+            params.extend(item.value for item in selector.memory_layers)
+        if selector.privacy_levels:
+            where.append(f"e.privacy_level in ({self._placeholders(selector.privacy_levels)})")
+            params.extend(item.value for item in selector.privacy_levels)
+        if selector.lifecycle_states:
+            where.append(f"e.lifecycle_state in ({self._placeholders(selector.lifecycle_states)})")
+            params.extend(item.value for item in selector.lifecycle_states)
+        if selector.time_start is not None:
+            where.append("e.valid_start >= ?")
+            params.append(selector.time_start.isoformat())
+        if selector.time_end is not None:
+            where.append("e.valid_start <= ?")
+            params.append(selector.time_end.isoformat())
+        if where:
+            sql.append("where " + " and ".join(where))
+        sql.append("order by e.created_at, e.event_id")
+
+        rows = self.connection.execute(" ".join(sql), params).fetchall()
+        return [self._event_from_dict(json.loads(row["event_json"])) for row in rows]
+
+    def _event_from_dict(self, data: dict[str, Any]) -> MemoryEvent:
+        return MemoryEvent(
+            event_id=data["event_id"],
+            created_at=datetime.fromisoformat(data["created_at"]),
+            valid_time=ValidTime(
+                start=datetime.fromisoformat(data["valid_time"]["start"]),
+                end=(
+                    datetime.fromisoformat(data["valid_time"]["end"])
+                    if data["valid_time"]["end"] is not None
+                    else None
+                ),
+            ),
+            event_type=EventType(data["event_type"]),
+            memory_layer=MemoryLayer(data["memory_layer"]),
+            semantic_description=data["semantic_description"],
+            entities=list(data["entities"]),
+            relations=list(data["relations"]),
+            source=EventSource(
+                app=data["source"]["app"],
+                actor=Actor(data["source"]["actor"]),
+                modality=[Modality(item) for item in data["source"]["modality"]],
+                attribution=Attribution(data["source"]["attribution"]),
+            ),
+            privacy=Privacy(
+                level=PrivacyLevel(data["privacy"]["level"]),
+                allowed_scopes=list(data["privacy"]["allowed_scopes"]),
+                processing_policy=ProcessingPolicy(data["privacy"]["processing_policy"]),
+            ),
+            quality=Quality(
+                confidence=data["quality"]["confidence"],
+                importance=data["quality"]["importance"],
+                freshness_half_life_days=data["quality"]["freshness_half_life_days"],
+            ),
+            lineage=Lineage(
+                parents=list(data["lineage"]["parents"]),
+                derived_from=list(data["lineage"]["derived_from"]),
+                supersedes=list(data["lineage"]["supersedes"]),
+            ),
+            lifecycle=Lifecycle(
+                state=LifecycleState(data["lifecycle"]["state"]),
+                deleted_at=(
+                    datetime.fromisoformat(data["lifecycle"]["deleted_at"])
+                    if data["lifecycle"]["deleted_at"] is not None
+                    else None
+                ),
+                delete_reason=data["lifecycle"]["delete_reason"],
+            ),
+        )
+
+    def _placeholders(self, values: list[object]) -> str:
+        return ",".join("?" for _ in values)

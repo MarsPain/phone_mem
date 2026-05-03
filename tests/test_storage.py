@@ -1,8 +1,27 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 import sqlite3
 import unittest
 
+from phone_mem.personal_memory_service.events import (
+    Actor,
+    Attribution,
+    EventSource,
+    EventType,
+    Lifecycle,
+    LifecycleState,
+    Lineage,
+    MemoryEvent,
+    MemoryLayer,
+    MemorySelector,
+    Modality,
+    Privacy,
+    PrivacyLevel,
+    ProcessingPolicy,
+    Quality,
+    ValidTime,
+)
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore
 
 
@@ -29,6 +48,69 @@ class SQLiteSchemaTest(unittest.TestCase):
         store = SQLiteMemoryStore.connect(":memory:")
 
         self.assertIs(store.connection.row_factory, sqlite3.Row)
+
+
+def make_event(event_id: str, *, app: str = "system_assistant", entity: str = "user") -> MemoryEvent:
+    created_at = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
+    return MemoryEvent(
+        event_id=event_id,
+        created_at=created_at,
+        valid_time=ValidTime(start=created_at),
+        event_type=EventType.USER_UTTERANCE,
+        memory_layer=MemoryLayer.EPISODIC,
+        semantic_description=f"{entity} prefers morning planning sessions.",
+        entities=[entity],
+        relations=[],
+        source=EventSource(
+            app=app,
+            actor=Actor.USER,
+            modality=[Modality.TEXT],
+            attribution=Attribution.USER_STATED,
+        ),
+        privacy=Privacy(
+            level=PrivacyLevel.PERSONAL,
+            allowed_scopes=[app],
+            processing_policy=ProcessingPolicy.CLIENT_ENCRYPTED_SYNC,
+        ),
+        quality=Quality(confidence=0.95, importance=0.7, freshness_half_life_days=30),
+        lineage=Lineage(),
+        lifecycle=Lifecycle(),
+    )
+
+
+class SQLiteEventPersistenceTest(unittest.TestCase):
+    def test_insert_and_get_event_round_trips_canonical_data(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        store.initialize_schema()
+        event = make_event("event-1")
+
+        store.insert_event(event)
+
+        loaded = store.get_event("event-1")
+        self.assertIsNotNone(loaded)
+        assert loaded is not None
+        self.assertEqual(loaded.event_id, "event-1")
+        self.assertEqual(loaded.source.app, "system_assistant")
+        self.assertEqual(loaded.privacy.level, PrivacyLevel.PERSONAL)
+        self.assertEqual(loaded.entities, ["user"])
+
+    def test_query_events_applies_selector_filters(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        store.initialize_schema()
+        store.insert_event(make_event("event-1", app="system_assistant", entity="user"))
+        store.insert_event(make_event("event-2", app="calendar", entity="calendar"))
+
+        results = store.query_events(
+            MemorySelector(
+                app="system_assistant",
+                entities=["user"],
+                memory_layers=[MemoryLayer.EPISODIC],
+                privacy_levels=[PrivacyLevel.PERSONAL],
+                lifecycle_states=[LifecycleState.ACTIVE],
+            )
+        )
+
+        self.assertEqual([event.event_id for event in results], ["event-1"])
 
 
 if __name__ == "__main__":
