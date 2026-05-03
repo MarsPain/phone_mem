@@ -731,7 +731,7 @@ git commit -m "feat: add scoped permission grants"
 - Modify: `phone_mem/governance/__init__.py`
 - Modify: `tests/test_governance.py`
 
-- [ ] **Step 1: Add memory view tests**
+- [x] **Step 1: Add memory view tests**
 
 Append to `tests/test_governance.py`:
 
@@ -770,7 +770,7 @@ class MemoryViewProjectorTest(unittest.TestCase):
         self.assertEqual(view.denied_event_ids, {"event-2": "no active grant matched"})
 ```
 
-- [ ] **Step 2: Run memory view tests to verify they fail**
+- [x] **Step 2: Run memory view tests to verify they fail**
 
 Run:
 
@@ -780,7 +780,7 @@ uv run python -m unittest tests.test_governance.MemoryViewProjectorTest
 
 Expected: import failure for `phone_mem.governance.views`.
 
-- [ ] **Step 3: Implement memory view projection**
+- [x] **Step 3: Implement memory view projection**
 
 Implement in `phone_mem/governance/views.py`:
 
@@ -797,7 +797,7 @@ class MemoryViewProjector:
 
 The projector must call `PermissionService.can_access` for each event before returning any event to callers. Denied events are represented only by event ID and denial reason for tests and audit; later retrieval must not score denied memory.
 
-- [ ] **Step 4: Run memory view tests to verify they pass**
+- [x] **Step 4: Run memory view tests to verify they pass**
 
 Run:
 
@@ -807,7 +807,7 @@ uv run python -m unittest tests.test_governance.MemoryViewProjectorTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit memory view projection**
+- [x] **Step 5: Commit memory view projection**
 
 Run:
 
