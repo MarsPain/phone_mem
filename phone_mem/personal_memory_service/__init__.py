@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from phone_mem.personal_memory_service.events import (
     Actor,
+    AuditOperation,
+    AuditRecord,
     Attribution,
     EventSource,
     EventType,
@@ -11,6 +13,7 @@ from phone_mem.personal_memory_service.events import (
     MemoryEvent,
     MemoryEventValidationError,
     MemoryLayer,
+    MemorySelector,
     Modality,
     Privacy,
     PrivacyLevel,
@@ -21,6 +24,8 @@ from phone_mem.personal_memory_service.events import (
 
 __all__ = [
     "Actor",
+    "AuditOperation",
+    "AuditRecord",
     "Attribution",
     "EventSource",
     "EventType",
@@ -30,6 +35,7 @@ __all__ = [
     "MemoryEvent",
     "MemoryEventValidationError",
     "MemoryLayer",
+    "MemorySelector",
     "Modality",
     "Privacy",
     "PrivacyLevel",

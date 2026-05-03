@@ -643,7 +643,7 @@ git commit -m "feat: validate memory event invariants"
 - Modify: `phone_mem/personal_memory_service/events.py`
 - Modify: `tests/test_event_models.py`
 
-- [ ] **Step 1: Add tests for selectors and audit records**
+- [x] **Step 1: Add tests for selectors and audit records**
 
 Append these imports to the import list in `tests/test_event_models.py`:
 
@@ -697,7 +697,7 @@ Append these tests inside `MemoryEventModelTest`:
         self.assertEqual(data["outcome"], "allowed")
 ```
 
-- [ ] **Step 2: Run focused tests to verify they fail**
+- [x] **Step 2: Run focused tests to verify they fail**
 
 Run:
 
@@ -707,7 +707,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: import failure for `AuditOperation`, `AuditRecord`, or `MemorySelector`.
 
-- [ ] **Step 3: Implement selector and audit value models**
+- [x] **Step 3: Implement selector and audit value models**
 
 Add these definitions to `phone_mem/personal_memory_service/events.py`:
 
@@ -804,7 +804,7 @@ Update `phone_mem/personal_memory_service/__init__.py` imports and `__all__` to 
     MemorySelector,
 ```
 
-- [ ] **Step 4: Run focused tests to verify they pass**
+- [x] **Step 4: Run focused tests to verify they pass**
 
 Run:
 
@@ -814,7 +814,7 @@ uv run python -m unittest tests.test_event_models
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit selector and audit value models**
+- [x] **Step 5: Commit selector and audit value models**
 
 Run:
 

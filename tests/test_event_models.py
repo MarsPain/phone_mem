@@ -5,6 +5,8 @@ import unittest
 
 from phone_mem.personal_memory_service.events import (
     Actor,
+    AuditOperation,
+    AuditRecord,
     Attribution,
     EventSource,
     EventType,
@@ -13,6 +15,7 @@ from phone_mem.personal_memory_service.events import (
     Lineage,
     MemoryEvent,
     MemoryLayer,
+    MemorySelector,
     Modality,
     Privacy,
     PrivacyLevel,
@@ -121,6 +124,46 @@ class MemoryEventModelTest(unittest.TestCase):
     def test_deleted_lifecycle_requires_deleted_at(self) -> None:
         with self.assertRaisesRegex(Exception, "deleted lifecycle requires deleted_at"):
             Lifecycle(state=LifecycleState.DELETED, delete_reason="missing timestamp")
+
+    def test_memory_selector_serializes_only_selected_filters(self) -> None:
+        selector = MemorySelector(
+            event_ids=["event-1"],
+            app="system_assistant",
+            entities=["user"],
+            memory_layers=[MemoryLayer.EPISODIC],
+            privacy_levels=[PrivacyLevel.PERSONAL],
+            lifecycle_states=[LifecycleState.ACTIVE],
+        )
+
+        data = selector.to_dict()
+
+        self.assertEqual(data["event_ids"], ["event-1"])
+        self.assertEqual(data["app"], "system_assistant")
+        self.assertEqual(data["entities"], ["user"])
+        self.assertEqual(data["memory_layers"], ["episodic"])
+        self.assertEqual(data["privacy_levels"], ["personal"])
+        self.assertEqual(data["lifecycle_states"], ["active"])
+        self.assertNotIn("time_start", data)
+
+    def test_audit_record_preserves_operation_and_affected_events(self) -> None:
+        occurred_at = datetime(2026, 5, 1, 10, 0, tzinfo=UTC)
+        audit = AuditRecord(
+            operation_id="audit-1",
+            caller="system_assistant",
+            operation=AuditOperation.WRITE,
+            scope={"app": "system_assistant"},
+            affected_event_ids=["event-1"],
+            occurred_at=occurred_at,
+            outcome="allowed",
+            denial_reason=None,
+        )
+
+        data = audit.to_dict()
+
+        self.assertEqual(data["operation"], "write")
+        self.assertEqual(data["affected_event_ids"], ["event-1"])
+        self.assertEqual(data["occurred_at"], "2026-05-01T10:00:00+00:00")
+        self.assertEqual(data["outcome"], "allowed")
 
 
 if __name__ == "__main__":

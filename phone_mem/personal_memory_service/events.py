@@ -67,6 +67,17 @@ class LifecycleState(StrEnum):
     QUARANTINED = "quarantined"
 
 
+class AuditOperation(StrEnum):
+    READ = "read"
+    WRITE = "write"
+    UPDATE = "update"
+    DELETE = "delete"
+    GRANT = "grant"
+    REVOKE = "revoke"
+    PROJECTION = "projection"
+    CONTEXT_BUILD = "context_build"
+
+
 @dataclass(frozen=True)
 class ValidTime:
     start: datetime
@@ -229,4 +240,77 @@ class MemoryEvent:
             "quality": self.quality.to_dict(),
             "lineage": self.lineage.to_dict(),
             "lifecycle": self.lifecycle.to_dict(),
+        }
+
+
+@dataclass(frozen=True)
+class MemorySelector:
+    event_ids: list[str] = field(default_factory=list)
+    app: str | None = None
+    entities: list[str] = field(default_factory=list)
+    topics: list[str] = field(default_factory=list)
+    memory_layers: list[MemoryLayer] = field(default_factory=list)
+    privacy_levels: list[PrivacyLevel] = field(default_factory=list)
+    lifecycle_states: list[LifecycleState] = field(default_factory=list)
+    time_start: datetime | None = None
+    time_end: datetime | None = None
+
+    def __post_init__(self) -> None:
+        if self.time_start is not None and self.time_end is not None and self.time_end < self.time_start:
+            raise MemoryEventValidationError("selector.time_end cannot be earlier than time_start")
+
+    def to_dict(self) -> dict[str, Any]:
+        data: dict[str, Any] = {}
+        if self.event_ids:
+            data["event_ids"] = list(self.event_ids)
+        if self.app is not None:
+            data["app"] = self.app
+        if self.entities:
+            data["entities"] = list(self.entities)
+        if self.topics:
+            data["topics"] = list(self.topics)
+        if self.memory_layers:
+            data["memory_layers"] = [item.value for item in self.memory_layers]
+        if self.privacy_levels:
+            data["privacy_levels"] = [item.value for item in self.privacy_levels]
+        if self.lifecycle_states:
+            data["lifecycle_states"] = [item.value for item in self.lifecycle_states]
+        if self.time_start is not None:
+            data["time_start"] = self.time_start.isoformat()
+        if self.time_end is not None:
+            data["time_end"] = self.time_end.isoformat()
+        return data
+
+
+@dataclass(frozen=True)
+class AuditRecord:
+    operation_id: str
+    caller: str
+    operation: AuditOperation
+    scope: dict[str, Any]
+    affected_event_ids: list[str]
+    occurred_at: datetime
+    outcome: str
+    denial_reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.operation_id.strip():
+            raise MemoryEventValidationError("operation_id is required")
+        if not self.caller.strip():
+            raise MemoryEventValidationError("audit caller is required")
+        if self.outcome not in {"allowed", "denied"}:
+            raise MemoryEventValidationError("audit outcome must be allowed or denied")
+        if self.outcome == "denied" and not self.denial_reason:
+            raise MemoryEventValidationError("denied audit records require denial_reason")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "operation_id": self.operation_id,
+            "caller": self.caller,
+            "operation": self.operation.value,
+            "scope": dict(self.scope),
+            "affected_event_ids": list(self.affected_event_ids),
+            "occurred_at": self.occurred_at.isoformat(),
+            "outcome": self.outcome,
+            "denial_reason": self.denial_reason,
         }
