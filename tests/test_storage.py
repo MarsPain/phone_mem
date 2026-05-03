@@ -23,6 +23,7 @@ from phone_mem.personal_memory_service.events import (
     ValidTime,
 )
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore
+from phone_mem.personal_memory_service.storage import TombstoneRecord
 
 
 class SQLiteSchemaTest(unittest.TestCase):
@@ -111,6 +112,43 @@ class SQLiteEventPersistenceTest(unittest.TestCase):
         )
 
         self.assertEqual([event.event_id for event in results], ["event-1"])
+
+
+class SQLiteLifecycleAndTombstoneTest(unittest.TestCase):
+    def test_update_lifecycle_hides_deleted_event_from_active_selector(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        store.initialize_schema()
+        event = make_event("event-1")
+        store.insert_event(event)
+        deleted_at = datetime(2026, 5, 2, 10, 0, tzinfo=UTC)
+
+        store.update_lifecycle(
+            "event-1",
+            Lifecycle().mark_deleted(deleted_at=deleted_at, reason="user requested deletion"),
+        )
+
+        active = store.query_events(MemorySelector(lifecycle_states=[LifecycleState.ACTIVE]))
+        deleted = store.get_event("event-1")
+        self.assertEqual(active, [])
+        self.assertIsNotNone(deleted)
+        assert deleted is not None
+        self.assertEqual(deleted.lifecycle.state, LifecycleState.DELETED)
+
+    def test_write_tombstone_records_deleted_event_and_selector(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        store.initialize_schema()
+        deleted_at = datetime(2026, 5, 2, 10, 0, tzinfo=UTC)
+        tombstone = TombstoneRecord(
+            tombstone_id="tombstone-1",
+            event_id="event-1",
+            deleted_at=deleted_at,
+            reason="user requested deletion",
+            selector=MemorySelector(event_ids=["event-1"]),
+        )
+
+        store.write_tombstone(tombstone)
+
+        self.assertEqual(store.list_tombstones(), [tombstone])
 
 
 if __name__ == "__main__":

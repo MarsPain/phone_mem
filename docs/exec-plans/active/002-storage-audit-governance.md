@@ -486,7 +486,7 @@ git commit -m "feat: persist canonical memory events"
 - Modify: `phone_mem/personal_memory_service/storage.py`
 - Modify: `tests/test_storage.py`
 
-- [ ] **Step 1: Add lifecycle and tombstone tests**
+- [x] **Step 1: Add lifecycle and tombstone tests**
 
 Append to `tests/test_storage.py`:
 
@@ -531,7 +531,7 @@ class SQLiteLifecycleAndTombstoneTest(unittest.TestCase):
         self.assertEqual(store.list_tombstones(), [tombstone])
 ```
 
-- [ ] **Step 2: Run lifecycle tests to verify they fail**
+- [x] **Step 2: Run lifecycle tests to verify they fail**
 
 Run:
 
@@ -541,7 +541,7 @@ uv run python -m unittest tests.test_storage.SQLiteLifecycleAndTombstoneTest
 
 Expected: import or attribute failure for `TombstoneRecord`.
 
-- [ ] **Step 3: Implement lifecycle and tombstones**
+- [x] **Step 3: Implement lifecycle and tombstones**
 
 Add immutable `TombstoneRecord` to `storage.py` and implement:
 
@@ -557,7 +557,7 @@ class TombstoneRecord:
 
 `update_lifecycle` must update both lifecycle columns and the stored canonical `event_json`. `write_tombstone` and `list_tombstones` must persist and rehydrate `TombstoneRecord` using `selector.to_dict()`.
 
-- [ ] **Step 4: Run lifecycle tests to verify they pass**
+- [x] **Step 4: Run lifecycle tests to verify they pass**
 
 Run:
 
@@ -567,7 +567,7 @@ uv run python -m unittest tests.test_storage.SQLiteLifecycleAndTombstoneTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit lifecycle and tombstones**
+- [x] **Step 5: Commit lifecycle and tombstones**
 
 Run:
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 import json
 import sqlite3
@@ -28,6 +28,15 @@ from phone_mem.personal_memory_service.events import (
 
 class StorageError(RuntimeError):
     """Raised when persisted memory state is invalid."""
+
+
+@dataclass(frozen=True)
+class TombstoneRecord:
+    tombstone_id: str
+    event_id: str
+    deleted_at: datetime
+    reason: str
+    selector: MemorySelector
 
 
 @dataclass(frozen=True)
@@ -182,6 +191,58 @@ class SQLiteMemoryStore:
         rows = self.connection.execute(" ".join(sql), params).fetchall()
         return [self._event_from_dict(json.loads(row["event_json"])) for row in rows]
 
+    def update_lifecycle(self, event_id: str, lifecycle: Lifecycle) -> None:
+        event = self.get_event(event_id)
+        if event is None:
+            raise StorageError(f"memory event not found: {event_id}")
+        updated = replace(event, lifecycle=lifecycle)
+        data = updated.to_dict()
+        self.connection.execute(
+            """
+            update memory_events
+            set lifecycle_state = ?, event_json = ?
+            where event_id = ?
+            """,
+            (
+                lifecycle.state.value,
+                json.dumps(data, sort_keys=True),
+                event_id,
+            ),
+        )
+        self.connection.commit()
+
+    def write_tombstone(self, tombstone: TombstoneRecord) -> None:
+        self.connection.execute(
+            """
+            insert into tombstones (
+                tombstone_id, event_id, deleted_at, reason, selector_json
+            ) values (?, ?, ?, ?, ?)
+            """,
+            (
+                tombstone.tombstone_id,
+                tombstone.event_id,
+                tombstone.deleted_at.isoformat(),
+                tombstone.reason,
+                json.dumps(tombstone.selector.to_dict(), sort_keys=True),
+            ),
+        )
+        self.connection.commit()
+
+    def list_tombstones(self) -> list[TombstoneRecord]:
+        rows = self.connection.execute(
+            "select * from tombstones order by deleted_at, tombstone_id"
+        ).fetchall()
+        return [
+            TombstoneRecord(
+                tombstone_id=row["tombstone_id"],
+                event_id=row["event_id"],
+                deleted_at=datetime.fromisoformat(row["deleted_at"]),
+                reason=row["reason"],
+                selector=self._selector_from_dict(json.loads(row["selector_json"])),
+            )
+            for row in rows
+        ]
+
     def _event_from_dict(self, data: dict[str, Any]) -> MemoryEvent:
         return MemoryEvent(
             event_id=data["event_id"],
@@ -233,3 +294,26 @@ class SQLiteMemoryStore:
 
     def _placeholders(self, values: list[object]) -> str:
         return ",".join("?" for _ in values)
+
+    def _selector_from_dict(self, data: dict[str, Any]) -> MemorySelector:
+        return MemorySelector(
+            event_ids=list(data.get("event_ids", [])),
+            app=data.get("app"),
+            entities=list(data.get("entities", [])),
+            topics=list(data.get("topics", [])),
+            memory_layers=[MemoryLayer(item) for item in data.get("memory_layers", [])],
+            privacy_levels=[PrivacyLevel(item) for item in data.get("privacy_levels", [])],
+            lifecycle_states=[
+                LifecycleState(item) for item in data.get("lifecycle_states", [])
+            ],
+            time_start=(
+                datetime.fromisoformat(data["time_start"])
+                if data.get("time_start") is not None
+                else None
+            ),
+            time_end=(
+                datetime.fromisoformat(data["time_end"])
+                if data.get("time_end") is not None
+                else None
+            ),
+        )
