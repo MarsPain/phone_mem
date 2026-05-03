@@ -105,7 +105,7 @@ class AuditLog:
 - Create: `phone_mem/personal_memory_service/storage.py`
 - Test: `tests/test_storage.py`
 
-- [ ] **Step 1: Write failing schema test**
+- [x] **Step 1: Write failing schema test**
 
 Create `tests/test_storage.py`:
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run schema test to verify it fails**
+- [x] **Step 2: Run schema test to verify it fails**
 
 Run:
 
@@ -157,7 +157,7 @@ uv run python -m unittest tests.test_storage.SQLiteSchemaTest
 
 Expected: import failure for `phone_mem.personal_memory_service.storage`.
 
-- [ ] **Step 3: Implement schema bootstrap**
+- [x] **Step 3: Implement schema bootstrap**
 
 Create `phone_mem/personal_memory_service/storage.py` with:
 
@@ -249,7 +249,7 @@ class SQLiteMemoryStore:
         self.connection.commit()
 ```
 
-- [ ] **Step 4: Run schema test to verify it passes**
+- [x] **Step 4: Run schema test to verify it passes**
 
 Run:
 
@@ -259,7 +259,7 @@ uv run python -m unittest tests.test_storage.SQLiteSchemaTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit schema bootstrap**
+- [x] **Step 5: Commit schema bootstrap**
 
 Run:
 
