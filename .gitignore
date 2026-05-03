@@ -9,5 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# Local git worktrees
+.worktrees/
+
 # Source materials kept outside git
 手机端Agent_Memory架构设计方案.pdf
