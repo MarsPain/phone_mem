@@ -10,6 +10,8 @@ from phone_mem.governance.permissions import PermissionGrant, PermissionScope
 from phone_mem.personal_memory_service.events import (
     Actor,
     Attribution,
+    AuditOperation,
+    AuditRecord,
     EventSource,
     EventType,
     Lifecycle,
@@ -293,6 +295,45 @@ class SQLiteMemoryStore:
             ).fetchall()
         return [self._permission_grant_from_row(row) for row in rows]
 
+    def insert_audit_record(self, record: AuditRecord) -> None:
+        self.connection.execute(
+            """
+            insert into audit_log (
+                operation_id, caller, operation, scope_json,
+                affected_event_ids_json, occurred_at, outcome, denial_reason
+            ) values (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                record.operation_id,
+                record.caller,
+                record.operation.value,
+                json.dumps(record.scope, sort_keys=True),
+                json.dumps(record.affected_event_ids, sort_keys=True),
+                record.occurred_at.isoformat(),
+                record.outcome,
+                record.denial_reason,
+            ),
+        )
+        self.connection.commit()
+
+    def query_audit_records(self, selector: object | None = None) -> list[AuditRecord]:
+        sql = ["select * from audit_log"]
+        params: list[str] = []
+        where: list[str] = []
+        caller = getattr(selector, "caller", None)
+        operations = getattr(selector, "operations", []) if selector is not None else []
+        if caller is not None:
+            where.append("caller = ?")
+            params.append(caller)
+        if operations:
+            where.append(f"operation in ({self._placeholders(operations)})")
+            params.extend(operation.value for operation in operations)
+        if where:
+            sql.append("where " + " and ".join(where))
+        sql.append("order by occurred_at, operation_id")
+        rows = self.connection.execute(" ".join(sql), params).fetchall()
+        return [self._audit_record_from_row(row) for row in rows]
+
     def _event_from_dict(self, data: dict[str, Any]) -> MemoryEvent:
         return MemoryEvent(
             event_id=data["event_id"],
@@ -380,4 +421,16 @@ class SQLiteMemoryStore:
                 if row["revoked_at"] is not None
                 else None
             ),
+        )
+
+    def _audit_record_from_row(self, row: sqlite3.Row) -> AuditRecord:
+        return AuditRecord(
+            operation_id=row["operation_id"],
+            caller=row["caller"],
+            operation=AuditOperation(row["operation"]),
+            scope=json.loads(row["scope_json"]),
+            affected_event_ids=list(json.loads(row["affected_event_ids_json"])),
+            occurred_at=datetime.fromisoformat(row["occurred_at"]),
+            outcome=row["outcome"],
+            denial_reason=row["denial_reason"],
         )

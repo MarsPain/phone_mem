@@ -824,7 +824,7 @@ git commit -m "feat: project permissioned memory views"
 - Modify: `phone_mem/personal_memory_service/storage.py`
 - Modify: `tests/test_governance.py`
 
-- [ ] **Step 1: Add audit log tests**
+- [x] **Step 1: Add audit log tests**
 
 Append to `tests/test_governance.py`:
 
@@ -864,7 +864,7 @@ class AuditLogTest(unittest.TestCase):
         self.assertEqual([record.operation_id for record in records], ["audit-1"])
 ```
 
-- [ ] **Step 2: Run audit tests to verify they fail**
+- [x] **Step 2: Run audit tests to verify they fail**
 
 Run:
 
@@ -874,11 +874,11 @@ uv run python -m unittest tests.test_governance.AuditLogTest
 
 Expected: import failure for `phone_mem.governance.audit`.
 
-- [ ] **Step 3: Implement audit log wrapper and storage methods**
+- [x] **Step 3: Implement audit log wrapper and storage methods**
 
 Implement `AuditSelector` and `AuditLog` in `phone_mem/governance/audit.py`. Add `insert_audit_record` and `query_audit_records` to `SQLiteMemoryStore`. Persist `AuditRecord.scope` and `affected_event_ids` as JSON strings. Query filters should support caller and operations.
 
-- [ ] **Step 4: Run audit tests to verify they pass**
+- [x] **Step 4: Run audit tests to verify they pass**
 
 Run:
 
@@ -888,7 +888,7 @@ uv run python -m unittest tests.test_governance.AuditLogTest
 
 Expected: `OK`.
 
-- [ ] **Step 5: Commit audit log**
+- [x] **Step 5: Commit audit log**
 
 Run:
 
