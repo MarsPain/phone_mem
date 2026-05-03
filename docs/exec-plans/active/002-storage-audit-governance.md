@@ -902,7 +902,7 @@ git commit -m "feat: add audit log persistence"
 **Files:**
 - Modify: `docs/exec-plans/active/002-storage-audit-governance.md`
 
-- [ ] **Step 1: Run focused Stage 002 tests**
+- [x] **Step 1: Run focused Stage 002 tests**
 
 Run:
 
@@ -912,7 +912,7 @@ uv run python -m unittest tests.test_storage tests.test_governance
 
 Expected: all Stage 002 tests pass.
 
-- [ ] **Step 2: Run full test suite**
+- [x] **Step 2: Run full test suite**
 
 Run:
 
@@ -922,7 +922,7 @@ uv run python -m unittest discover -s tests
 
 Expected: all tests pass.
 
-- [ ] **Step 3: Run documentation validation**
+- [x] **Step 3: Run documentation validation**
 
 Run:
 
@@ -932,7 +932,7 @@ uv run python scripts/validate_docs.py
 
 Expected: `Documentation validation passed.`
 
-- [ ] **Step 4: Review implementation against Stage 002 acceptance**
+- [x] **Step 4: Review implementation against Stage 002 acceptance**
 
 Confirm these outcomes before closing 002:
 
@@ -944,7 +944,7 @@ Confirm these outcomes before closing 002:
 - Audit records can be written and queried.
 - No retrieval ranking, context assembly, cloud sync, graph/vector store, or production encryption was introduced.
 
-- [ ] **Step 5: Commit final plan checkbox updates**
+- [x] **Step 5: Commit final plan checkbox updates**
 
 Run:
 
