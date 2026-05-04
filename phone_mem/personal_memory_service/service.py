@@ -391,4 +391,47 @@ class PersonalMemoryService:
             "quality": event.quality.to_dict(),
             "lineage": event.lineage.to_dict(),
             "lifecycle": event.lifecycle.to_dict(),
+            "lifecycle_explanation": self._lifecycle_explanation(event),
         }
+
+    def _lifecycle_explanation(self, event: MemoryEvent) -> dict[str, object]:
+        if event.lifecycle.state == LifecycleState.QUARANTINED:
+            return {
+                "state": event.lifecycle.state.value,
+                "reason": "contradicts active memory",
+                "related_event_ids": list(event.lineage.parents),
+            }
+
+        if event.lifecycle.state == LifecycleState.SUPERSEDED:
+            return {
+                "state": event.lifecycle.state.value,
+                "reason": "superseded by correction",
+                "related_event_ids": self._events_superseding(event.event_id),
+            }
+
+        if event.lifecycle.state == LifecycleState.DELETED:
+            return {
+                "state": event.lifecycle.state.value,
+                "reason": event.lifecycle.delete_reason or "deleted",
+                "related_event_ids": [],
+            }
+
+        if event.lineage.supersedes:
+            return {
+                "state": event.lifecycle.state.value,
+                "reason": "corrects previous memory",
+                "related_event_ids": list(event.lineage.supersedes),
+            }
+
+        return {
+            "state": event.lifecycle.state.value,
+            "reason": "active memory",
+            "related_event_ids": [],
+        }
+
+    def _events_superseding(self, event_id: str) -> list[str]:
+        return [
+            candidate.event_id
+            for candidate in self.store.query_events()
+            if event_id in candidate.lineage.supersedes
+        ]

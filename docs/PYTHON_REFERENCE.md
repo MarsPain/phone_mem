@@ -67,6 +67,28 @@ The same flow is covered by:
 uv run python -m unittest tests.test_file_backed_sqlite_walkthrough
 ```
 
+## Retrieval Selector Walkthrough
+
+Run the selector walkthrough:
+
+```bash
+uv run python examples/retrieval_selector_walkthrough.py
+```
+
+The walkthrough records planning and travel memories, then demonstrates scoped search with `MemorySelector`:
+
+1. entity-scoped retrieval for planning memory;
+2. app-scoped retrieval for `system_assistant` memory;
+3. app-scoped retrieval for a calendar-synced app event;
+4. selector-based deletion for travel memory;
+5. post-delete retrieval filtering.
+
+The same flow is covered by:
+
+```bash
+uv run python -m unittest tests.test_retrieval_selector_walkthrough
+```
+
 ## Minimal Service Usage
 
 ```python
@@ -168,6 +190,23 @@ except MemoryEventNotFound as error:
 ```
 
 Permission denials include the attempted operation, caller, affected event IDs when known, selector context when relevant, and the denial reason that is also written to audit. Missing event reads and updates also write denied audit records with `memory event not found`.
+
+## Lifecycle Explainability
+
+`service.explain(event_id, caller=...)` returns the canonical event metadata plus a `lifecycle_explanation` object for caller-facing review:
+
+```python
+explanation = service.explain(event_id, caller="calendar_agent")
+print(explanation["lifecycle_explanation"])
+```
+
+The lifecycle explanation contains:
+
+- `state`: current lifecycle state, such as `active`, `quarantined`, `superseded`, or `deleted`;
+- `reason`: caller-readable lifecycle reason;
+- `related_event_ids`: contradiction parents, corrected originals, or correction replacements when known.
+
+Rejected writes are not persisted as memory events. They are represented by denied audit records and `MemoryPermissionDenied`.
 
 ## Iteration Priorities
 
