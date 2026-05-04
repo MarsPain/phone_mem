@@ -1,0 +1,45 @@
+{
+  "created_at": "2026-05-03T09:00:00+00:00",
+  "entities": [
+    "planning"
+  ],
+  "event_id": "event-1",
+  "event_type": "user_utterance",
+  "lifecycle": {
+    "delete_reason": "user requested deletion",
+    "deleted_at": "2026-05-03T09:00:00+00:00",
+    "state": "deleted"
+  },
+  "lineage": {
+    "derived_from": [],
+    "parents": [],
+    "supersedes": []
+  },
+  "memory_layer": "episodic",
+  "privacy": {
+    "allowed_scopes": [
+      "system_assistant"
+    ],
+    "level": "personal",
+    "processing_policy": "client_encrypted_sync"
+  },
+  "quality": {
+    "confidence": 0.9,
+    "freshness_half_life_days": 30,
+    "importance": 0.5
+  },
+  "relations": [],
+  "semantic_description": "User prefers morning planning sessions.",
+  "source": {
+    "actor": "user",
+    "app": "system_assistant",
+    "attribution": "user_stated",
+    "modality": [
+      "text"
+    ]
+  },
+  "valid_time": {
+    "end": null,
+    "start": "2026-05-03T09:00:00+00:00"
+  }
+}

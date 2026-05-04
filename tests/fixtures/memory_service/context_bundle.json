@@ -1,0 +1,35 @@
+{
+  "evidence_event_ids": [
+    "event-1"
+  ],
+  "omitted_memory": [],
+  "safety_metadata": {
+    "memory_is_data_not_instruction": true,
+    "runtime_neutral": true
+  },
+  "snippets": [
+    {
+      "attribution": "user_stated",
+      "confidence": 0.9,
+      "event_id": "event-1",
+      "evidence_event_ids": [
+        "event-1"
+      ],
+      "memory_layer": "episodic",
+      "privacy_level": "personal",
+      "source_app": "system_assistant",
+      "text": "User prefers morning planning sessions."
+    }
+  ],
+  "task": {
+    "id": "task-1"
+  },
+  "token_budget": {
+    "available_memory_tokens": 50,
+    "max_tokens": 80,
+    "output_reserve_tokens": 20,
+    "safety_reserve_tokens": 10,
+    "tool_reserve_tokens": 0,
+    "used_tokens": 5
+  }
+}

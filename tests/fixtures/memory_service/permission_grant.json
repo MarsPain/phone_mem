@@ -1,0 +1,24 @@
+{
+  "caller": "calendar_agent",
+  "expires_at": "2026-05-03T09:01:00+00:00",
+  "grant_id": "grant-1",
+  "granted_at": "2026-05-03T09:00:00+00:00",
+  "revoked_at": null,
+  "scope": {
+    "apps": [
+      "system_assistant"
+    ],
+    "memory_layers": [
+      "episodic"
+    ],
+    "operations": [
+      "write",
+      "read",
+      "delete",
+      "context_build"
+    ],
+    "privacy_levels": [
+      "personal"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "deleted_event_ids": [
+    "event-1"
+  ],
+  "tombstones": [
+    {
+      "deleted_at": "2026-05-03T09:00:00+00:00",
+      "event_id": "event-1",
+      "reason": "user requested deletion",
+      "selector": {
+        "event_ids": [
+          "event-1"
+        ]
+      },
+      "tombstone_id": "tombstone-1"
+    }
+  ]
+}

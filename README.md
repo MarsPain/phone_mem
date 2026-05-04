@@ -22,6 +22,7 @@ uv run python -m unittest discover -s tests
 - [docs/design-docs/smartphone-agent-memory.md](docs/design-docs/smartphone-agent-memory.md): smartphone Agent Memory development design.
 - [docs/references/source-review.md](docs/references/source-review.md): deep review, distilled insights, and corrections for the source PDF.
 - [docs/references/research-review-2026.md](docs/references/research-review-2026.md): v2 research basis across agent memory, on-device LLM systems, and Apple/Android platform constraints.
+- [mobile/README.md](mobile/README.md): Stage 2 mobile runtime prototype boundary.
 
 ## Current Stage
 

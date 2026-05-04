@@ -1,0 +1,29 @@
+[
+  {
+    "event_id": "event-1",
+    "explanation": {
+      "lexical_score": 3,
+      "matched_entities": [
+        "planning"
+      ],
+      "matched_terms": [
+        "morning",
+        "planning"
+      ],
+      "recency_score": 1.0
+    },
+    "score": 36.8,
+    "snippet": {
+      "attribution": "user_stated",
+      "confidence": 0.9,
+      "event_id": "event-1",
+      "evidence_event_ids": [
+        "event-1"
+      ],
+      "memory_layer": "episodic",
+      "privacy_level": "personal",
+      "source_app": "system_assistant",
+      "text": "User prefers morning planning sessions."
+    }
+  }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "affected_event_ids": [],
+    "caller": "calendar_agent",
+    "denial_reason": null,
+    "occurred_at": "2026-05-03T09:00:00+00:00",
+    "operation": "grant",
+    "operation_id": "audit-1",
+    "outcome": "allowed",
+    "scope": {
+      "apps": [
+        "system_assistant"
+      ],
+      "memory_layers": [
+        "episodic"
+      ],
+      "operations": [
+        "write",
+        "read",
+        "delete",
+        "context_build"
+      ],
+      "privacy_levels": [
+        "personal"
+      ]
+    }
+  },
+  {
+    "affected_event_ids": [
+      "event-1"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": null,
+    "occurred_at": "2026-05-03T09:00:00+00:00",
+    "operation": "write",
+    "operation_id": "audit-2",
+    "outcome": "allowed",
+    "scope": {
+      "event": {
+        "created_at": "2026-05-03T09:00:00+00:00",
+        "entities": [
+          "planning"
+        ],
+        "event_id": "event-1",
+        "event_type": "user_utterance",
+        "lifecycle": {
+          "delete_reason": null,
+          "deleted_at": null,
+          "state": "active"
+        },
+        "lineage": {
+          "derived_from": [],
+          "parents": [],
+          "supersedes": []
+        },
+        "memory_layer": "episodic",
+        "privacy": {
+          "allowed_scopes": [
+            "system_assistant"
+          ],
+          "level": "personal",
+          "processing_policy": "client_encrypted_sync"
+        },
+        "quality": {
+          "confidence": 0.9,
+          "freshness_half_life_days": 30,
+          "importance": 0.5
+        },
+        "relations": [],
+        "semantic_description": "User prefers morning planning sessions.",
+        "source": {
+          "actor": "user",
+          "app": "system_assistant",
+          "attribution": "user_stated",
+          "modality": [
+            "text"
+          ]
+        },
+        "valid_time": {
+          "end": null,
+          "start": "2026-05-03T09:00:00+00:00"
+        }
+      }
+    }
+  },
+  {
+    "affected_event_ids": [
+      "event-1"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": null,
+    "occurred_at": "2026-05-03T09:00:00+00:00",
+    "operation": "read",
+    "operation_id": "audit-3",
+    "outcome": "allowed",
+    "scope": {
+      "query": "morning planning",
+      "selector": {
+        "lifecycle_states": [
+          "active"
+        ]
+      },
+      "top_k": 1
+    }
+  },
+  {
+    "affected_event_ids": [
+      "event-1"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": null,
+    "occurred_at": "2026-05-03T09:00:00+00:00",
+    "operation": "read",
+    "operation_id": "audit-4",
+    "outcome": "allowed",
+    "scope": {
+      "query": "morning planning",
+      "selector": {
+        "lifecycle_states": [
+          "active"
+        ]
+      },
+      "top_k": 1
+    }
+  },
+  {
+    "affected_event_ids": [
+      "event-1"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": null,
+    "occurred_at": "2026-05-03T09:00:00+00:00",
+    "operation": "context_build",
+    "operation_id": "audit-5",
+    "outcome": "allowed",
+    "scope": {
+      "budget": {
+        "available_memory_tokens": 50,
+        "max_tokens": 80
+      },
+      "task": {
+        "id": "task-1"
+      }
+    }
+  },
+  {
+    "affected_event_ids": [
+      "event-1"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": null,
+    "occurred_at": "2026-05-03T09:00:00+00:00",
+    "operation": "delete",
+    "operation_id": "audit-6",
+    "outcome": "allowed",
+    "scope": {
+      "event_ids": [
+        "event-1"
+      ]
+    }
+  }
+]
