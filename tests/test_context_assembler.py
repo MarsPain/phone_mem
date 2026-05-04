@@ -76,6 +76,7 @@ class ContextAssemblerTest(unittest.TestCase):
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         ids = count(1)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         audit = AuditLog(
             store,

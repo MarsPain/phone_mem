@@ -29,6 +29,7 @@ from phone_mem.personal_memory_service.storage import TombstoneRecord
 class SQLiteSchemaTest(unittest.TestCase):
     def test_initialize_schema_creates_mvp_tables(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
 
         table_names = {
@@ -47,6 +48,7 @@ class SQLiteSchemaTest(unittest.TestCase):
 
     def test_connection_uses_row_factory(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
 
         self.assertIs(store.connection.row_factory, sqlite3.Row)
 
@@ -90,6 +92,7 @@ def make_event(event_id: str, *, app: str = "system_assistant", entity: str = "u
 class SQLiteEventPersistenceTest(unittest.TestCase):
     def test_insert_and_get_event_round_trips_canonical_data(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         event = make_event("event-1")
 
@@ -105,6 +108,7 @@ class SQLiteEventPersistenceTest(unittest.TestCase):
 
     def test_query_events_applies_selector_filters(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         store.insert_event(make_event("event-1", app="system_assistant", entity="user"))
         store.insert_event(make_event("event-2", app="calendar", entity="calendar"))
@@ -125,6 +129,7 @@ class SQLiteEventPersistenceTest(unittest.TestCase):
 class SQLiteLifecycleAndTombstoneTest(unittest.TestCase):
     def test_update_lifecycle_hides_deleted_event_from_active_selector(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         event = make_event("event-1")
         store.insert_event(event)
@@ -144,6 +149,7 @@ class SQLiteLifecycleAndTombstoneTest(unittest.TestCase):
 
     def test_write_tombstone_records_deleted_event_and_selector(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         deleted_at = datetime(2026, 5, 2, 10, 0, tzinfo=UTC)
         tombstone = TombstoneRecord(

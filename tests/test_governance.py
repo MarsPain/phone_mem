@@ -16,6 +16,7 @@ class PermissionServiceTest(unittest.TestCase):
     def test_grant_allows_matching_event_until_expiry(self) -> None:
         now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         service = PermissionService(store, clock=lambda: now, id_factory=lambda: "grant-1")
         event = make_event("event-1")
@@ -39,6 +40,7 @@ class PermissionServiceTest(unittest.TestCase):
     def test_expired_grant_denies_matching_event(self) -> None:
         now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         service = PermissionService(store, clock=lambda: now, id_factory=lambda: "grant-1")
         event = make_event("event-1")
@@ -57,6 +59,7 @@ class PermissionServiceTest(unittest.TestCase):
     def test_revoked_grant_denies_access(self) -> None:
         now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         service = PermissionService(store, clock=lambda: now, id_factory=lambda: "grant-1")
         event = make_event("event-1")
@@ -73,6 +76,7 @@ class MemoryViewProjectorTest(unittest.TestCase):
     def test_project_returns_only_authorized_events_and_denials(self) -> None:
         now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         permissions = PermissionService(store, clock=lambda: now, id_factory=lambda: "grant-1")
         permissions.grant(
@@ -105,6 +109,7 @@ class AuditLogTest(unittest.TestCase):
         now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
         ids = count(1)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         audit = AuditLog(
             store,
@@ -138,6 +143,7 @@ class AuditLogTest(unittest.TestCase):
         now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
         ids = count(1)
         store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
         store.initialize_schema()
         audit = AuditLog(
             store,

@@ -42,6 +42,7 @@ def make_retrieval_stack() -> tuple[SQLiteMemoryStore, PermissionService, AuditL
 class LocalMemoryRetrieverTest(unittest.TestCase):
     def test_permission_projection_happens_before_ranking(self) -> None:
         store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
         authorized = replace(
             make_event("event-1", app="system_assistant", entity="planning"),
             semantic_description="User prefers morning planning sessions.",
@@ -77,6 +78,7 @@ class LocalMemoryRetrieverTest(unittest.TestCase):
 
     def test_deleted_and_superseded_events_are_excluded(self) -> None:
         store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
         active = replace(
             make_event("event-1", entity="travel"),
             semantic_description="User prefers aisle seats for flights.",
@@ -115,6 +117,7 @@ class LocalMemoryRetrieverTest(unittest.TestCase):
 
     def test_scoring_is_deterministic_and_preserves_explanation_metadata(self) -> None:
         store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
         weaker = replace(
             make_event("event-1", entity="planning"),
             semantic_description="User mentioned planning.",
