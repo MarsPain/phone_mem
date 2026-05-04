@@ -144,6 +144,31 @@ finally:
     service.close()
 ```
 
+## Service Error Contracts
+
+Service methods raise domain-specific exceptions for caller-visible failures while preserving Python compatibility with built-in exception families:
+
+- `MemoryPermissionDenied` subclasses `PermissionError`.
+- `MemoryEventNotFound` subclasses `KeyError`.
+
+Both expose structured context so callers and future mobile contract tests do not need to parse message strings:
+
+```python
+from phone_mem.personal_memory_service.errors import (
+    MemoryEventNotFound,
+    MemoryPermissionDenied,
+)
+
+try:
+    service.explain("event-123", caller="calendar_agent")
+except MemoryPermissionDenied as error:
+    print(error.operation, error.caller, error.denial_reason)
+except MemoryEventNotFound as error:
+    print(error.operation, error.caller, error.event_id)
+```
+
+Permission denials include the attempted operation, caller, affected event IDs when known, selector context when relevant, and the denial reason that is also written to audit. Missing event reads and updates also write denied audit records with `memory event not found`.
+
 ## Iteration Priorities
 
 Focus Python maturation work on behavior that improves the reference oracle:

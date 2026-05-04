@@ -38,7 +38,7 @@ Make the Python Personal Memory Service easy to understand, exercise, and iterat
 - [x] Add a runnable lifecycle walkthrough example.
 - [x] Add a regression test for the walkthrough output.
 - [x] Add a file-backed SQLite walkthrough and test.
-- [ ] Improve service errors and caller-facing failure messages.
+- [x] Improve service errors and caller-facing failure messages.
 - [ ] Expand lifecycle tests for rejection, quarantine review, and correction explainability.
 - [ ] Add retrieval selector examples and tests.
 - [ ] Revisit mobile contract fixtures after Python API behavior stabilizes.

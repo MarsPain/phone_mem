@@ -21,6 +21,15 @@ Stage 1 runs on the development machine as a Python reference implementation. It
 
 Status: completed on 2026-05-04 as the local Python reference core.
 
+## Current Engineering Track: Python Reference Maturation
+
+- Improve service API ergonomics and caller-facing failure messages.
+- Expand lifecycle behavior for rejection, quarantine review, correction explainability, and contradiction handling.
+- Add retrieval selector examples and tests.
+- Keep the Python reference as the executable oracle for future mobile parity.
+
+Status: active. Tracked by [PLANS.md](PLANS.md) and [exec-plans/active/python-reference-maturation.md](exec-plans/active/python-reference-maturation.md).
+
 ## Stage 2: Mobile Runtime Prototype
 
 - React Native and TypeScript app shell for iPhone and Android.
@@ -29,7 +38,7 @@ Status: completed on 2026-05-04 as the local Python reference core.
 - Governance, audit, correction, deletion, retrieval, and context assembly flows exposed through mobile UI.
 - Contract tests or shared fixtures to keep mobile behavior aligned with the Python reference.
 
-Status: active planning.
+Status: deferred planning. Stage 2 has a documented `mobile/` boundary and Python-backed contract fixtures, but implementation work remains parked until the Python reference API is mature enough to mirror. The deferred plan is tracked in [exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
 
 ## Stage 3: Retrieval, Context, And Semantic Layer
 

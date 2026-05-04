@@ -20,6 +20,7 @@ from phone_mem.personal_memory_service.events import (
     MemoryEvent,
     MemorySelector,
 )
+from phone_mem.personal_memory_service.errors import MemoryEventNotFound, MemoryPermissionDenied
 from phone_mem.personal_memory_service.lifecycle import MemoryLifecycleValidator
 from phone_mem.personal_memory_service.metrics import MemoryServiceMetrics
 from phone_mem.personal_memory_service.retrieval import LocalMemoryRetriever, RetrievalResult
@@ -120,7 +121,12 @@ class PersonalMemoryService:
                 "denied",
                 denial_reason=decision.reason,
             )
-            raise PermissionError(decision.reason)
+            raise MemoryPermissionDenied(
+                operation=AuditOperation.WRITE,
+                caller=caller,
+                denial_reason=decision.reason,
+                affected_event_ids=[memory_event.event_id],
+            )
 
         duplicate = self.lifecycle_validator.find_duplicate(memory_event)
         if duplicate is not None:
@@ -176,7 +182,12 @@ class PersonalMemoryService:
         return bundle
 
     def explain(self, event_id: str, *, caller: str) -> dict[str, object]:
-        event = self._get_event_or_raise(event_id)
+        event = self._get_event_or_raise(
+            event_id,
+            caller=caller,
+            operation=AuditOperation.READ,
+            scope={"event_id": event_id, "explain": True},
+        )
         decision = self.permissions.can_access(caller, AuditOperation.READ, event)
         if not decision.allowed:
             self.audit_log.record(
@@ -187,7 +198,12 @@ class PersonalMemoryService:
                 "denied",
                 denial_reason=decision.reason,
             )
-            raise PermissionError(decision.reason)
+            raise MemoryPermissionDenied(
+                operation=AuditOperation.READ,
+                caller=caller,
+                denial_reason=decision.reason,
+                affected_event_ids=[event_id],
+            )
 
         self.audit_log.record(
             caller,
@@ -199,7 +215,12 @@ class PersonalMemoryService:
         return self._explanation(event)
 
     def correct(self, event_id: str, patch: dict[str, object], *, caller: str) -> str:
-        original = self._get_event_or_raise(event_id)
+        original = self._get_event_or_raise(
+            event_id,
+            caller=caller,
+            operation=AuditOperation.UPDATE,
+            scope={"event_id": event_id, "patch": dict(patch)},
+        )
         decision = self.permissions.can_access(caller, AuditOperation.UPDATE, original)
         if not decision.allowed:
             self.audit_log.record(
@@ -210,7 +231,12 @@ class PersonalMemoryService:
                 "denied",
                 denial_reason=decision.reason,
             )
-            raise PermissionError(decision.reason)
+            raise MemoryPermissionDenied(
+                operation=AuditOperation.UPDATE,
+                caller=caller,
+                denial_reason=decision.reason,
+                affected_event_ids=[event_id],
+            )
 
         corrected = self.constructor.construct(
             MemoryCandidate(
@@ -259,7 +285,13 @@ class PersonalMemoryService:
                     "denied",
                     denial_reason=decision.reason,
                 )
-                raise PermissionError(decision.reason)
+                raise MemoryPermissionDenied(
+                    operation=AuditOperation.DELETE,
+                    caller=caller,
+                    denial_reason=decision.reason,
+                    affected_event_ids=[event.event_id],
+                    selector=selector.to_dict(),
+                )
 
             self.store.update_lifecycle(
                 event.event_id,
@@ -323,11 +355,27 @@ class PersonalMemoryService:
             return self.constructor.construct(event)
         return self.constructor.construct(MemoryCandidate(**event))
 
-    def _get_event_or_raise(self, event_id: str) -> MemoryEvent:
+    def _get_event_or_raise(
+        self,
+        event_id: str,
+        *,
+        caller: str,
+        operation: AuditOperation,
+        scope: dict[str, object],
+    ) -> MemoryEvent:
         event = self.store.get_event(event_id)
-        if event is None:
-            raise KeyError(event_id)
-        return event
+        if event is not None:
+            return event
+
+        self.audit_log.record(
+            caller,
+            operation,
+            scope,
+            [event_id],
+            "denied",
+            denial_reason="memory event not found",
+        )
+        raise MemoryEventNotFound(operation=operation, caller=caller, event_id=event_id)
 
     def _correction_lineage(self, event_id: str) -> object:
         from phone_mem.personal_memory_service.events import Lineage

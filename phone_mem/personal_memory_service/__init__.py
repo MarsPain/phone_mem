@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 from phone_mem.personal_memory_service.constructor import MemoryCandidate, MemoryConstructor
+from phone_mem.personal_memory_service.errors import (
+    MemoryEventNotFound,
+    MemoryPermissionDenied,
+    ServiceErrorContext,
+)
 from phone_mem.personal_memory_service.events import (
     Actor,
     AuditOperation,
@@ -37,12 +42,15 @@ __all__ = [
     "MemoryEventValidationError",
     "MemoryCandidate",
     "MemoryConstructor",
+    "MemoryEventNotFound",
     "MemoryLayer",
     "MemorySelector",
+    "MemoryPermissionDenied",
     "Modality",
     "Privacy",
     "PrivacyLevel",
     "ProcessingPolicy",
     "Quality",
+    "ServiceErrorContext",
     "ValidTime",
 ]
