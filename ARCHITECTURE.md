@@ -27,4 +27,4 @@
 
 ## Current Code State
 
-The runtime is not implemented yet. `main.py` is a placeholder, and the first engineering milestone should create the Python reference Personal Memory Service described in [docs/exec-plans/active/mvp-local-memory-core.md](docs/exec-plans/active/mvp-local-memory-core.md). The first real iPhone and Android runtime should mirror that service boundary in React Native, TypeScript, and on-device SQLite.
+The Stage 1 Python reference Personal Memory Service is implemented under `phone_mem/` and is covered by deterministic unit tests. `main.py` remains a placeholder entrypoint. The active engineering milestone is the Stage 2 mobile runtime prototype described in [docs/exec-plans/active/stage2-mobile-runtime-prototype.md](docs/exec-plans/active/stage2-mobile-runtime-prototype.md), which should mirror the Python service boundary in TypeScript before adding on-device SQLite, React Native UI, or model runtime adapters.

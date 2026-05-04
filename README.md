@@ -25,4 +25,4 @@ uv run python -m unittest discover -s tests
 
 ## Current Stage
 
-The project is in the architecture-to-implementation preparation stage. The short-term goal is to implement a Python reference version of the local Personal Memory Service: canonical event abstraction, local memory service, permission views, audit and deletion, basic retrieval, and a context assembly boundary decoupled from model runtimes. The first real phone runtime should then mirror those boundaries in React Native, TypeScript, and on-device SQLite for iPhone and Android.
+Stage 1 is complete as a deterministic Python reference Personal Memory Service: canonical events, SQLite persistence, permission views, audit, deletion, governed retrieval, context assembly, lifecycle behavior, and MVP metrics hooks. The active planning focus is Stage 2: mirror that service boundary in a mobile TypeScript prototype before adding on-device SQLite, React Native UI, model runtime adapters, cloud sync, or third-party SDK packaging.

@@ -19,6 +19,8 @@
 
 Stage 1 runs on the development machine as a Python reference implementation. It proves service behavior and testable invariants; it is not the production iOS or Android runtime.
 
+Status: completed on 2026-05-04 as the local Python reference core.
+
 ## Stage 2: Mobile Runtime Prototype
 
 - React Native and TypeScript app shell for iPhone and Android.
@@ -26,6 +28,8 @@ Stage 1 runs on the development machine as a Python reference implementation. It
 - On-device SQLite storage adapter.
 - Governance, audit, correction, deletion, retrieval, and context assembly flows exposed through mobile UI.
 - Contract tests or shared fixtures to keep mobile behavior aligned with the Python reference.
+
+Status: active planning.
 
 ## Stage 3: Retrieval, Context, And Semantic Layer
 

@@ -1,7 +1,8 @@
 # MVP Local Personal Memory Service
 
-Status: active
+Status: completed
 Type: umbrella
+Completed: 2026-05-04
 
 ## Goal
 
@@ -33,10 +34,10 @@ This plan is the executable specification track. It is not the final iOS or Andr
 
 ## Subplans
 
-1. [001 Package And Event Model](001-package-event-model.md)
-2. [002 Storage Audit And Governance](002-storage-audit-governance.md)
-3. [003 Retrieval And Context Assembly](003-retrieval-context-assembly.md)
-4. [004 Service API And Lifecycle Tests](004-service-api-lifecycle-tests.md)
+1. [001 Package And Event Model](2026-05-04-001-package-event-model.md)
+2. [002 Storage Audit And Governance](2026-05-04-002-storage-audit-governance.md)
+3. [003 Retrieval And Context Assembly](2026-05-04-003-retrieval-context-assembly.md)
+4. [004 Service API And Lifecycle Tests](2026-05-04-004-service-api-lifecycle-tests.md)
 
 ## Out Of Scope
 

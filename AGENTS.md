@@ -30,6 +30,7 @@ uv run python -m unittest discover -s tests
 
 ## Current Implementation State
 
-- `main.py` is only a placeholder.
-- No production memory runtime exists yet.
-- The current useful system of record is the documentation set under `docs/`.
+- `main.py` is still only a placeholder.
+- Stage 1 Python reference memory core is implemented under `phone_mem/`.
+- No production mobile runtime exists yet.
+- The active planning track is Stage 2 mobile TypeScript prototype work under [docs/PLANS.md](docs/PLANS.md).
