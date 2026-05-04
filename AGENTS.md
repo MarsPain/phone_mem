@@ -33,4 +33,4 @@ uv run python -m unittest discover -s tests
 - `main.py` is still only a placeholder.
 - Stage 1 Python reference memory core is implemented under `phone_mem/`.
 - No production mobile runtime exists yet.
-- The active planning track is Stage 2 mobile TypeScript prototype work under [docs/PLANS.md](docs/PLANS.md).
+- The active planning track is Python reference maturation under [docs/PLANS.md](docs/PLANS.md); mobile work is deferred.

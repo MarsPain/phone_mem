@@ -1,7 +1,10 @@
 # Stage 2 Mobile Runtime Prototype
 
-Status: active
+Status: deferred
 Type: umbrella
+Deferred: 2026-05-04
+
+This plan is intentionally deferred until the Python reference API is mature enough to mirror in mobile TypeScript.
 
 ## Goal
 

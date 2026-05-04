@@ -60,7 +60,7 @@ The MVP proves the local service boundary as the Stage 1 Python reference implem
 - correction, deletion, tombstone, and audit primitives;
 - deterministic lifecycle tests.
 
-The completed execution record is [../exec-plans/completed/2026-05-04-mvp-local-memory-core.md](../exec-plans/completed/2026-05-04-mvp-local-memory-core.md). Current mobile prototype planning is tracked in [../exec-plans/active/stage2-mobile-runtime-prototype.md](../exec-plans/active/stage2-mobile-runtime-prototype.md).
+The completed execution record is [../exec-plans/completed/2026-05-04-mvp-local-memory-core.md](../exec-plans/completed/2026-05-04-mvp-local-memory-core.md). Current work is tracked in [../exec-plans/active/python-reference-maturation.md](../exec-plans/active/python-reference-maturation.md); mobile prototype planning is deferred in [../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
 
 ## Non-Goals For MVP
 

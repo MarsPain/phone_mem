@@ -19,6 +19,7 @@ uv run python -m unittest discover -s tests
 - [ARCHITECTURE.md](ARCHITECTURE.md): top-level architecture map.
 - [AGENTS.md](AGENTS.md): working map for coding agents.
 - [docs/README.md](docs/README.md): detailed documentation index.
+- [docs/PYTHON_REFERENCE.md](docs/PYTHON_REFERENCE.md): practical Python reference usage guide.
 - [docs/design-docs/smartphone-agent-memory.md](docs/design-docs/smartphone-agent-memory.md): smartphone Agent Memory development design.
 - [docs/references/source-review.md](docs/references/source-review.md): deep review, distilled insights, and corrections for the source PDF.
 - [docs/references/research-review-2026.md](docs/references/research-review-2026.md): v2 research basis across agent memory, on-device LLM systems, and Apple/Android platform constraints.
@@ -26,4 +27,4 @@ uv run python -m unittest discover -s tests
 
 ## Current Stage
 
-Stage 1 is complete as a deterministic Python reference Personal Memory Service: canonical events, SQLite persistence, permission views, audit, deletion, governed retrieval, context assembly, lifecycle behavior, and MVP metrics hooks. The active planning focus is Stage 2: mirror that service boundary in a mobile TypeScript prototype before adding on-device SQLite, React Native UI, model runtime adapters, cloud sync, or third-party SDK packaging.
+Stage 1 is complete as a deterministic Python reference Personal Memory Service: canonical events, SQLite persistence, permission views, audit, deletion, governed retrieval, context assembly, lifecycle behavior, and MVP metrics hooks. The active focus is now Python reference maturation: learn the API, add examples, improve ergonomics, and stabilize behavior before resuming mobile implementation.

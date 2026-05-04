@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Stage 2 mobile runtime prototype](exec-plans/active/stage2-mobile-runtime-prototype.md): plan for mirroring the Python reference service boundary in a mobile TypeScript prototype.
+- [Python reference maturation](exec-plans/active/python-reference-maturation.md): current focus for learning, exercising, and improving the Python Personal Memory Service before mobile implementation resumes.
 
 ## Completed
 
@@ -22,3 +22,4 @@
 ## Tech Debt
 
 - [Open architecture risks](exec-plans/tech-debt/open-architecture-risks.md)
+- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until the Python reference API is mature enough to mirror.

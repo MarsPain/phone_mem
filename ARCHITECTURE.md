@@ -27,4 +27,4 @@
 
 ## Current Code State
 
-The Stage 1 Python reference Personal Memory Service is implemented under `phone_mem/` and is covered by deterministic unit tests. `main.py` remains a placeholder entrypoint. The active engineering milestone is the Stage 2 mobile runtime prototype described in [docs/exec-plans/active/stage2-mobile-runtime-prototype.md](docs/exec-plans/active/stage2-mobile-runtime-prototype.md), which should mirror the Python service boundary in TypeScript before adding on-device SQLite, React Native UI, or model runtime adapters.
+The Stage 1 Python reference Personal Memory Service is implemented under `phone_mem/` and is covered by deterministic unit tests. `main.py` remains a placeholder entrypoint. The active engineering milestone is [Python reference maturation](docs/exec-plans/active/python-reference-maturation.md): learn the API, add examples, improve ergonomics, and stabilize behavior before resuming the deferred [Stage 2 mobile runtime prototype](docs/exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
