@@ -34,12 +34,19 @@ This subplan belongs to Stage 1: the Python reference implementation. It should 
 
 ## Steps
 
-1. Implement retrieval query models and result snippets.
-2. Apply memory view projection before scoring.
-3. Implement deterministic lexical, entity, recency, confidence, and importance scoring.
-4. Exclude deleted, superseded, and unauthorized events.
-5. Implement `ContextAssembler.build_context`.
-6. Add tests for permission-before-ranking, ranking determinism, deleted event exclusion, budget limits, and evidence ID preservation.
+- [x] Implement retrieval query models and result snippets.
+- [x] Apply memory view projection before scoring.
+- [x] Implement deterministic lexical, entity, recency, confidence, and importance scoring.
+- [x] Exclude deleted, superseded, and unauthorized events.
+- [x] Implement `ContextAssembler.build_context`.
+- [x] Add tests for permission-before-ranking, ranking determinism, deleted event exclusion, budget limits, evidence ID preservation, and context-build audit records.
+
+## Implementation Notes
+
+- `phone_mem/personal_memory_service/retrieval.py` implements deterministic local retrieval over active events only.
+- `LocalMemoryRetriever` applies `MemoryViewProjector` before scoring and writes read audit records for allowed and denied projections.
+- `phone_mem/context/assembler.py` emits runtime-neutral `ContextBundle` values and keeps model execution out of the memory service.
+- MVP token accounting uses deterministic word counting. A production tokenizer remains out of scope until model-runtime adapters exist.
 
 ## Validation
 

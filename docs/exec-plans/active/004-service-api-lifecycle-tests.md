@@ -34,13 +34,21 @@ This subplan belongs to Stage 1: the Python reference implementation. The facade
 
 ## Steps
 
-1. Implement `PersonalMemoryService.record`.
-2. Implement `PersonalMemoryService.search` through governed retrieval.
-3. Implement `PersonalMemoryService.explain`.
-4. Implement `PersonalMemoryService.correct` and contradiction/supersession behavior.
-5. Implement `PersonalMemoryService.delete` with tombstone propagation.
-6. Implement `grant`, `revoke`, and `audit` facade methods.
-7. Add end-to-end lifecycle tests and update affected docs.
+- [x] Implement `PersonalMemoryService.record`.
+- [x] Implement `PersonalMemoryService.search` through governed retrieval.
+- [x] Implement `PersonalMemoryService.explain`.
+- [x] Implement `PersonalMemoryService.correct` and contradiction/supersession behavior.
+- [x] Implement `PersonalMemoryService.delete` with tombstone propagation.
+- [x] Implement `grant`, `revoke`, and `audit` facade methods.
+- [x] Add end-to-end lifecycle tests and update affected docs.
+
+## Implementation Notes
+
+- `phone_mem/personal_memory_service/service.py` provides an in-memory Python reference facade for Stage 1 tests.
+- `record` enforces write permission, detects duplicate active events, and quarantines simple same-entity preference contradictions.
+- `correct` creates a new event with lineage and marks the original event superseded.
+- `delete` marks events deleted, writes tombstones, and records delete audit rows.
+- `search` delegates to governed retrieval rather than reading storage directly.
 
 ## Validation
 
