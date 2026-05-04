@@ -51,11 +51,18 @@ This plan is the executable specification track. It is not the final iOS or Andr
 
 ## Steps
 
-1. Complete subplan 001 to establish package structure and event types.
-2. Complete subplan 002 to persist events and enforce grants.
-3. Complete subplan 003 to retrieve authorized memory and build context bundles.
-4. Complete subplan 004 to expose service operations and cover lifecycle behavior.
-5. Sync implementation notes back into [../../BACKEND.md](../../BACKEND.md), [../../DATA.md](../../DATA.md), and relevant design docs when behavior changes.
+- [x] Complete subplan 001 to establish package structure and event types.
+- [x] Complete subplan 002 to persist events and enforce grants.
+- [x] Complete subplan 003 to retrieve authorized memory and build context bundles.
+- [x] Complete subplan 004 to expose service operations and cover lifecycle behavior.
+- [x] Sync implementation notes back into [../../BACKEND.md](../../BACKEND.md), [../../DATA.md](../../DATA.md), and relevant design docs when behavior changes.
+
+## Implementation Notes
+
+- The Python reference now exposes a service-level `build_context` facade that runs governed retrieval before context assembly.
+- `phone_mem/personal_memory_service/metrics.py` provides MVP metrics hooks from audit records, tombstones, deleted lifecycle rows, and latest context budget usage.
+- `phone_mem/personal_memory_service/lifecycle.py` owns duplicate detection and simple same-entity preference contradiction quarantine.
+- The MVP remains local-only and does not introduce model providers, vector stores, cloud sync, mobile runtime code, or SDK packaging.
 
 ## Validation
 

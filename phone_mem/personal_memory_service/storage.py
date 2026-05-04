@@ -113,6 +113,9 @@ class SQLiteMemoryStore:
         )
         self.connection.commit()
 
+    def close(self) -> None:
+        self.connection.close()
+
     def insert_event(self, event: MemoryEvent) -> None:
         data = event.to_dict()
         self.connection.execute(

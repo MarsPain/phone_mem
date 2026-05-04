@@ -22,6 +22,7 @@ class PersonalMemoryServiceTest(unittest.TestCase):
     def test_record_search_explain_delete_and_audit_flow(self) -> None:
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
         service.grant(
             "calendar_agent",
             PermissionScope(
@@ -72,6 +73,7 @@ class PersonalMemoryServiceTest(unittest.TestCase):
     def test_explain_denies_unauthorized_caller_without_leaking_event(self) -> None:
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
         service.grant(
             "calendar_agent",
             PermissionScope(
@@ -106,6 +108,7 @@ class PersonalMemoryServiceTest(unittest.TestCase):
     def test_duplicate_record_returns_existing_event_id_without_new_row(self) -> None:
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
         service.grant(
             "calendar_agent",
             PermissionScope(
@@ -132,6 +135,7 @@ class PersonalMemoryServiceTest(unittest.TestCase):
     def test_contradictory_preference_is_quarantined_not_silently_overwritten(self) -> None:
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
         service.grant(
             "travel_agent",
             PermissionScope(
@@ -179,6 +183,7 @@ class PersonalMemoryServiceTest(unittest.TestCase):
     def test_correct_creates_new_event_and_supersedes_original(self) -> None:
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
         service.grant(
             "calendar_agent",
             PermissionScope(

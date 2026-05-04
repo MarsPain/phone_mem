@@ -6,6 +6,8 @@ The repository currently contains only a placeholder Python entrypoint. The firs
 
 The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
 
+The current Python reference covers the Stage 1 memory core: canonical event construction, SQLite persistence, scoped permissions, audit records, governed retrieval, runtime-neutral context assembly, correction, deletion tombstones, and MVP metrics hooks. It remains a reference implementation rather than the production mobile runtime.
+
 ## Runtime Tracks
 
 ### Track 1: Python Reference Implementation
@@ -60,6 +62,7 @@ phone_mem/
 │   ├── storage.py
 │   ├── retrieval.py
 │   ├── lifecycle.py
+│   ├── metrics.py
 │   └── service.py
 ├── governance/
 │   ├── permissions.py

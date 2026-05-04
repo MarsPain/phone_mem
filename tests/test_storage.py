@@ -50,6 +50,14 @@ class SQLiteSchemaTest(unittest.TestCase):
 
         self.assertIs(store.connection.row_factory, sqlite3.Row)
 
+    def test_close_closes_connection(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+
+        store.close()
+
+        with self.assertRaises(sqlite3.ProgrammingError):
+            store.connection.execute("select 1")
+
 
 def make_event(event_id: str, *, app: str = "system_assistant", entity: str = "user") -> MemoryEvent:
     created_at = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)

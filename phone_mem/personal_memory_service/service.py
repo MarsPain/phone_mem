@@ -1,23 +1,26 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import count
 
 from phone_mem.governance.audit import AuditLog, AuditSelector
 from phone_mem.governance.permissions import PermissionScope, PermissionService
 from phone_mem.governance.views import MemoryViewProjector
+from phone_mem.context.assembler import ContextAssembler, ContextBundle
+from phone_mem.context.budgets import ContextBudget
 from phone_mem.personal_memory_service.constructor import MemoryCandidate, MemoryConstructor
 from phone_mem.personal_memory_service.events import (
     AuditOperation,
     AuditRecord,
     Lifecycle,
     LifecycleState,
-    Lineage,
     MemoryEvent,
     MemorySelector,
 )
+from phone_mem.personal_memory_service.lifecycle import MemoryLifecycleValidator
+from phone_mem.personal_memory_service.metrics import MemoryServiceMetrics
 from phone_mem.personal_memory_service.retrieval import LocalMemoryRetriever, RetrievalResult
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore, TombstoneRecord
 
@@ -29,6 +32,9 @@ class PersonalMemoryService:
     permissions: PermissionService
     audit_log: AuditLog
     retriever: LocalMemoryRetriever
+    context_assembler: ContextAssembler
+    lifecycle_validator: MemoryLifecycleValidator
+    metrics: MemoryServiceMetrics
     clock: Callable[[], datetime]
     tombstone_id_factory: Callable[[], str]
 
@@ -65,12 +71,18 @@ class PersonalMemoryService:
             audit_log=audit_log,
             clock=resolved_clock,
         )
+        context_assembler = ContextAssembler(audit_log=audit_log)
+        metrics = MemoryServiceMetrics(store)
+        lifecycle_validator = MemoryLifecycleValidator(store)
         return cls(
             store=store,
             constructor=constructor,
             permissions=permissions,
             audit_log=audit_log,
             retriever=retriever,
+            context_assembler=context_assembler,
+            lifecycle_validator=lifecycle_validator,
+            metrics=metrics,
             clock=resolved_clock,
             tombstone_id_factory=lambda: f"tombstone-{next(tombstone_ids)}",
         )
@@ -89,7 +101,7 @@ class PersonalMemoryService:
             )
             raise PermissionError(decision.reason)
 
-        duplicate = self._find_duplicate(memory_event)
+        duplicate = self.lifecycle_validator.find_duplicate(memory_event)
         if duplicate is not None:
             self.audit_log.record(
                 caller,
@@ -100,13 +112,7 @@ class PersonalMemoryService:
             )
             return duplicate.event_id
 
-        contradiction = self._find_contradiction(memory_event)
-        if contradiction is not None:
-            memory_event = replace(
-                memory_event,
-                lifecycle=Lifecycle(state=LifecycleState.QUARANTINED),
-                lineage=Lineage(parents=[contradiction.event_id]),
-            )
+        memory_event = self.lifecycle_validator.quarantine_if_contradictory(memory_event)
 
         self.store.insert_event(memory_event)
         self.audit_log.record(
@@ -127,6 +133,26 @@ class PersonalMemoryService:
         top_k: int = 10,
     ) -> list[RetrievalResult]:
         return self.retriever.search(query, caller=caller, selector=scope, top_k=top_k)
+
+    def build_context(
+        self,
+        query: str,
+        *,
+        caller: str,
+        task: dict[str, object],
+        budget: ContextBudget,
+        scope: MemorySelector | None = None,
+        top_k: int = 10,
+    ) -> ContextBundle:
+        results = self.search(query, caller=caller, scope=scope, top_k=top_k)
+        bundle = self.context_assembler.build_context(
+            results,
+            task=task,
+            budget=budget,
+            caller=caller,
+        )
+        self.metrics.record_context_bundle(bundle)
+        return bundle
 
     def explain(self, event_id: str, *, caller: str) -> dict[str, object]:
         event = self._get_event_or_raise(event_id)
@@ -184,7 +210,7 @@ class PersonalMemoryService:
                 importance=original.quality.importance,
                 freshness_half_life_days=original.quality.freshness_half_life_days,
                 valid_at=original.valid_time.start,
-                lineage=Lineage(parents=[event_id], supersedes=[event_id]),
+                lineage=self._correction_lineage(event_id),
             )
         )
         self.store.insert_event(corrected)
@@ -238,6 +264,9 @@ class PersonalMemoryService:
         )
         return deleted_event_ids
 
+    def delete_by_event_id(self, event_id: str, *, caller: str, reason: str) -> list[str]:
+        return self.delete(MemorySelector(event_ids=[event_id]), caller=caller, reason=reason)
+
     def grant(self, caller: str, scope: PermissionScope, duration_seconds: int) -> str:
         grant = self.permissions.grant(caller, scope, duration_seconds)
         self.audit_log.record(
@@ -262,6 +291,12 @@ class PersonalMemoryService:
     def audit(self, selector: AuditSelector | None = None) -> list[AuditRecord]:
         return self.audit_log.query(selector)
 
+    def metrics_snapshot(self) -> dict[str, dict[str, object]]:
+        return self.metrics.snapshot()
+
+    def close(self) -> None:
+        self.store.close()
+
     def _construct_event(self, event: MemoryCandidate | dict[str, object]) -> MemoryEvent:
         if isinstance(event, MemoryCandidate):
             return self.constructor.construct(event)
@@ -273,41 +308,10 @@ class PersonalMemoryService:
             raise KeyError(event_id)
         return event
 
-    def _find_duplicate(self, event: MemoryEvent) -> MemoryEvent | None:
-        for existing in self._active_events():
-            if self._is_duplicate(existing, event):
-                return existing
-        return None
+    def _correction_lineage(self, event_id: str) -> object:
+        from phone_mem.personal_memory_service.events import Lineage
 
-    def _find_contradiction(self, event: MemoryEvent) -> MemoryEvent | None:
-        for existing in self._active_events():
-            if self._is_contradiction(existing, event):
-                return existing
-        return None
-
-    def _active_events(self) -> list[MemoryEvent]:
-        return self.store.query_events(MemorySelector(lifecycle_states=[LifecycleState.ACTIVE]))
-
-    def _is_duplicate(self, existing: MemoryEvent, event: MemoryEvent) -> bool:
-        return (
-            existing.source.app == event.source.app
-            and existing.memory_layer == event.memory_layer
-            and set(existing.entities) == set(event.entities)
-            and self._normalized_text(existing.semantic_description)
-            == self._normalized_text(event.semantic_description)
-        )
-
-    def _is_contradiction(self, existing: MemoryEvent, event: MemoryEvent) -> bool:
-        if existing.source.app != event.source.app:
-            return False
-        if not set(existing.entities).intersection(event.entities):
-            return False
-        existing_text = self._normalized_text(existing.semantic_description)
-        event_text = self._normalized_text(event.semantic_description)
-        return "prefers" in existing_text and "prefers" in event_text and existing_text != event_text
-
-    def _normalized_text(self, value: str) -> str:
-        return " ".join(value.lower().split())
+        return Lineage(parents=[event_id], supersedes=[event_id])
 
     def _explanation(self, event: MemoryEvent) -> dict[str, object]:
         return {
