@@ -39,6 +39,34 @@ The same flow is covered by:
 uv run python -m unittest tests.test_python_reference_walkthrough
 ```
 
+## File-Backed SQLite Walkthrough
+
+Run the file-backed walkthrough with a temporary SQLite file:
+
+```bash
+uv run python examples/file_backed_sqlite_walkthrough.py
+```
+
+Or reuse a specific local database across runs:
+
+```bash
+uv run python examples/file_backed_sqlite_walkthrough.py memory-dev.sqlite3
+```
+
+The walkthrough opens the same SQLite file three times:
+
+1. initialize schema, grant a caller, and record one memory;
+2. reopen the file and confirm search, audit, and tombstone queries see persisted state;
+3. delete the memory, reopen again, and confirm search excludes the deleted event while tombstone and audit records remain.
+
+It uses `SQLiteMemoryStore.connect(path)` plus `PersonalMemoryService.from_store(store)`, so the service orchestration stays reusable while file path ownership remains outside the service facade.
+
+The same flow is covered by:
+
+```bash
+uv run python -m unittest tests.test_file_backed_sqlite_walkthrough
+```
+
 ## Minimal Service Usage
 
 ```python
@@ -98,6 +126,22 @@ bundle = service.build_context(
 
 service.delete_by_event_id(event_id, caller="calendar_agent", reason="user requested deletion")
 service.close()
+```
+
+## File-Backed Service Usage
+
+```python
+from phone_mem.personal_memory_service.service import PersonalMemoryService
+from phone_mem.personal_memory_service.storage import SQLiteMemoryStore
+
+store = SQLiteMemoryStore.connect("memory-dev.sqlite3")
+store.initialize_schema()
+service = PersonalMemoryService.from_store(store)
+
+try:
+    ...
+finally:
+    service.close()
 ```
 
 ## Iteration Priorities

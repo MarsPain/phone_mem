@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import count
+from uuid import uuid4
 
 from phone_mem.governance.audit import AuditLog, AuditSelector
 from phone_mem.governance.permissions import PermissionScope, PermissionService
@@ -39,31 +40,30 @@ class PersonalMemoryService:
     tombstone_id_factory: Callable[[], str]
 
     @classmethod
-    def in_memory(
+    def from_store(
         cls,
+        store: SQLiteMemoryStore,
         *,
         clock: Callable[[], datetime] | None = None,
+        event_id_factory: Callable[[], str] | None = None,
+        grant_id_factory: Callable[[], str] | None = None,
+        audit_id_factory: Callable[[], str] | None = None,
+        tombstone_id_factory: Callable[[], str] | None = None,
     ) -> PersonalMemoryService:
         resolved_clock = clock or (lambda: datetime.now(tz=UTC))
-        event_ids = count(1)
-        grant_ids = count(1)
-        audit_ids = count(1)
-        tombstone_ids = count(1)
-        store = SQLiteMemoryStore.connect(":memory:")
-        store.initialize_schema()
         constructor = MemoryConstructor(
             clock=resolved_clock,
-            id_factory=lambda: f"event-{next(event_ids)}",
+            id_factory=event_id_factory or (lambda: str(uuid4())),
         )
         permissions = PermissionService(
             store,
             clock=resolved_clock,
-            id_factory=lambda: f"grant-{next(grant_ids)}",
+            id_factory=grant_id_factory or (lambda: str(uuid4())),
         )
         audit_log = AuditLog(
             store,
             clock=resolved_clock,
-            id_factory=lambda: f"audit-{next(audit_ids)}",
+            id_factory=audit_id_factory or (lambda: str(uuid4())),
         )
         retriever = LocalMemoryRetriever(
             store=store,
@@ -84,6 +84,27 @@ class PersonalMemoryService:
             lifecycle_validator=lifecycle_validator,
             metrics=metrics,
             clock=resolved_clock,
+            tombstone_id_factory=tombstone_id_factory or (lambda: str(uuid4())),
+        )
+
+    @classmethod
+    def in_memory(
+        cls,
+        *,
+        clock: Callable[[], datetime] | None = None,
+    ) -> PersonalMemoryService:
+        event_ids = count(1)
+        grant_ids = count(1)
+        audit_ids = count(1)
+        tombstone_ids = count(1)
+        store = SQLiteMemoryStore.connect(":memory:")
+        store.initialize_schema()
+        return cls.from_store(
+            store,
+            clock=clock,
+            event_id_factory=lambda: f"event-{next(event_ids)}",
+            grant_id_factory=lambda: f"grant-{next(grant_ids)}",
+            audit_id_factory=lambda: f"audit-{next(audit_ids)}",
             tombstone_id_factory=lambda: f"tombstone-{next(tombstone_ids)}",
         )
 
