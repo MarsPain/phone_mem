@@ -4,7 +4,7 @@
 
 Retrieval finds relevant memory only inside the caller's authorized memory view. Context assembly turns those authorized results into a model-runtime-neutral bundle with token budget accounting, source evidence, and safety metadata.
 
-The current implementation track should build deterministic local retrieval and context assembly in Python as a reference behavior. Real phone runtime adapters and model provider integrations come later and must consume the same runtime-neutral bundles.
+The Stage 1 implementation built deterministic local retrieval and context assembly in Python as a reference behavior. The active Stage 1.5 Python LLM Agent Runtime may consume these runtime-neutral bundles for real provider-backed chat demos, while real phone runtime adapters remain a later mobile track.
 
 ## Retrieval Pipeline
 
@@ -78,7 +78,7 @@ Priority order:
 
 ## Runtime Boundary
 
-The Context Assembler does not execute prompts. Runtime adapters may target on-device models, local open-weight models, Apple or Android model APIs, or private-compute backends later. Those adapters receive bundles and must not query the memory store directly.
+The Context Assembler does not execute prompts. Runtime adapters may target an OpenAI-compatible Python demo adapter, on-device models, local open-weight models, Apple or Android model APIs, or private-compute backends later. Those adapters receive bundles and must not query the memory store directly.
 
 ## MVP Test Coverage
 

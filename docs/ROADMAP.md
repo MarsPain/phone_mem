@@ -28,7 +28,17 @@ Status: completed on 2026-05-04 as the local Python reference core.
 - Add retrieval selector examples and tests.
 - Keep the Python reference as the executable oracle for future mobile parity.
 
-Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans/completed/2026-05-05-python-reference-maturation.md](exec-plans/completed/2026-05-05-python-reference-maturation.md). There is currently no active execution plan.
+Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans/completed/2026-05-05-python-reference-maturation.md](exec-plans/completed/2026-05-05-python-reference-maturation.md).
+
+## Active Track: Stage 1.5 Python LLM Agent Runtime
+
+- Add a provider-neutral Python Agent runtime around the completed memory service.
+- Add a fake deterministic LLM client for tests and an OpenAI-compatible adapter for real local development.
+- Add memory tools for governed search, context build, remember, explain, correct, and delete.
+- Add a real-provider interactive chat demo while keeping default tests network-free.
+- Preserve the Personal Memory Service as provider-independent and permission-gated.
+
+Status: active planning and implementation track as of 2026-05-05. Tracked by [PLANS.md](PLANS.md), [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md), and [exec-plans/active/2026-05-05-python-llm-agent-runtime.md](exec-plans/active/2026-05-05-python-llm-agent-runtime.md).
 
 ## Stage 2: Mobile Runtime Prototype
 

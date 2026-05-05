@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification.
+The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The active Stage 1.5 planning track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core.
 
 The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
 
@@ -22,9 +22,21 @@ Use Python on the development machine as the completed executable specification 
 - context bundle assembly;
 - deterministic lifecycle tests.
 
-This track is complete as an active implementation track. Continue to keep it correct, deterministic, and aligned with contract fixtures when bugs or mobile parity questions reveal a necessary reference change. It should not depend on iOS or Android runtime assumptions.
+This track is complete as an implementation track. Continue to keep it correct, deterministic, and aligned with contract fixtures when bugs or mobile parity questions reveal a necessary reference change. It should not depend on iOS or Android runtime assumptions.
 
-### Track 2: Real Mobile Runtime Prototype
+### Track 2: Python LLM Agent Runtime Spike
+
+Use Python on the development machine to prove the real Agent loop before mobile runtime work resumes:
+
+- provider-neutral `LLMClient` interface;
+- fake deterministic client for tests;
+- OpenAI-compatible adapter for local real-provider use;
+- runtime orchestration over governed retrieval, context assembly, model calls, memory tools, and response evidence;
+- interactive chat example under `examples/`.
+
+This track may import the memory service, but the memory service must not import provider adapters. It is documented in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and tracked by [PLANS.md](PLANS.md).
+
+### Track 3: Real Mobile Runtime Prototype
 
 Use React Native, TypeScript, and on-device SQLite for the first iPhone and Android runtime prototype. In this stage, "service" means an app-internal local service module with clear APIs, not a background daemon.
 
@@ -108,6 +120,8 @@ The MVP should not depend on a specific LLM provider. Define a runtime-neutral `
 - safety and system-priority metadata.
 
 Runtime adapters may later target Apple Foundation Models, Android AICore/Gemini Nano, local open-weight models, or private-compute backends. Those adapters must not bypass memory service permissions.
+
+The Stage 1.5 Python runtime may add an OpenAI-compatible adapter for developer-machine chat demos. That adapter is an outer runtime concern and must use runtime-neutral context bundles plus memory service tools instead of direct storage access.
 
 ## Cloud Boundary
 

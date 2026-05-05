@@ -18,6 +18,7 @@
 - [docs/design-docs/personal-memory-service.md](docs/design-docs/personal-memory-service.md): local service boundary and MVP operations.
 - [docs/design-docs/memory-lifecycle-and-data-flow.md](docs/design-docs/memory-lifecycle-and-data-flow.md): memory event lifecycle and data flow.
 - [docs/design-docs/retrieval-and-context-assembly.md](docs/design-docs/retrieval-and-context-assembly.md): retrieval and context assembly boundary.
+- [docs/design-docs/python-llm-agent-runtime.md](docs/design-docs/python-llm-agent-runtime.md): Python LLM runtime spike over governed memory APIs.
 - [docs/design-docs/governance-permissions-audit.md](docs/design-docs/governance-permissions-audit.md): permissions, memory views, audit, and explanation.
 - [docs/DATA.md](docs/DATA.md): canonical memory event model, lifecycle, and storage rules.
 - [docs/SECURITY.md](docs/SECURITY.md): privacy, permission, sync, deletion, and abuse boundaries.
@@ -27,4 +28,4 @@
 
 ## Current Code State
 
-The Stage 1 Python reference Personal Memory Service is implemented under `phone_mem/` and is covered by deterministic unit tests. `main.py` remains a placeholder entrypoint. The [Python reference maturation](docs/exec-plans/completed/2026-05-05-python-reference-maturation.md) track is complete; there is no active execution plan while the deferred [Stage 2 mobile runtime prototype](docs/exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md) remains parked.
+The Stage 1 Python reference Personal Memory Service is implemented under `phone_mem/` and is covered by deterministic unit tests. `main.py` remains a placeholder entrypoint. The [Python reference maturation](docs/exec-plans/completed/2026-05-05-python-reference-maturation.md) track is complete; the active [Python LLM Agent Runtime](docs/exec-plans/active/2026-05-05-python-llm-agent-runtime.md) track plans a provider-backed Python chat runtime around the governed service while the deferred [Stage 2 mobile runtime prototype](docs/exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md) remains parked.

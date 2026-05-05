@@ -17,6 +17,7 @@
 - [design-docs/personal-memory-service.md](design-docs/personal-memory-service.md): service boundary, operations, module ownership, and MVP storage responsibilities.
 - [design-docs/memory-lifecycle-and-data-flow.md](design-docs/memory-lifecycle-and-data-flow.md): event lifecycle from ingestion through deletion.
 - [design-docs/retrieval-and-context-assembly.md](design-docs/retrieval-and-context-assembly.md): governed retrieval and runtime-neutral context bundles.
+- [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md): Stage 1.5 Python runtime plan for real LLM chat over governed memory APIs.
 - [design-docs/governance-permissions-audit.md](design-docs/governance-permissions-audit.md): grants, memory views, audit, explanation, correction, and abuse controls.
 
 ## Product Specs

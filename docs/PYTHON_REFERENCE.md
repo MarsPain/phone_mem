@@ -14,7 +14,7 @@ The Python reference implements a local-only memory service under `phone_mem/`:
 - `context`: runtime-neutral context bundle assembly and budget accounting.
 - `governance`: permission grants, audit records, and memory views.
 
-The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime.
+The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The active Stage 1.5 plan adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider.
 
 ## Product-Style Demo
 
@@ -60,6 +60,8 @@ The REPL keeps one in-memory service alive for the session. It supports:
 - `quit`
 
 This is a command interface over the reference service, not an LLM chat runtime. It is meant to make memory lifecycle behavior easy to feel in one terminal session.
+
+The planned real LLM chat runtime is tracked separately in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and [exec-plans/active/2026-05-05-python-llm-agent-runtime.md](exec-plans/active/2026-05-05-python-llm-agent-runtime.md). Until that plan is implemented, `examples/agent_memory_repl.py` remains deterministic and does not call a provider API.
 
 The same flow is covered by:
 
@@ -271,7 +273,7 @@ Those fixtures cover canonical events, permission grants, retrieval results, con
 
 ## Maintenance Guidance
 
-The Python reference is no longer the active product implementation track. Keep future Python changes scoped to behavior that preserves or clarifies the reference oracle:
+The Python memory core remains the reference oracle. Keep future changes to `phone_mem.personal_memory_service`, `phone_mem.context`, and `phone_mem.governance` scoped to behavior that preserves or clarifies that oracle:
 
 - bug fixes in reference behavior;
 - contract fixture updates needed for mobile parity;
@@ -279,4 +281,4 @@ The Python reference is no longer the active product implementation track. Keep 
 - lifecycle, retrieval, permission, or service-error clarifications discovered while implementing Stage 2;
 - tests for every behavior change.
 
-Broader product implementation should move to Stage 2 only after a separate mobile execution plan is accepted.
+Real LLM API work belongs in a separate `phone_mem.agent_runtime` boundary. Broader mobile product implementation should still move to Stage 2 only after a separate mobile execution plan is accepted.

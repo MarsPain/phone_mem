@@ -8,7 +8,7 @@
 
 ## Active
 
-- No active execution plan. Mobile implementation remains deferred until a separate Stage 2 plan is accepted.
+- [Python LLM Agent Runtime](exec-plans/active/2026-05-05-python-llm-agent-runtime.md): Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs.
 
 ## Completed
 
