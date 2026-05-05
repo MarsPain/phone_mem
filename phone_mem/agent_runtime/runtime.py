@@ -14,6 +14,7 @@ class AgentTurnResponse:
     text: str
     evidence_event_ids: list[str]
     tool_results: list[dict[str, Any]] = field(default_factory=list)
+    memory_context: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -46,6 +47,7 @@ class AgentRuntime:
                         *initial_response.evidence_event_ids,
                     ]
                 ),
+                memory_context=memory_context,
             )
 
         tool_results = [
@@ -78,6 +80,7 @@ class AgentRuntime:
                 ]
             ),
             tool_results=tool_results,
+            memory_context=memory_context,
         )
 
 

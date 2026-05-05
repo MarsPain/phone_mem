@@ -56,6 +56,13 @@ class AgentRuntimeTest(unittest.TestCase):
 
         self.assertEqual(response.text, "Schedule planning in the morning. [memory: event-1]")
         self.assertEqual(response.evidence_event_ids, ["event-1"])
+        self.assertIsNotNone(response.memory_context)
+        assert response.memory_context is not None
+        self.assertEqual(response.memory_context["evidence_event_ids"], ["event-1"])
+        self.assertEqual(
+            response.memory_context["snippets"][0]["text"],
+            "User prefers morning planning sessions.",
+        )
         self.assertEqual(len(client.requests), 1)
         request_text = "\n".join(message.content for message in client.requests[0].messages)
         self.assertIn("User prefers morning planning sessions.", request_text)
@@ -109,6 +116,10 @@ class AgentRuntimeTest(unittest.TestCase):
         response = runtime.run_turn("Remember that I prefer Friday retrospectives.")
 
         self.assertEqual(response.text, "I will remember that preference. [memory: event-1]")
+        self.assertIsNotNone(response.memory_context)
+        assert response.memory_context is not None
+        self.assertEqual(response.memory_context["evidence_event_ids"], [])
+        self.assertEqual(response.memory_context["snippets"], [])
         self.assertEqual(response.tool_results[0]["result"]["event_id"], "event-1")
         self.assertEqual(service.search("Friday retrospectives", caller=CALLER)[0].event_id, "event-1")
         self.assertEqual(len(client.requests), 2)

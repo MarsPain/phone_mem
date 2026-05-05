@@ -1,0 +1,197 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f8fb;
+  --panel: #ffffff;
+  --line: #d8dee8;
+  --text: #172033;
+  --muted: #5f6b7a;
+  --accent: #2563eb;
+  --danger: #b42318;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 1024px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+.lab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 92px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+h1,
+h2,
+p,
+dl {
+  margin: 0;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.lab-header p {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.lab-header dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, max-content));
+  gap: 12px 22px;
+}
+
+.lab-header dt {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.lab-header dd {
+  margin: 3px 0 0;
+  max-width: 320px;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.lab-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1fr) minmax(420px, 1.15fr);
+  gap: 12px;
+  height: calc(100vh - 92px);
+  padding: 12px;
+}
+
+.panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.panel-title,
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-title {
+  justify-content: space-between;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+input,
+textarea,
+button {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 8px 9px;
+  color: var(--text);
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  min-height: 34px;
+  padding: 0 12px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button[type="button"] {
+  background: #eef3ff;
+  color: #174ea6;
+}
+
+.log,
+.output {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbfcff;
+}
+
+.log {
+  flex: 1;
+  padding: 10px;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.message b {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.output {
+  flex: 1;
+  margin: 0;
+  padding: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-height: 180px;
+}
+
+.split .output {
+  min-height: 180px;
+}
+
+.error {
+  color: var(--danger);
+}

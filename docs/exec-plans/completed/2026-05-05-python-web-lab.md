@@ -1,8 +1,9 @@
 # Python Web Lab
 
-Status: active
+Status: completed
 Type: implementation
 Started: 2026-05-05
+Completed: 2026-05-05
 
 ## Goal
 
@@ -81,20 +82,20 @@ phone_mem.web_lab
 
 ## Steps
 
-- [ ] Add Web Lab dependencies.
+- [x] Add Web Lab dependencies.
   - Files: `pyproject.toml`, `uv.lock`.
   - Add FastAPI and Uvicorn as project dependencies.
   - Add an explicit HTTP test dependency if FastAPI `TestClient` requires it in this environment.
   - Validate with `uv run python -c "import fastapi, uvicorn; print(fastapi.__version__)"`.
 
-- [ ] Add runtime turn observability.
+- [x] Add runtime turn observability.
   - Files: `phone_mem/agent_runtime/runtime.py`, `tests/test_agent_runtime.py`.
   - Extend `AgentTurnResponse` with `memory_context: dict[str, Any] | None = None`.
   - Return the initial `memory_context` for no-tool and tool-call turns.
   - Add tests proving `response.memory_context["snippets"]` and `response.memory_context["evidence_event_ids"]` match the context used during the turn.
   - Validate with `uv run python -m unittest tests.test_agent_runtime`.
 
-- [ ] Add Web Lab state construction.
+- [x] Add Web Lab state construction.
   - Files: `phone_mem/web_lab/__init__.py`, `phone_mem/web_lab/state.py`, `tests/test_web_lab_state.py`.
   - Implement default constants for `web_lab_agent`, `system_assistant`, and `.phone-mem-lab/memory.sqlite3`.
   - Implement `LabState.create(...)` for file-backed SQLite startup, schema initialization, permission grant, tool registry construction, and runtime construction.
@@ -102,13 +103,13 @@ phone_mem.web_lab
   - Implement `LabState.close()`.
   - Validate with `uv run python -m unittest tests.test_web_lab_state`.
 
-- [ ] Add route and inspector schemas.
+- [x] Add route and inspector schemas.
   - Files: `phone_mem/web_lab/schemas.py`, `tests/test_web_lab_inspector.py`.
   - Define small dataclasses or typed dictionaries for chat turn requests, chat turn responses, memory operation responses, error payloads, lab metadata, and turn snapshots.
   - Ensure every response can be serialized to JSON without custom framework hooks.
   - Validate with `uv run python -m unittest tests.test_web_lab_inspector`.
 
-- [ ] Add Memory Inspector use cases.
+- [x] Add Memory Inspector use cases.
   - Files: `phone_mem/web_lab/inspector.py`, `tests/test_web_lab_inspector.py`.
   - Implement memory listing through `service.store.query_events()` and domain `to_dict()` serialization.
   - Implement search and context preview through `MemoryToolRegistry`.
@@ -117,7 +118,7 @@ phone_mem.web_lab
   - Preserve structured domain errors in returned payloads.
   - Validate with `uv run python -m unittest tests.test_web_lab_inspector`.
 
-- [ ] Add FastAPI app and JSON routes.
+- [x] Add FastAPI app and JSON routes.
   - Files: `phone_mem/web_lab/app.py`, `tests/test_web_lab_routes.py`.
   - Implement `create_app(state: LabState | None = None) -> FastAPI`.
   - Add `GET /` for the lab page.
@@ -125,7 +126,7 @@ phone_mem.web_lab
   - Ensure route handlers call `LabState` and inspector use cases rather than directly embedding memory logic.
   - Validate with `uv run python -m unittest tests.test_web_lab_routes`.
 
-- [ ] Add the single-screen Hybrid Lab UI.
+- [x] Add the single-screen Hybrid Lab UI.
   - Files: `phone_mem/web_lab/templates/index.html`, `phone_mem/web_lab/static/web_lab.css`, `phone_mem/web_lab/static/web_lab.js`, `tests/test_web_lab_routes.py`.
   - Render Chat Panel, Memory Inspector, Turn Debugger, and Lab Header.
   - Use stable three-panel layout sizing for desktop developer use.
@@ -133,20 +134,20 @@ phone_mem.web_lab
   - Display model, provider status, database path, caller, source app, evidence IDs, memory context, tool results, audit records, and errors.
   - Validate with `uv run python -m unittest tests.test_web_lab_routes`.
 
-- [ ] Add the optional launch wrapper.
+- [x] Add the optional launch wrapper.
   - Files: `examples/web_lab.py`, `tests/test_web_lab_routes.py`.
   - Implement a small wrapper that imports `phone_mem.web_lab.app:create_app` and runs Uvicorn.
   - Keep the canonical command documented as `uv run uvicorn phone_mem.web_lab.app:create_app --factory --reload`.
   - Validate with an import-only or argument-level test that does not start a network server.
 
-- [ ] Update user-facing documentation.
+- [x] Update user-facing documentation.
   - Files: `README.md`, `README.zh-CN.md`, `docs/PYTHON_REFERENCE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, `docs/PLANS.md`.
   - Document the Web Lab as Stage 1.6 active developer experience work.
   - Document run commands, environment variables, default database path, reset caution, and fake-client test policy.
   - Keep mobile runtime status deferred.
   - Validate with `uv run python scripts/validate_docs.py`.
 
-- [ ] Run final verification.
+- [x] Run final verification.
   - Commands:
     - `uv run python -m unittest discover -s tests`
     - `uv run python scripts/validate_docs.py`

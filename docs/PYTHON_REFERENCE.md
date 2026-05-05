@@ -104,6 +104,43 @@ uv run python -m unittest tests.test_agent_runtime_client tests.test_agent_runti
 
 The demo is the first real Agent experience for the Python reference. It is still a developer-machine runtime spike, not the production mobile runtime.
 
+## Python Web Lab
+
+Run the local browser Web Lab:
+
+```bash
+OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run uvicorn phone_mem.web_lab.app:create_app --factory --reload
+```
+
+Or use the optional wrapper:
+
+```bash
+OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run python examples/web_lab.py --reload
+```
+
+The Web Lab is the Stage 1.6 developer-machine experience over the Python reference service and LLM Agent runtime. It opens a single-screen Hybrid Lab with:
+
+- Chat Panel: sends turns through `AgentRuntime.run_turn(...)`;
+- Memory Inspector: lists memories, searches, previews context, explains, corrects, deletes, and shows audit and metrics through governed service APIs;
+- Turn Debugger: shows the memory context attached to `AgentTurnResponse`, evidence event IDs, tool results, recent audit records, and structured errors;
+- Lab Header: shows model, provider status, database path, caller, and source app.
+
+Default runtime configuration:
+
+- `PHONE_MEM_LLM_MODEL`: model used for chat; defaults to `gpt-4.1`.
+- `OPENAI_API_KEY`: required for real provider chat.
+- `PHONE_MEM_LLM_BASE_URL`: optional OpenAI-compatible base URL.
+- Database path: `.phone-mem-lab/memory.sqlite3`.
+- Caller/source app: `web_lab_agent` and `system_assistant`.
+
+The SQLite database is file-backed and cumulative by default. Resetting it means explicitly deleting `.phone-mem-lab/memory.sqlite3`; do that only when you intend to discard local lab memory. The UI and routes do not read or write SQL directly; all memory behavior comes from `PersonalMemoryService` and `MemoryToolRegistry`.
+
+Default automated tests use `FakeLLMClient`, temporary SQLite files, and FastAPI `TestClient`, so they do not require network access or provider credentials:
+
+```bash
+uv run python -m unittest tests.test_web_lab_state tests.test_web_lab_inspector tests.test_web_lab_routes
+```
+
 ## Quick Walkthrough
 
 Run the lifecycle walkthrough:
@@ -316,4 +353,4 @@ The Python memory core remains the reference oracle. Keep future changes to `pho
 - lifecycle, retrieval, permission, or service-error clarifications discovered while implementing Stage 2;
 - tests for every behavior change.
 
-Real LLM API work belongs in a separate `phone_mem.agent_runtime` boundary. Broader mobile product implementation should still move to Stage 2 only after a separate mobile execution plan is accepted.
+Real LLM API work belongs in a separate `phone_mem.agent_runtime` boundary. Local browser inspection belongs in the outer `phone_mem.web_lab` boundary and must remain an experience layer over the reference service. Broader mobile product implementation should still move to Stage 2 only after a separate mobile execution plan is accepted.

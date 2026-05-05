@@ -12,5 +12,8 @@ wheels/
 # Local git worktrees
 .worktrees/
 
+# Local Web Lab runtime state
+.phone-mem-lab/
+
 # Source materials kept outside git
 手机端Agent_Memory架构设计方案.pdf

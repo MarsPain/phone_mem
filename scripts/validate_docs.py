@@ -55,6 +55,16 @@ ACTIVE_PLAN_REQUIRED_HEADINGS = [
     "## Validation",
     "## Acceptance",
 ]
+IGNORED_MARKDOWN_DIRS = {
+    ".git",
+    ".mypy_cache",
+    ".phone-mem-lab",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".worktrees",
+    "__pycache__",
+}
 
 
 def strip_fenced_code(text: str) -> str:
@@ -62,7 +72,11 @@ def strip_fenced_code(text: str) -> str:
 
 
 def markdown_files() -> list[Path]:
-    return sorted(ROOT.rglob("*.md"))
+    return sorted(
+        path
+        for path in ROOT.rglob("*.md")
+        if not set(path.relative_to(ROOT).parts).intersection(IGNORED_MARKDOWN_DIRS)
+    )
 
 
 def normalize_link_target(raw: str) -> str | None:

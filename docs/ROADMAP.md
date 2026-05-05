@@ -40,6 +40,16 @@ Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans
 
 Status: completed on 2026-05-05. The Python runtime modules, fake-client tests, OpenAI-compatible adapter, thinking configuration, provider request error handling, and `examples/llm_agent_chat.py` demo now exist. Tracked by [PLANS.md](PLANS.md), [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md), and [exec-plans/completed/2026-05-05-python-llm-agent-runtime.md](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md).
 
+## Recently Completed Track: Stage 1.6 Python Web Lab
+
+- Add a local FastAPI Web Lab over the Python Personal Memory Service and Python LLM Agent runtime.
+- Use `.phone-mem-lab/memory.sqlite3` for persistent developer-machine memory.
+- Add a single-screen Hybrid Lab with Chat Panel, Memory Inspector, Turn Debugger, and Lab Header.
+- Expose memory context, evidence event IDs, tool results, audit records, metrics, and structured errors.
+- Keep automated tests fake-client and temporary-database based so they require no network or provider credentials.
+
+Status: completed on 2026-05-05. The `phone_mem.web_lab` package, FastAPI routes, server-rendered UI, launch wrapper, and Web Lab tests now exist. Tracked by [PLANS.md](PLANS.md), [design-docs/python-web-lab.md](design-docs/python-web-lab.md), and [exec-plans/completed/2026-05-05-python-web-lab.md](exec-plans/completed/2026-05-05-python-web-lab.md).
+
 ## Stage 2: Mobile Runtime Prototype
 
 - React Native and TypeScript app shell for iPhone and Android.

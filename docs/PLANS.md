@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Python Web Lab](exec-plans/active/2026-05-05-python-web-lab.md): active Stage 1.6 local developer Web Lab for real Agent chat, memory inspection, turn debugging, and file-backed SQLite exploration before mobile runtime work resumes.
+No active execution plan.
 
 ## Completed
 
@@ -20,6 +20,7 @@
 - [004 Service API and lifecycle tests](exec-plans/completed/2026-05-04-004-service-api-lifecycle-tests.md)
 - [Python reference maturation](exec-plans/completed/2026-05-05-python-reference-maturation.md): completed the reference usage, lifecycle, retrieval selector, file-backed SQLite, service error, explainability, and mobile contract fixture maturation track.
 - [Python LLM Agent Runtime](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md): completed the Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs.
+- [Python Web Lab](exec-plans/completed/2026-05-05-python-web-lab.md): completed the Stage 1.6 local developer Web Lab for real Agent chat, memory inspection, turn debugging, and file-backed SQLite exploration before mobile runtime work resumes.
 
 ## Tech Debt
 

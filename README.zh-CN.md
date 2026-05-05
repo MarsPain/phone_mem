@@ -4,7 +4,7 @@
 
 `phone-mem` 是智能手机 Agent Memory 的架构与原型仓库。项目目标是在手机上构建一个以 Agent 方式管理用户 memory 的本地优先系统：它理解并维护用户在手机场景中的长期偏好、事件、上下文和操作习惯，并把这些受控 memory 能力提供给更广泛的 Agent 应用。
 
-仓库现在包含已完成的确定性 Python 参考版 Personal Memory Service、已完成的 Stage 1.5 Python LLM Agent runtime spike，以及未来移动端 runtime 所需的架构上下文。Stage 1.5 用真实 provider-backed chat 验证受治理 memory API 上的 Agent 体验；Stage 2 移动端实现会等单独计划被接受后再启动。
+仓库现在包含已完成的确定性 Python 参考版 Personal Memory Service、已完成的 Stage 1.5 Python LLM Agent runtime spike、Stage 1.6 本地 Python Web Lab，以及未来移动端 runtime 所需的架构上下文。Stage 1.5 用真实 provider-backed chat 验证受治理 memory API 上的 Agent 体验；Stage 1.6 在浏览器里提供 chat、memory inspection 和 turn debugging；Stage 2 移动端实现会等单独计划被接受后再启动。
 
 ## 快速开始
 
@@ -13,6 +13,7 @@ uv run python main.py
 uv run python examples/agent_memory_demo.py
 uv run python examples/agent_memory_repl.py
 OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run python examples/llm_agent_chat.py
+OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run uvicorn phone_mem.web_lab.app:create_app --factory --reload
 uv run python scripts/validate_docs.py
 uv run python -m unittest discover -s tests
 ```
@@ -24,12 +25,13 @@ uv run python -m unittest discover -s tests
 - [docs/README.md](docs/README.md)：详细文档索引。
 - [docs/PYTHON_REFERENCE.md](docs/PYTHON_REFERENCE.md)：Python 参考服务使用与维护指南。
 - [docs/design-docs/python-llm-agent-runtime.md](docs/design-docs/python-llm-agent-runtime.md)：Python LLM Agent runtime 设计。
+- [docs/design-docs/python-web-lab.md](docs/design-docs/python-web-lab.md)：Stage 1.6 本地 Web Lab 设计。
 - [docs/design-docs/smartphone-agent-memory.md](docs/design-docs/smartphone-agent-memory.md)：智能手机 Agent Memory 开发设计。
 - [docs/references/source-review.md](docs/references/source-review.md)：原 PDF 的深度 review、精华提炼和漏洞澄清。
 - [docs/references/research-review-2026.md](docs/references/research-review-2026.md)：结合论文与 Apple/Android 平台资料的 v2 调研依据。
 
 ## 当前阶段
 
-Stage 1、Python reference maturation track 和 Stage 1.5 Python LLM Agent runtime spike 已完成。`phone_mem/` 下的 Python 代码现在是未来移动端对齐的 executable oracle。`phone_mem.agent_runtime` 边界支持真实 LLM API demo，同时保持 memory core 不依赖 provider。
+Stage 1、Python reference maturation track、Stage 1.5 Python LLM Agent runtime spike 和 Stage 1.6 Python Web Lab 已完成。`phone_mem/` 下的 Python 代码现在是未来移动端对齐的 executable oracle。`phone_mem.agent_runtime` 边界支持真实 LLM API demo，同时保持 memory core 不依赖 provider；`phone_mem.web_lab` 提供本地浏览器入口，用于 chat、memory inspection 和 turn debugging。
 
 Stage 2 移动端实现仍处于 deferred 状态。仓库目前只有 TypeScript boundary files 和由 Python reference 支撑的 contract fixtures，还没有 React Native app、移动端 SQLite adapter 或 TypeScript 测试工具链。

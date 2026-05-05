@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Python Web Lab</title>
+    <link rel="stylesheet" href="/static/web_lab.css" />
+  </head>
+  <body>
+    <header class="lab-header">
+      <div>
+        <h1>Python Web Lab</h1>
+        <p>Model <strong>{{ model }}</strong> | Provider <strong>{{ provider_status }}</strong></p>
+      </div>
+      <dl>
+        <div><dt>Database</dt><dd>{{ db_path }}</dd></div>
+        <div><dt>Caller</dt><dd>{{ caller }}</dd></div>
+        <div><dt>Source</dt><dd>{{ source_app }}</dd></div>
+      </dl>
+    </header>
+
+    <main class="lab-grid">
+      <section class="panel chat-panel">
+        <div class="panel-title">
+          <h2>Chat</h2>
+          <button id="refresh-chat" type="button">Refresh</button>
+        </div>
+        <div id="chat-log" class="log"></div>
+        <form id="chat-form" class="stack">
+          <textarea id="chat-message" name="message" rows="5" placeholder="Ask or instruct the memory Agent"></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </section>
+
+      <section class="panel inspector-panel">
+        <div class="panel-title">
+          <h2>Memory Inspector</h2>
+          <button id="refresh-memory" type="button">Refresh</button>
+        </div>
+        <form id="search-form" class="row">
+          <input id="search-query" name="query" placeholder="Search or preview query" />
+          <button type="submit">Search</button>
+          <button id="preview-context" type="button">Context</button>
+        </form>
+        <form id="event-form" class="stack">
+          <input id="event-id" name="event_id" placeholder="event id" />
+          <textarea id="replacement-text" rows="3" placeholder="Replacement text for correction"></textarea>
+          <input id="delete-reason" placeholder="Delete reason" />
+          <div class="row">
+            <button id="explain-event" type="button">Explain</button>
+            <button id="correct-event" type="button">Correct</button>
+            <button id="delete-event" type="button">Delete</button>
+          </div>
+        </form>
+        <pre id="memory-output" class="output"></pre>
+      </section>
+
+      <section class="panel debugger-panel">
+        <div class="panel-title">
+          <h2>Turn Debugger</h2>
+          <button id="refresh-debugger" type="button">Refresh</button>
+        </div>
+        <pre id="debug-output" class="output"></pre>
+        <div class="split">
+          <pre id="audit-output" class="output"></pre>
+          <pre id="metrics-output" class="output"></pre>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/web_lab.js"></script>
+  </body>
+</html>

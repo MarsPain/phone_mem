@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The completed Stage 1.5 track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core.
+The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The completed Stage 1.5 track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core. The completed Stage 1.6 track adds a local FastAPI Web Lab for browser-based chat, memory inspection, and turn debugging over the same service and runtime boundaries.
 
 The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
 
@@ -35,6 +35,19 @@ Use Python on the development machine to prove the real Agent loop before mobile
 - interactive chat example under `examples/`.
 
 This track may import the memory service, but the memory service must not import provider adapters. The first implementation lives under `phone_mem/agent_runtime/` and is exercised by fake-client and injected-transport tests so default verification stays network-free. It is documented in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and tracked by [PLANS.md](PLANS.md).
+
+### Track 2.5: Python Web Lab
+
+Use FastAPI on the development machine as a local inspection shell around the Python reference service and Python LLM Agent runtime. This track is complete and includes:
+
+- file-backed SQLite startup at `.phone-mem-lab/memory.sqlite3`;
+- default `web_lab_agent` grants for governed memory inspection and mutation;
+- server-rendered single-screen Hybrid Lab with vanilla JavaScript;
+- JSON routes for chat turns, memory list, search, context preview, explain, correct, delete, audit, metrics, and turn snapshots;
+- turn observability through `AgentTurnResponse.memory_context`;
+- deterministic route, state, and inspector tests using fake clients and temporary SQLite files.
+
+This track may own app startup, templates, static assets, and in-process turn snapshots. It must not become a parallel memory implementation, and route handlers must keep using `PersonalMemoryService`, `MemoryToolRegistry`, and `AgentRuntime`.
 
 ### Track 3: Real Mobile Runtime Prototype
 
@@ -74,6 +87,13 @@ phone_mem/
 │   ├── prompts.py
 │   ├── runtime.py
 │   └── tools.py
+├── web_lab/
+│   ├── app.py
+│   ├── inspector.py
+│   ├── schemas.py
+│   ├── state.py
+│   ├── static/
+│   └── templates/
 ├── personal_memory_service/
 │   ├── events.py
 │   ├── constructor.py

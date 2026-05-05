@@ -48,7 +48,7 @@ class SQLiteMemoryStore:
 
     @classmethod
     def connect(cls, path: str = ":memory:") -> SQLiteMemoryStore:
-        connection = sqlite3.connect(path)
+        connection = sqlite3.connect(path, check_same_thread=False)
         connection.row_factory = sqlite3.Row
         return cls(connection=connection)
 
