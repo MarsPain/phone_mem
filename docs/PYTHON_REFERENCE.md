@@ -10,7 +10,7 @@ The Python reference implements a local-only memory service under `phone_mem/`:
 - `personal_memory_service.service`: service facade for record, search, explain, correct, delete, grant, revoke, audit, build context, and metrics.
 - `personal_memory_service.storage`: SQLite-backed event, permission, audit, and tombstone persistence.
 - `personal_memory_service.lifecycle`: duplicate detection and simple contradiction quarantine.
-- `personal_memory_service.retrieval`: governed lexical retrieval after permission projection.
+- `personal_memory_service.retrieval`: governed lexical retrieval after permission projection, with deterministic English/digit terms and CJK character n-grams.
 - `context`: runtime-neutral context bundle assembly and budget accounting.
 - `governance`: permission grants, audit records, and memory views.
 

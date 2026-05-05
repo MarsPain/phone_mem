@@ -23,7 +23,7 @@ Unauthorized memory must not be scored, ranked, embedded on demand, or leaked th
 
 The first implementation should use deterministic local retrieval:
 
-- normalized text matching over `semantic_description`;
+- normalized text matching over `semantic_description`, using English/digit terms and CJK character n-grams for deterministic multilingual recall;
 - entity and source filters;
 - recency and confidence scoring;
 - lifecycle exclusion for deleted and superseded events;

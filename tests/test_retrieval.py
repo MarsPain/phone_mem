@@ -154,6 +154,32 @@ class LocalMemoryRetrieverTest(unittest.TestCase):
         self.assertEqual(results[0].snippet.confidence, stronger.quality.confidence)
         self.assertEqual(results[0].explanation["matched_terms"], ["morning", "planning"])
 
+    def test_chinese_query_matches_chinese_memory_text(self) -> None:
+        store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
+        coffee = replace(
+            make_event("event-1", entity="coffee"),
+            semantic_description="用户喜欢早上9点喝咖啡。",
+            entities=["咖啡"],
+        )
+        store.insert_event(coffee)
+        permissions.grant(
+            "assistant_agent",
+            PermissionScope(operations=[AuditOperation.READ], entities=["咖啡"]),
+            duration_seconds=60,
+        )
+        retriever = LocalMemoryRetriever(
+            store=store,
+            projector=MemoryViewProjector(permissions),
+            audit_log=audit,
+            clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC),
+        )
+
+        results = retriever.search("我喜欢几点喝咖啡", caller="assistant_agent")
+
+        self.assertEqual([result.event_id for result in results], ["event-1"])
+        self.assertIn("喝咖啡", results[0].explanation["matched_terms"])
+
 
 if __name__ == "__main__":
     unittest.main()

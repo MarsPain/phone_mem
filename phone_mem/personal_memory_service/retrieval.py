@@ -160,7 +160,24 @@ class LocalMemoryRetriever:
         return Counter(terms)
 
     def _terms(self, text: str) -> list[str]:
-        return re.findall(r"[a-z0-9]+", text.lower())
+        terms: list[str] = []
+        for match in re.finditer(r"[a-z0-9]+|[\u4e00-\u9fff]+", text.lower()):
+            token = match.group(0)
+            if re.fullmatch(r"[a-z0-9]+", token):
+                terms.append(token)
+                continue
+            terms.extend(self._cjk_ngrams(token))
+        return terms
+
+    def _cjk_ngrams(self, text: str) -> list[str]:
+        grams: list[str] = []
+        max_size = min(4, len(text))
+        for size in range(2, max_size + 1):
+            for index in range(0, len(text) - size + 1):
+                grams.append(text[index : index + size])
+        if len(text) == 1:
+            grams.append(text)
+        return grams
 
     def _audit_scope(
         self,

@@ -52,6 +52,18 @@ class AgentRuntimeMemoryToolsTest(unittest.TestCase):
         self.assertIn(AuditOperation.UPDATE, audit_operations)
         self.assertIn(AuditOperation.DELETE, audit_operations)
 
+    def test_memory_context_retrieves_chinese_preference_followup(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        tools = MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP)
+
+        remembered = tools.remember("用户喜欢早上9点喝咖啡。", entities=["咖啡"])
+        context = tools.build_memory_context("我喜欢几点喝咖啡", max_tokens=80)
+
+        self.assertEqual(remembered["event_id"], "event-1")
+        self.assertEqual(context["evidence_event_ids"], ["event-1"])
+        self.assertEqual(context["snippets"][0]["text"], "用户喜欢早上9点喝咖啡。")
+
     def test_memory_tools_preserve_permission_denial_errors(self) -> None:
         service = PersonalMemoryService.in_memory(clock=lambda: datetime(2026, 5, 3, tzinfo=UTC))
         self.addCleanup(service.close)
