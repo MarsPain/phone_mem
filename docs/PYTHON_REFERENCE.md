@@ -14,7 +14,7 @@ The Python reference implements a local-only memory service under `phone_mem/`:
 - `context`: runtime-neutral context bundle assembly and budget accounting.
 - `governance`: permission grants, audit records, and memory views.
 
-The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The active Stage 1.5 plan adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider.
+The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The completed Stage 1.5 track adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider.
 
 ## Product-Style Demo
 
@@ -61,7 +61,7 @@ The REPL keeps one in-memory service alive for the session. It supports:
 
 This is a command interface over the reference service, not an LLM chat runtime. It is meant to make memory lifecycle behavior easy to feel in one terminal session.
 
-The planned real LLM chat runtime is tracked separately in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and [exec-plans/active/2026-05-05-python-llm-agent-runtime.md](exec-plans/active/2026-05-05-python-llm-agent-runtime.md). Until that plan is implemented, `examples/agent_memory_repl.py` remains deterministic and does not call a provider API.
+The real LLM chat runtime is tracked separately in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and [exec-plans/completed/2026-05-05-python-llm-agent-runtime.md](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md). `examples/agent_memory_repl.py` remains deterministic and does not call a provider API; use `examples/llm_agent_chat.py` for provider-backed chat.
 
 The same flow is covered by:
 

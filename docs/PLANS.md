@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Python LLM Agent Runtime](exec-plans/active/2026-05-05-python-llm-agent-runtime.md): Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs. Initial implementation exists under `phone_mem/agent_runtime/`.
+No active execution plan is currently accepted.
 
 ## Completed
 
@@ -19,6 +19,7 @@
 - [003 Retrieval and context assembly](exec-plans/completed/2026-05-04-003-retrieval-context-assembly.md)
 - [004 Service API and lifecycle tests](exec-plans/completed/2026-05-04-004-service-api-lifecycle-tests.md)
 - [Python reference maturation](exec-plans/completed/2026-05-05-python-reference-maturation.md): completed the reference usage, lifecycle, retrieval selector, file-backed SQLite, service error, explainability, and mobile contract fixture maturation track.
+- [Python LLM Agent Runtime](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md): completed the Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs.
 
 ## Tech Debt
 

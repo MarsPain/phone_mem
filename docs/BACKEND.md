@@ -2,7 +2,7 @@
 
 ## Current State
 
-The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The active Stage 1.5 planning track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core.
+The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The completed Stage 1.5 track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core.
 
 The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
 
@@ -26,7 +26,7 @@ This track is complete as an implementation track. Continue to keep it correct, 
 
 ### Track 2: Python LLM Agent Runtime Spike
 
-Use Python on the development machine to prove the real Agent loop before mobile runtime work resumes:
+Use Python on the development machine to prove the real Agent loop before mobile runtime work resumes. This spike is complete and includes:
 
 - provider-neutral `LLMClient` interface;
 - fake deterministic client for tests;
@@ -124,7 +124,7 @@ The MVP should not depend on a specific LLM provider. Define a runtime-neutral `
 
 Runtime adapters may later target Apple Foundation Models, Android AICore/Gemini Nano, local open-weight models, or private-compute backends. Those adapters must not bypass memory service permissions.
 
-The Stage 1.5 Python runtime may add an OpenAI-compatible adapter for developer-machine chat demos. That adapter is an outer runtime concern and must use runtime-neutral context bundles plus memory service tools instead of direct storage access.
+The Stage 1.5 Python runtime includes an OpenAI-compatible adapter for developer-machine chat demos. That adapter is an outer runtime concern and uses runtime-neutral context bundles plus memory service tools instead of direct storage access.
 
 ## Cloud Boundary
 

@@ -10,7 +10,7 @@ The system is a local-first OS-level Personal Memory Service for smartphone agen
 
 Apps and agents do not own the global memory store. They receive scoped projections through service APIs.
 
-The completed Stage 1 implementation is a Python reference version running on the development machine. It proves the service contract and lifecycle invariants before the later React Native, TypeScript, and on-device SQLite mobile runtime. The active Stage 1.5 track adds a Python LLM Agent runtime around that service to test a real provider-backed Agent loop without changing the memory service boundary.
+The completed Stage 1 implementation is a Python reference version running on the development machine. It proves the service contract and lifecycle invariants before the later React Native, TypeScript, and on-device SQLite mobile runtime. The completed Stage 1.5 track adds a Python LLM Agent runtime around that service to test a real provider-backed Agent loop without changing the memory service boundary.
 
 ## Key Corrections To The Source Design
 
@@ -60,7 +60,7 @@ The MVP proves the local service boundary as the Stage 1 Python reference implem
 - correction, deletion, tombstone, and audit primitives;
 - deterministic lifecycle tests.
 
-The completed execution records are [../exec-plans/completed/2026-05-04-mvp-local-memory-core.md](../exec-plans/completed/2026-05-04-mvp-local-memory-core.md) and [../exec-plans/completed/2026-05-05-python-reference-maturation.md](../exec-plans/completed/2026-05-05-python-reference-maturation.md). The active Python LLM runtime plan is [../exec-plans/active/2026-05-05-python-llm-agent-runtime.md](../exec-plans/active/2026-05-05-python-llm-agent-runtime.md); mobile prototype planning remains deferred in [../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
+The completed execution records are [../exec-plans/completed/2026-05-04-mvp-local-memory-core.md](../exec-plans/completed/2026-05-04-mvp-local-memory-core.md), [../exec-plans/completed/2026-05-05-python-reference-maturation.md](../exec-plans/completed/2026-05-05-python-reference-maturation.md), and [../exec-plans/completed/2026-05-05-python-llm-agent-runtime.md](../exec-plans/completed/2026-05-05-python-llm-agent-runtime.md); mobile prototype planning remains deferred in [../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
 
 ## Non-Goals For MVP
 

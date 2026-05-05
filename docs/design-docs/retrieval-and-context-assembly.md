@@ -4,7 +4,7 @@
 
 Retrieval finds relevant memory only inside the caller's authorized memory view. Context assembly turns those authorized results into a model-runtime-neutral bundle with token budget accounting, source evidence, and safety metadata.
 
-The Stage 1 implementation built deterministic local retrieval and context assembly in Python as a reference behavior. The active Stage 1.5 Python LLM Agent Runtime may consume these runtime-neutral bundles for real provider-backed chat demos, while real phone runtime adapters remain a later mobile track.
+The Stage 1 implementation built deterministic local retrieval and context assembly in Python as a reference behavior. The completed Stage 1.5 Python LLM Agent Runtime consumes these runtime-neutral bundles for real provider-backed chat demos, while real phone runtime adapters remain a later mobile track.
 
 ## Retrieval Pipeline
 

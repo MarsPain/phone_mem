@@ -30,7 +30,7 @@ Status: completed on 2026-05-04 as the local Python reference core.
 
 Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans/completed/2026-05-05-python-reference-maturation.md](exec-plans/completed/2026-05-05-python-reference-maturation.md).
 
-## Active Track: Stage 1.5 Python LLM Agent Runtime
+## Recently Completed Track: Stage 1.5 Python LLM Agent Runtime
 
 - Add a provider-neutral Python Agent runtime around the completed memory service.
 - Add a fake deterministic LLM client for tests and an OpenAI-compatible adapter for real local development.
@@ -38,7 +38,7 @@ Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans
 - Add a real-provider interactive chat demo while keeping default tests network-free.
 - Preserve the Personal Memory Service as provider-independent and permission-gated.
 
-Status: active implementation track as of 2026-05-05. The first Python runtime modules, fake-client tests, OpenAI-compatible adapter, and `examples/llm_agent_chat.py` demo now exist. Tracked by [PLANS.md](PLANS.md), [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md), and [exec-plans/active/2026-05-05-python-llm-agent-runtime.md](exec-plans/active/2026-05-05-python-llm-agent-runtime.md).
+Status: completed on 2026-05-05. The Python runtime modules, fake-client tests, OpenAI-compatible adapter, thinking configuration, provider request error handling, and `examples/llm_agent_chat.py` demo now exist. Tracked by [PLANS.md](PLANS.md), [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md), and [exec-plans/completed/2026-05-05-python-llm-agent-runtime.md](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md).
 
 ## Stage 2: Mobile Runtime Prototype
 

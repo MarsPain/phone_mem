@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Python LLM Agent Runtime is a Stage 1.5 planning track for making the reference memory service feel like a real Agent without changing the phone-first product architecture. It adds prompt execution and provider adapters around the completed Python Personal Memory Service so a developer can chat with an Agent that retrieves, cites, writes, corrects, and deletes governed memory.
+The Python LLM Agent Runtime is the completed Stage 1.5 runtime spike for making the reference memory service feel like a real Agent without changing the phone-first product architecture. It adds prompt execution and provider adapters around the completed Python Personal Memory Service so a developer can chat with an Agent that retrieves, cites, writes, corrects, and deletes governed memory.
 
 This track is a developer-machine runtime spike. It is not the production mobile runtime, not an OS service, and not a replacement for the deterministic memory core.
 
@@ -38,7 +38,7 @@ phone_mem.agent_runtime.AgentRuntime
 
 The runtime may call the service. The provider adapter may not. The LLM receives context bundles and tool schemas, never the raw SQLite store or unfiltered memory list.
 
-## Proposed Python Modules
+## Implemented Python Modules
 
 - `phone_mem/agent_runtime/client.py`: provider-neutral `LLMClient`, request, response, and tool-call value objects.
 - `phone_mem/agent_runtime/openai_client.py`: OpenAI-compatible chat or responses adapter selected by environment configuration.
@@ -85,7 +85,7 @@ Every tool must call `PersonalMemoryService` with a caller identity and existing
 - Real API integration tests must be optional and skipped unless explicit credentials are present.
 - Sensitive memory should default to local-only behavior; external provider calls require an allowed processing policy before this runtime is used with such data.
 
-## Development Sequence
+## Completed Development Sequence
 
 1. Add provider-neutral runtime interfaces and fake-client tests.
 2. Add memory tool registry tests proving all tool calls go through service permissions and audit.

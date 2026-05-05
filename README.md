@@ -4,7 +4,7 @@ Language: English | [Chinese](README.zh-CN.md)
 
 `phone-mem` is the architecture and prototype repository for smartphone Agent Memory. The project goal is to build a local-first memory system on the phone that manages user memory with an agentic lifecycle: it understands and maintains long-term preferences, events, context, and operating habits from smartphone scenarios, then exposes governed memory capabilities to broader Agent applications.
 
-The repository now contains a completed deterministic Python reference Personal Memory Service plus architecture context for the future mobile runtime. The active Stage 1.5 planning track is a Python LLM Agent runtime spike for real provider-backed chat over governed memory APIs; Stage 2 mobile implementation remains deferred until a separate plan is accepted.
+The repository now contains a completed deterministic Python reference Personal Memory Service, a completed Stage 1.5 Python LLM Agent runtime spike for real provider-backed chat over governed memory APIs, and architecture context for the future mobile runtime. Stage 2 mobile implementation remains deferred until a separate plan is accepted.
 
 ## Quick Start
 
@@ -31,6 +31,6 @@ uv run python -m unittest discover -s tests
 
 ## Current Stage
 
-Stage 1 and the Python reference maturation track are complete. The Python code under `phone_mem/` is now the executable oracle for future mobile parity. The active Stage 1.5 implementation adds a separate `phone_mem.agent_runtime` boundary for real LLM API demos while keeping the memory core provider-independent.
+Stage 1, the Python reference maturation track, and the Stage 1.5 Python LLM Agent runtime spike are complete. The Python code under `phone_mem/` is now the executable oracle for future mobile parity. The `phone_mem.agent_runtime` boundary supports real LLM API demos while keeping the memory core provider-independent.
 
 Stage 2 mobile implementation is deferred. The repository currently has TypeScript boundary files and Python-backed contract fixtures, but no React Native app, mobile SQLite adapter, or TypeScript test toolchain yet.
