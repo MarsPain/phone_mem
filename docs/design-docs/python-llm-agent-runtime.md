@@ -56,6 +56,8 @@ Runtime configuration should come from environment variables such as:
 
 - `PHONE_MEM_LLM_PROVIDER`;
 - `PHONE_MEM_LLM_MODEL`;
+- `PHONE_MEM_LLM_THINKING`, defaulting to `disabled` for provider calls that support a thinking control;
+- `PHONE_MEM_LLM_THINKING_BUDGET_TOKENS`, when thinking is explicitly enabled;
 - `OPENAI_API_KEY` or provider-specific compatible credentials;
 - optional base URL for OpenAI-compatible local or hosted providers.
 

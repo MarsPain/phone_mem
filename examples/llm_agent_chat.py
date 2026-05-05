@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import json
 import os
 from pathlib import Path
 import sys
@@ -10,7 +11,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from phone_mem.agent_runtime.openai_client import OpenAICompatibleClient
+from phone_mem.agent_runtime.openai_client import OpenAICompatibleClient, OpenAICompatibleRequestError
 from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.governance.permissions import PermissionScope
@@ -55,7 +56,11 @@ def run_chat(
             if user_message in {"quit", "exit"}:
                 print("bye", file=resolved_output)
                 return
-            response = resolved_runtime.run_turn(user_message)
+            try:
+                response = resolved_runtime.run_turn(user_message)
+            except OpenAICompatibleRequestError as exc:
+                print(f"error: {exc}", file=resolved_output)
+                continue
             print(response.text, file=resolved_output)
             print(f"evidence: {response.evidence_event_ids}", file=resolved_output)
     finally:
@@ -68,8 +73,29 @@ def _runtime_from_env(service: PersonalMemoryService) -> AgentRuntime:
     return AgentRuntime(
         client=OpenAICompatibleClient.from_env(),
         model=model,
+        thinking=_thinking_from_env(),
         tools=MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP),
     )
+
+
+def _thinking_from_env() -> dict[str, object]:
+    raw_value = os.environ.get("PHONE_MEM_LLM_THINKING", "disabled").strip()
+    if raw_value.startswith("{"):
+        parsed = json.loads(raw_value)
+        if not isinstance(parsed, dict):
+            raise ValueError("PHONE_MEM_LLM_THINKING JSON must decode to an object")
+        return parsed
+
+    normalized = raw_value.lower()
+    if normalized in {"", "0", "false", "no", "off", "disabled"}:
+        return {"type": "disabled"}
+    if normalized in {"1", "true", "yes", "on", "enabled"}:
+        thinking: dict[str, object] = {"type": "enabled"}
+        budget_tokens = os.environ.get("PHONE_MEM_LLM_THINKING_BUDGET_TOKENS", "").strip()
+        if budget_tokens:
+            thinking["budget_tokens"] = int(budget_tokens)
+        return thinking
+    raise ValueError("PHONE_MEM_LLM_THINKING must be disabled, enabled, or a JSON object")
 
 
 def _service_with_grant() -> PersonalMemoryService:

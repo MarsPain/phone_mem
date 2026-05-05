@@ -61,6 +61,21 @@ class AgentRuntimeTest(unittest.TestCase):
         self.assertIn("User prefers morning planning sessions.", request_text)
         self.assertIn("event-1", request_text)
 
+    def test_chat_turn_forwards_thinking_config_to_llm_requests(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        client = FakeLLMClient([LLMResponse(text="Done.")])
+        runtime = AgentRuntime(
+            client=client,
+            model="fake-memory-model",
+            thinking={"type": "disabled"},
+            tools=MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP),
+        )
+
+        runtime.run_turn("Plan my day.")
+
+        self.assertEqual(client.requests[0].thinking, {"type": "disabled"})
+
     def test_chat_turn_executes_memory_tool_then_requests_final_answer(self) -> None:
         service = _service_with_grant()
         self.addCleanup(service.close)

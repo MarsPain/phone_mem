@@ -12,6 +12,7 @@ from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.agent_runtime.openai_client import (
     OpenAICompatibleClient,
     OpenAICompatibleConfigurationError,
+    OpenAICompatibleRequestError,
 )
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "MemoryToolRegistry",
     "OpenAICompatibleClient",
     "OpenAICompatibleConfigurationError",
+    "OpenAICompatibleRequestError",
     "ToolCall",
     "ToolDefinition",
 ]

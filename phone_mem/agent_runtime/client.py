@@ -38,6 +38,7 @@ class ToolCall:
 class LLMRequest:
     model: str
     messages: list[LLMMessage]
+    thinking: dict[str, Any] | None = None
     tools: list[ToolDefinition] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -45,6 +46,8 @@ class LLMRequest:
             "model": self.model,
             "messages": [message.to_dict() for message in self.messages],
         }
+        if self.thinking is not None:
+            data["thinking"] = dict(self.thinking)
         if self.tools:
             data["tools"] = [tool.to_dict() for tool in self.tools]
         return data

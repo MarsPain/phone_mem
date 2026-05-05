@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 import unittest
+from urllib.error import URLError
 from unittest.mock import patch
 
 from phone_mem.agent_runtime.client import LLMMessage, LLMRequest, ToolDefinition
 from phone_mem.agent_runtime.openai_client import (
     OpenAICompatibleClient,
     OpenAICompatibleConfigurationError,
+    OpenAICompatibleRequestError,
 )
 
 
@@ -57,6 +59,7 @@ class AgentRuntimeOpenAICompatibleClientTest(unittest.TestCase):
             LLMRequest(
                 model="gpt-test",
                 messages=[LLMMessage(role="user", content="Search memory.")],
+                thinking={"type": "disabled"},
                 tools=[
                     ToolDefinition(
                         name="search_memory",
@@ -78,6 +81,7 @@ class AgentRuntimeOpenAICompatibleClientTest(unittest.TestCase):
         payload = captured["payload"]
         assert isinstance(payload, dict)
         self.assertEqual(payload["model"], "gpt-test")
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
         self.assertEqual(
             payload["tools"],
             [
@@ -98,6 +102,33 @@ class AgentRuntimeOpenAICompatibleClientTest(unittest.TestCase):
         self.assertEqual(response.text, "I found one memory.")
         self.assertEqual(response.tool_calls[0].name, "search_memory")
         self.assertEqual(response.tool_calls[0].arguments, {"query": "planning", "top_k": 2})
+
+    def test_complete_wraps_transport_url_errors(self) -> None:
+        def transport(
+            url: str,
+            headers: dict[str, str],
+            payload: dict[str, object],
+        ) -> dict[str, object]:
+            raise URLError("[SSL: UNEXPECTED_EOF_WHILE_READING]")
+
+        client = OpenAICompatibleClient(
+            api_key="test-key",
+            base_url="https://example.test/v1",
+            transport=transport,
+        )
+
+        with self.assertRaisesRegex(
+            OpenAICompatibleRequestError,
+            "https://example.test/v1/chat/completions",
+        ) as raised:
+            client.complete(
+                LLMRequest(
+                    model="gpt-test",
+                    messages=[LLMMessage(role="user", content="Search memory.")],
+                )
+            )
+
+        self.assertIn("UNEXPECTED_EOF_WHILE_READING", str(raised.exception))
 
 
 if __name__ == "__main__":

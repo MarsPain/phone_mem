@@ -81,8 +81,12 @@ Optional environment variables:
 
 - `PHONE_MEM_LLM_MODEL`: model used for the chat request; defaults to `gpt-4.1` for local demos.
 - `PHONE_MEM_LLM_BASE_URL`: OpenAI-compatible base URL; defaults to `https://api.openai.com/v1`.
+- `PHONE_MEM_LLM_THINKING`: thinking config for LLM API calls; defaults to `disabled`, accepts `enabled`, or a JSON object such as `{"type":"disabled"}`.
+- `PHONE_MEM_LLM_THINKING_BUDGET_TOKENS`: optional integer budget used only when `PHONE_MEM_LLM_THINKING=enabled`.
 
 The demo creates an in-memory service, grants `llm_memory_agent` scoped read, write, update, delete, and context-build access to `system_assistant` personal episodic memory, then runs chat turns through `phone_mem.agent_runtime.AgentRuntime`.
+
+Provider request failures are printed as `error: LLM API request failed ...` without terminating the chat loop. TLS errors such as `UNEXPECTED_EOF_WHILE_READING` happen before the provider returns an API response; check `PHONE_MEM_LLM_BASE_URL`, local proxy or VPN settings, and network access before debugging the memory runtime.
 
 The runtime path is intentionally separate from the memory core:
 

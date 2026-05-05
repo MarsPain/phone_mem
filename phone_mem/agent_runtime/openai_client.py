@@ -4,7 +4,7 @@ from collections.abc import Callable
 import json
 import os
 from typing import Any
-from urllib import request
+from urllib import error, request
 
 from phone_mem.agent_runtime.client import LLMRequest, LLMResponse, ToolCall, ToolDefinition
 
@@ -13,6 +13,10 @@ Transport = Callable[[str, dict[str, str], dict[str, object]], dict[str, object]
 
 
 class OpenAICompatibleConfigurationError(RuntimeError):
+    pass
+
+
+class OpenAICompatibleRequestError(RuntimeError):
     pass
 
 
@@ -41,17 +45,30 @@ class OpenAICompatibleClient:
             "model": request_data.model,
             "messages": [message.to_dict() for message in request_data.messages],
         }
+        if request_data.thinking is not None:
+            payload["thinking"] = dict(request_data.thinking)
         if request_data.tools:
             payload["tools"] = [_tool_payload(tool) for tool in request_data.tools]
 
-        raw = self._transport(
-            f"{self._base_url}/chat/completions",
-            {
-                "Authorization": f"Bearer {self._api_key}",
-                "Content-Type": "application/json",
-            },
-            payload,
-        )
+        url = f"{self._base_url}/chat/completions"
+        try:
+            raw = self._transport(
+                url,
+                {
+                    "Authorization": f"Bearer {self._api_key}",
+                    "Content-Type": "application/json",
+                },
+                payload,
+            )
+        except OpenAICompatibleRequestError:
+            raise
+        except error.HTTPError as exc:
+            detail = _http_error_detail(exc)
+            raise OpenAICompatibleRequestError(
+                f"LLM API request failed for {url}: HTTP {exc.code}: {detail}"
+            ) from exc
+        except (error.URLError, TimeoutError, OSError) as exc:
+            raise OpenAICompatibleRequestError(f"LLM API request failed for {url}: {exc}") from exc
         return _parse_chat_completion(raw)
 
 
@@ -110,6 +127,13 @@ def _parse_arguments(raw_arguments: object) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise RuntimeError("tool call arguments must decode to a JSON object")
     return parsed
+
+
+def _http_error_detail(exc: error.HTTPError) -> str:
+    raw_body = exc.read().decode("utf-8", errors="replace").strip()
+    if raw_body:
+        return raw_body
+    return str(exc.reason)
 
 
 def _post_json(url: str, headers: dict[str, str], payload: dict[str, object]) -> dict[str, object]:

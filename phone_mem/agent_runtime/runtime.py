@@ -21,6 +21,7 @@ class AgentRuntime:
     client: LLMClient
     model: str
     tools: MemoryToolRegistry
+    thinking: dict[str, Any] | None = None
 
     def run_turn(self, user_message: str) -> AgentTurnResponse:
         memory_context = self.tools.build_memory_context(user_message)
@@ -32,6 +33,7 @@ class AgentRuntime:
             LLMRequest(
                 model=self.model,
                 messages=initial_messages,
+                thinking=self.thinking,
                 tools=self.tools.tool_definitions(),
             )
         )
@@ -62,6 +64,7 @@ class AgentRuntime:
                     LLMMessage(role="assistant", content=_tool_call_summary(tool_results)),
                     LLMMessage(role="user", content="Use the tool results to answer the user."),
                 ],
+                thinking=self.thinking,
                 tools=self.tools.tool_definitions(),
             )
         )
