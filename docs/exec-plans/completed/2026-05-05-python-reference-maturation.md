@@ -1,7 +1,8 @@
 # Python Reference Maturation
 
-Status: active
+Status: completed
 Type: umbrella
+Completed: 2026-05-05
 
 ## Goal
 
@@ -41,7 +42,7 @@ Make the Python Personal Memory Service easy to understand, exercise, and iterat
 - [x] Improve service errors and caller-facing failure messages.
 - [x] Expand lifecycle tests for rejection, quarantine review, and correction explainability.
 - [x] Add retrieval selector examples and tests.
-- [ ] Revisit mobile contract fixtures after Python API behavior stabilizes.
+- [x] Revisit mobile contract fixtures after Python API behavior stabilizes.
 
 ## Validation
 
@@ -54,3 +55,7 @@ Make the Python Personal Memory Service easy to understand, exercise, and iterat
 - Python reference docs explain the current service modules and common usage flow.
 - Active plans reflect that mobile work is intentionally deferred.
 - Standard tests and docs validation pass.
+
+## Completion Note
+
+The Python reference now has deterministic fixtures for the stabilized service surface, including happy-path record/search/context/delete/audit behavior, lifecycle explainability for correction and quarantine, and structured service error contracts. Mobile implementation remains deferred until a separate Stage 2 execution plan is accepted.

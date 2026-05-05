@@ -1,0 +1,139 @@
+{
+  "correction": {
+    "corrected_event_id": "event-2",
+    "corrected_explanation": {
+      "event_id": "event-2",
+      "lifecycle": {
+        "delete_reason": null,
+        "deleted_at": null,
+        "state": "active"
+      },
+      "lifecycle_explanation": {
+        "reason": "corrects previous memory",
+        "related_event_ids": [
+          "event-1"
+        ],
+        "state": "active"
+      },
+      "lineage": {
+        "derived_from": [],
+        "parents": [
+          "event-1"
+        ],
+        "supersedes": [
+          "event-1"
+        ]
+      },
+      "memory_layer": "episodic",
+      "privacy": {
+        "allowed_scopes": [
+          "system_assistant"
+        ],
+        "level": "personal",
+        "processing_policy": "client_encrypted_sync"
+      },
+      "quality": {
+        "confidence": 0.9,
+        "freshness_half_life_days": 30,
+        "importance": 0.5
+      },
+      "source": {
+        "actor": "user",
+        "app": "system_assistant",
+        "attribution": "user_stated",
+        "modality": [
+          "text"
+        ]
+      }
+    },
+    "original_event_id": "event-1",
+    "original_explanation": {
+      "event_id": "event-1",
+      "lifecycle": {
+        "delete_reason": null,
+        "deleted_at": null,
+        "state": "superseded"
+      },
+      "lifecycle_explanation": {
+        "reason": "superseded by correction",
+        "related_event_ids": [
+          "event-2"
+        ],
+        "state": "superseded"
+      },
+      "lineage": {
+        "derived_from": [],
+        "parents": [],
+        "supersedes": []
+      },
+      "memory_layer": "episodic",
+      "privacy": {
+        "allowed_scopes": [
+          "system_assistant"
+        ],
+        "level": "personal",
+        "processing_policy": "client_encrypted_sync"
+      },
+      "quality": {
+        "confidence": 0.9,
+        "freshness_half_life_days": 30,
+        "importance": 0.5
+      },
+      "source": {
+        "actor": "user",
+        "app": "system_assistant",
+        "attribution": "user_stated",
+        "modality": [
+          "text"
+        ]
+      }
+    }
+  },
+  "quarantine": {
+    "active_event_id": "event-1",
+    "quarantined_event_id": "event-2",
+    "quarantined_explanation": {
+      "event_id": "event-2",
+      "lifecycle": {
+        "delete_reason": null,
+        "deleted_at": null,
+        "state": "quarantined"
+      },
+      "lifecycle_explanation": {
+        "reason": "contradicts active memory",
+        "related_event_ids": [
+          "event-1"
+        ],
+        "state": "quarantined"
+      },
+      "lineage": {
+        "derived_from": [],
+        "parents": [
+          "event-1"
+        ],
+        "supersedes": []
+      },
+      "memory_layer": "episodic",
+      "privacy": {
+        "allowed_scopes": [
+          "system_assistant"
+        ],
+        "level": "personal",
+        "processing_policy": "client_encrypted_sync"
+      },
+      "quality": {
+        "confidence": 0.9,
+        "freshness_half_life_days": 30,
+        "importance": 0.5
+      },
+      "source": {
+        "actor": "user",
+        "app": "system_assistant",
+        "attribution": "user_stated",
+        "modality": [
+          "text"
+        ]
+      }
+    }
+  }
+}

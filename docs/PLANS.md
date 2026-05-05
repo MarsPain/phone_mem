@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Python reference maturation](exec-plans/active/python-reference-maturation.md): current focus for learning, exercising, and improving the Python Personal Memory Service before mobile implementation resumes.
+- No active execution plan. Mobile implementation remains deferred until a separate Stage 2 plan is accepted.
 
 ## Completed
 
@@ -18,6 +18,7 @@
 - [002 Storage, audit, and governance](exec-plans/completed/2026-05-04-002-storage-audit-governance.md)
 - [003 Retrieval and context assembly](exec-plans/completed/2026-05-04-003-retrieval-context-assembly.md)
 - [004 Service API and lifecycle tests](exec-plans/completed/2026-05-04-004-service-api-lifecycle-tests.md)
+- [Python reference maturation](exec-plans/completed/2026-05-05-python-reference-maturation.md): completed the reference usage, lifecycle, retrieval selector, file-backed SQLite, service error, explainability, and mobile contract fixture maturation track.
 
 ## Tech Debt
 

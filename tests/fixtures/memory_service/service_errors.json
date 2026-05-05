@@ -1,0 +1,26 @@
+{
+  "not_found": {
+    "affected_event_ids": [
+      "missing-event"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": "memory event not found",
+    "event_id": "missing-event",
+    "message": "read failed for calendar_agent: memory event not found",
+    "operation": "read",
+    "selector": null,
+    "type": "not_found"
+  },
+  "permission_denied": {
+    "affected_event_ids": [
+      "event-1"
+    ],
+    "caller": "calendar_agent",
+    "denial_reason": "no active grant matched",
+    "event_id": null,
+    "message": "write denied for calendar_agent: no active grant matched",
+    "operation": "write",
+    "selector": null,
+    "type": "permission_denied"
+  }
+}

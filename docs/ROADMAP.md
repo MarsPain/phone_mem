@@ -21,14 +21,14 @@ Stage 1 runs on the development machine as a Python reference implementation. It
 
 Status: completed on 2026-05-04 as the local Python reference core.
 
-## Current Engineering Track: Python Reference Maturation
+## Recently Completed Track: Python Reference Maturation
 
 - Improve service API ergonomics and caller-facing failure messages.
 - Expand lifecycle behavior for rejection, quarantine review, correction explainability, and contradiction handling.
 - Add retrieval selector examples and tests.
 - Keep the Python reference as the executable oracle for future mobile parity.
 
-Status: active. Tracked by [PLANS.md](PLANS.md) and [exec-plans/active/python-reference-maturation.md](exec-plans/active/python-reference-maturation.md).
+Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans/completed/2026-05-05-python-reference-maturation.md](exec-plans/completed/2026-05-05-python-reference-maturation.md). There is currently no active execution plan.
 
 ## Stage 2: Mobile Runtime Prototype
 
@@ -38,7 +38,7 @@ Status: active. Tracked by [PLANS.md](PLANS.md) and [exec-plans/active/python-re
 - Governance, audit, correction, deletion, retrieval, and context assembly flows exposed through mobile UI.
 - Contract tests or shared fixtures to keep mobile behavior aligned with the Python reference.
 
-Status: deferred planning. Stage 2 has a documented `mobile/` boundary and Python-backed contract fixtures, but implementation work remains parked until the Python reference API is mature enough to mirror. The deferred plan is tracked in [exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
+Status: deferred planning. Stage 2 has a documented `mobile/` boundary and Python-backed contract fixtures, but implementation work remains parked until a separate Stage 2 execution plan is accepted. The deferred plan is tracked in [exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
 
 ## Stage 3: Retrieval, Context, And Semantic Layer
 

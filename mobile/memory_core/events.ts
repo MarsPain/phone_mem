@@ -43,3 +43,32 @@ export interface MemoryEvent {
   lineage: { parents: string[]; derived_from: string[]; supersedes: string[] };
   lifecycle: { state: LifecycleState; deleted_at: string | null; delete_reason: string | null };
 }
+
+export interface MemorySelector {
+  event_ids?: string[];
+  app?: string;
+  entities?: string[];
+  topics?: string[];
+  memory_layers?: MemoryLayer[];
+  privacy_levels?: PrivacyLevel[];
+  lifecycle_states?: LifecycleState[];
+  time_start?: string;
+  time_end?: string;
+}
+
+export interface LifecycleExplanation {
+  state: LifecycleState;
+  reason: string;
+  related_event_ids: string[];
+}
+
+export interface MemoryExplanation {
+  event_id: string;
+  source: MemoryEvent["source"];
+  memory_layer: MemoryLayer;
+  privacy: MemoryEvent["privacy"];
+  quality: MemoryEvent["quality"];
+  lineage: MemoryEvent["lineage"];
+  lifecycle: MemoryEvent["lifecycle"];
+  lifecycle_explanation: LifecycleExplanation;
+}

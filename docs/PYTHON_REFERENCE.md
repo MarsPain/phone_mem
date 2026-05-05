@@ -208,6 +208,16 @@ The lifecycle explanation contains:
 
 Rejected writes are not persisted as memory events. They are represented by denied audit records and `MemoryPermissionDenied`.
 
+## Mobile Contract Fixtures
+
+The Python reference is also the executable oracle for future mobile TypeScript behavior. Shared contract fixtures live under `tests/fixtures/memory_service/` and are validated by:
+
+```bash
+uv run python -m unittest tests.test_stage2_mobile_contract_fixtures
+```
+
+Those fixtures cover canonical events, permission grants, retrieval results, context bundles, tombstones, audit records, lifecycle explanations for correction and quarantine, and structured service errors for permission denial and missing events.
+
 ## Iteration Priorities
 
 Focus Python maturation work on behavior that improves the reference oracle:
@@ -217,7 +227,6 @@ Focus Python maturation work on behavior that improves the reference oracle:
 - persistent file-backed SQLite usage examples;
 - stronger lifecycle rules for correction, contradiction, rejection, and quarantine;
 - better retrieval scoring and query selectors while preserving permission-before-ranking;
-- fixture generation for cross-runtime contracts only after Python behavior stabilizes;
 - tests for every behavior change.
 
 Do not resume mobile implementation until the Python API feels stable enough to mirror.

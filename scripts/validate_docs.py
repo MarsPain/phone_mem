@@ -121,7 +121,12 @@ def validate_root_maps(errors: list[str]) -> None:
 def validate_plan_buckets(errors: list[str]) -> None:
     for bucket in ["active", "completed", "tech-debt"]:
         bucket_path = ROOT / "docs" / "exec-plans" / bucket
-        plans = list(bucket_path.glob("*.md")) if bucket_path.exists() else []
+        if not bucket_path.exists():
+            errors.append(f"Missing plan bucket: docs/exec-plans/{bucket}")
+            continue
+        if bucket == "active":
+            continue
+        plans = list(bucket_path.glob("*.md"))
         if not plans:
             errors.append(f"Plan bucket has no plans: docs/exec-plans/{bucket}")
 

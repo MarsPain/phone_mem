@@ -13,4 +13,4 @@ Stage 2 mirrors the completed Python reference Personal Memory Service as an app
 
 ## Contract Source
 
-The Python reference under `phone_mem/` remains the executable oracle for Stage 2. Shared fixtures live in `tests/fixtures/memory_service/` and define the cross-runtime behavior that TypeScript implementations must preserve.
+The Python reference under `phone_mem/` remains the executable oracle for Stage 2. Shared fixtures live in `tests/fixtures/memory_service/` and define the cross-runtime behavior that TypeScript implementations must preserve, including lifecycle explanations and structured service error payloads.

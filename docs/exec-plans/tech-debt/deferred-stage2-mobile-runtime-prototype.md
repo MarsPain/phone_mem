@@ -41,7 +41,7 @@ Create the first mobile-runtime prototype plan that mirrors the completed Python
 
 - [x] Create `mobile/README.md` that states Stage 2 is an app-internal local service prototype and links back to the Python reference.
 - [x] Create `mobile/memory_core/`, `mobile/governance/`, `mobile/storage/`, `mobile/retrieval/`, `mobile/context/`, and `mobile/service/` package folders with TypeScript boundary files.
-- [x] Add shared contract fixtures under `tests/fixtures/memory_service/` for canonical event JSON, permission grants, search results, context bundles, deletion tombstones, and audit records.
+- [x] Add shared contract fixtures under `tests/fixtures/memory_service/` for canonical event JSON, permission grants, search results, context bundles, deletion tombstones, audit records, lifecycle explanations, and service errors.
 - [x] Add a Python fixture validation test that proves current reference service output can generate or consume the shared fixtures.
 5. Add TypeScript project metadata only after selecting the minimal toolchain for tests and formatting.
 6. Implement TypeScript value models and contract tests before storage or UI work.
@@ -52,7 +52,7 @@ Create the first mobile-runtime prototype plan that mirrors the completed Python
 ## Implementation Notes
 
 - `mobile/` now contains TypeScript boundary files only. No npm, React Native, SQLite, or TypeScript test toolchain has been introduced.
-- `tests/fixtures/memory_service/` contains the initial Python-to-TypeScript contract fixtures generated from the reference `PersonalMemoryService`.
+- `tests/fixtures/memory_service/` contains the Python-to-TypeScript contract fixtures generated from the reference `PersonalMemoryService`, including lifecycle explanation and structured error payloads added after the Python API stabilized.
 - `tests/test_stage2_mobile_contract_fixtures.py` validates the mobile boundary and keeps the fixture JSON aligned with deterministic Python reference output.
 
 ## Validation
