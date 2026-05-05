@@ -27,6 +27,36 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertEqual(metadata.json()["model"], state.model)
         self.assertEqual(metadata.json()["provider_status"], "fake")
 
+    def test_html_renders_turn_debugger_tabs(self) -> None:
+        state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
+        self.addCleanup(state.close)
+
+        with TestClient(create_app(state)) as client:
+            html = client.get("/")
+
+        self.assertEqual(html.status_code, 200)
+        self.assertIn('role="tablist"', html.text)
+        self.assertIn('data-debug-tab="turns"', html.text)
+        self.assertIn('data-debug-tab="audit"', html.text)
+        self.assertIn('data-debug-tab="metrics"', html.text)
+        self.assertIn('id="debug-panel-turns"', html.text)
+        self.assertIn('id="debug-panel-audit"', html.text)
+        self.assertIn('id="debug-panel-metrics"', html.text)
+
+    def test_html_renders_turn_debugger_help(self) -> None:
+        state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
+        self.addCleanup(state.close)
+
+        with TestClient(create_app(state)) as client:
+            html = client.get("/")
+
+        self.assertEqual(html.status_code, 200)
+        self.assertIn('id="debug-help-toggle"', html.text)
+        self.assertIn('id="debug-help"', html.text)
+        self.assertIn("Turns shows each chat turn snapshot", html.text)
+        self.assertIn("Audit shows permissioned memory-service operations", html.text)
+        self.assertIn("Metrics shows aggregate service counters", html.text)
+
     def test_chat_route_returns_turn_debugger_payload_and_records_snapshot(self) -> None:
         state = self._state(
             FakeLLMClient(

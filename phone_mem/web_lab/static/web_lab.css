@@ -105,6 +105,12 @@ h2 {
   justify-content: space-between;
 }
 
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -145,6 +151,48 @@ button[type="button"] {
   color: #174ea6;
 }
 
+.debug-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.debug-tab {
+  min-height: 32px;
+  background: #eef3ff;
+  color: #174ea6;
+}
+
+.debug-tab.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.debug-panel {
+  flex: 1;
+}
+
+.debug-help {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.debug-help[hidden] {
+  display: none;
+}
+
+.debug-help p {
+  margin: 0;
+}
+
 .log,
 .output {
   min-height: 0;
@@ -179,17 +227,6 @@ button[type="button"] {
   line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-}
-
-.split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  min-height: 180px;
-}
-
-.split .output {
-  min-height: 180px;
 }
 
 .error {

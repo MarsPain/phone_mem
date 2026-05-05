@@ -58,13 +58,24 @@
       <section class="panel debugger-panel">
         <div class="panel-title">
           <h2>Turn Debugger</h2>
-          <button id="refresh-debugger" type="button">Refresh</button>
+          <div class="panel-actions">
+            <button id="debug-help-toggle" type="button" aria-expanded="false" aria-controls="debug-help">Help</button>
+            <button id="refresh-debugger" type="button">Refresh</button>
+          </div>
         </div>
-        <pre id="debug-output" class="output"></pre>
-        <div class="split">
-          <pre id="audit-output" class="output"></pre>
-          <pre id="metrics-output" class="output"></pre>
+        <div id="debug-help" class="debug-help" hidden>
+          <p>Turns shows each chat turn snapshot: user input, assistant text, evidence event IDs, memory context sent to the model, tool results, and errors.</p>
+          <p>Audit shows permissioned memory-service operations: who called the service, what operation ran, what scope was requested, affected event IDs, and whether it was allowed or denied.</p>
+          <p>Metrics shows aggregate service counters: retrieval reads, permission denials, writes, deletion tombstones, context builds, and latest context token budget usage.</p>
         </div>
+        <div class="debug-tabs" role="tablist" aria-label="Turn debugger views">
+          <button id="debug-tab-turns" class="debug-tab active" type="button" role="tab" aria-selected="true" aria-controls="debug-panel-turns" data-debug-tab="turns">Turns</button>
+          <button id="debug-tab-audit" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-audit" data-debug-tab="audit">Audit</button>
+          <button id="debug-tab-metrics" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-metrics" data-debug-tab="metrics">Metrics</button>
+        </div>
+        <pre id="debug-panel-turns" class="output debug-panel active" role="tabpanel" aria-labelledby="debug-tab-turns"></pre>
+        <pre id="debug-panel-audit" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-audit" hidden></pre>
+        <pre id="debug-panel-metrics" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-metrics" hidden></pre>
       </section>
     </main>
 

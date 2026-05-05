@@ -21,9 +21,30 @@ const refreshMemory = async () => {
 };
 
 const refreshDebugger = async () => {
-  setOutput("debug-output", await requestJson("/api/turns"));
-  setOutput("audit-output", await requestJson("/api/audit"));
-  setOutput("metrics-output", await requestJson("/api/metrics"));
+  setOutput("debug-panel-turns", await requestJson("/api/turns"));
+  setOutput("debug-panel-audit", await requestJson("/api/audit"));
+  setOutput("debug-panel-metrics", await requestJson("/api/metrics"));
+};
+
+const selectDebuggerTab = (selectedTab) => {
+  document.querySelectorAll("[data-debug-tab]").forEach((tab) => {
+    const isSelected = tab.dataset.debugTab === selectedTab;
+    tab.classList.toggle("active", isSelected);
+    tab.setAttribute("aria-selected", String(isSelected));
+  });
+  document.querySelectorAll(".debug-panel").forEach((panel) => {
+    const isSelected = panel.id === `debug-panel-${selectedTab}`;
+    panel.classList.toggle("active", isSelected);
+    panel.hidden = !isSelected;
+  });
+};
+
+const toggleDebuggerHelp = () => {
+  const help = document.getElementById("debug-help");
+  const toggle = document.getElementById("debug-help-toggle");
+  const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+  help.hidden = isExpanded;
+  toggle.setAttribute("aria-expanded", String(!isExpanded));
 };
 
 const addMessage = (role, text, className = "") => {
@@ -104,6 +125,10 @@ document.getElementById("delete-event").addEventListener("click", async () => {
 document.getElementById("refresh-memory").addEventListener("click", refreshMemory);
 document.getElementById("refresh-debugger").addEventListener("click", refreshDebugger);
 document.getElementById("refresh-chat").addEventListener("click", refreshDebugger);
+document.getElementById("debug-help-toggle").addEventListener("click", toggleDebuggerHelp);
+document.querySelectorAll("[data-debug-tab]").forEach((tab) => {
+  tab.addEventListener("click", () => selectDebuggerTab(tab.dataset.debugTab));
+});
 
 refreshMemory();
 refreshDebugger();
