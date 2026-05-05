@@ -69,6 +69,37 @@ The same flow is covered by:
 uv run python -m unittest tests.test_agent_memory_repl
 ```
 
+## LLM Agent Chat Demo
+
+Run the provider-backed Python Agent chat demo:
+
+```bash
+OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run python examples/llm_agent_chat.py
+```
+
+Optional environment variables:
+
+- `PHONE_MEM_LLM_MODEL`: model used for the chat request; defaults to `gpt-4.1` for local demos.
+- `PHONE_MEM_LLM_BASE_URL`: OpenAI-compatible base URL; defaults to `https://api.openai.com/v1`.
+
+The demo creates an in-memory service, grants `llm_memory_agent` scoped read, write, update, delete, and context-build access to `system_assistant` personal episodic memory, then runs chat turns through `phone_mem.agent_runtime.AgentRuntime`.
+
+The runtime path is intentionally separate from the memory core:
+
+- `phone_mem.agent_runtime.client`: provider-neutral request, response, message, and tool-call contracts.
+- `phone_mem.agent_runtime.tools`: governed memory tools backed only by `PersonalMemoryService`.
+- `phone_mem.agent_runtime.prompts`: prompt assembly that marks retrieved memory as data, not instruction.
+- `phone_mem.agent_runtime.runtime`: one-turn orchestration with optional memory tool execution.
+- `phone_mem.agent_runtime.openai_client`: OpenAI-compatible Chat Completions adapter using environment configuration.
+
+Default tests use `FakeLLMClient` or injected HTTP transports and do not call provider APIs:
+
+```bash
+uv run python -m unittest tests.test_agent_runtime_client tests.test_agent_runtime_tools tests.test_agent_runtime_prompts tests.test_agent_runtime tests.test_agent_runtime_openai_client tests.test_llm_agent_chat_example
+```
+
+The demo is the first real Agent experience for the Python reference. It is still a developer-machine runtime spike, not the production mobile runtime.
+
 ## Quick Walkthrough
 
 Run the lifecycle walkthrough:

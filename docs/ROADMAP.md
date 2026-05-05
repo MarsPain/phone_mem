@@ -38,7 +38,7 @@ Status: completed on 2026-05-05. Tracked by [PLANS.md](PLANS.md) and [exec-plans
 - Add a real-provider interactive chat demo while keeping default tests network-free.
 - Preserve the Personal Memory Service as provider-independent and permission-gated.
 
-Status: active planning and implementation track as of 2026-05-05. Tracked by [PLANS.md](PLANS.md), [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md), and [exec-plans/active/2026-05-05-python-llm-agent-runtime.md](exec-plans/active/2026-05-05-python-llm-agent-runtime.md).
+Status: active implementation track as of 2026-05-05. The first Python runtime modules, fake-client tests, OpenAI-compatible adapter, and `examples/llm_agent_chat.py` demo now exist. Tracked by [PLANS.md](PLANS.md), [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md), and [exec-plans/active/2026-05-05-python-llm-agent-runtime.md](exec-plans/active/2026-05-05-python-llm-agent-runtime.md).
 
 ## Stage 2: Mobile Runtime Prototype
 

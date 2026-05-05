@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Python LLM Agent Runtime](exec-plans/active/2026-05-05-python-llm-agent-runtime.md): Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs.
+- [Python LLM Agent Runtime](exec-plans/active/2026-05-05-python-llm-agent-runtime.md): Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs. Initial implementation exists under `phone_mem/agent_runtime/`.
 
 ## Completed
 

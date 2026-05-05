@@ -34,7 +34,7 @@ Use Python on the development machine to prove the real Agent loop before mobile
 - runtime orchestration over governed retrieval, context assembly, model calls, memory tools, and response evidence;
 - interactive chat example under `examples/`.
 
-This track may import the memory service, but the memory service must not import provider adapters. It is documented in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and tracked by [PLANS.md](PLANS.md).
+This track may import the memory service, but the memory service must not import provider adapters. The first implementation lives under `phone_mem/agent_runtime/` and is exercised by fake-client and injected-transport tests so default verification stays network-free. It is documented in [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md) and tracked by [PLANS.md](PLANS.md).
 
 ### Track 3: Real Mobile Runtime Prototype
 
@@ -68,6 +68,12 @@ If later stages require deeper platform integration, performance-sensitive or sy
 
 ```text
 phone_mem/
+├── agent_runtime/
+│   ├── client.py
+│   ├── openai_client.py
+│   ├── prompts.py
+│   ├── runtime.py
+│   └── tools.py
 ├── personal_memory_service/
 │   ├── events.py
 │   ├── constructor.py
@@ -84,9 +90,6 @@ phone_mem/
 │   ├── assembler.py
 │   ├── budgets.py
 │   └── snippets.py
-├── runtime_adapters/
-│   ├── base.py
-│   └── local_stub.py
 ├── app_gateway/
 │   ├── query.py
 │   ├── write.py

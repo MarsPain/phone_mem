@@ -12,6 +12,7 @@
 uv run python main.py
 uv run python examples/agent_memory_demo.py
 uv run python examples/agent_memory_repl.py
+OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run python examples/llm_agent_chat.py
 uv run python scripts/validate_docs.py
 uv run python -m unittest discover -s tests
 ```
@@ -29,6 +30,6 @@ uv run python -m unittest discover -s tests
 
 ## 当前阶段
 
-Stage 1 和 Python reference maturation track 已完成。`phone_mem/` 下的 Python 代码现在是未来移动端对齐的 executable oracle。当前 Stage 1.5 计划会新增独立的 `phone_mem.agent_runtime` 边界，用于真实 LLM API demo，同时保持 memory core 不依赖 provider。
+Stage 1 和 Python reference maturation track 已完成。`phone_mem/` 下的 Python 代码现在是未来移动端对齐的 executable oracle。当前 Stage 1.5 实现新增了独立的 `phone_mem.agent_runtime` 边界，用于真实 LLM API demo，同时保持 memory core 不依赖 provider。
 
 Stage 2 移动端实现仍处于 deferred 状态。仓库目前只有 TypeScript boundary files 和由 Python reference 支撑的 contract fixtures，还没有 React Native app、移动端 SQLite adapter 或 TypeScript 测试工具链。

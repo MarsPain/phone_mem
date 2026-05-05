@@ -44,20 +44,20 @@ Provider adapters must not import storage modules or query memory directly. Runt
 
 ## Steps
 
-- [ ] Create `phone_mem/agent_runtime/__init__.py` exporting the public runtime interfaces.
-- [ ] Create `phone_mem/agent_runtime/client.py` with provider-neutral request, response, message, and tool-call value objects.
-- [ ] Add `tests/test_agent_runtime_client.py` covering request construction, response parsing, and tool-call representation without importing provider SDKs.
-- [ ] Create `phone_mem/agent_runtime/tools.py` with `MemoryToolRegistry` methods for search, context build, remember, explain, correct, and delete.
-- [ ] Add `tests/test_agent_runtime_tools.py` proving each memory tool uses service permissions, writes audit records through the service, and preserves structured domain errors.
-- [ ] Create `phone_mem/agent_runtime/prompts.py` with system prompt assembly that treats retrieved memory as data and preserves source event IDs.
-- [ ] Add `tests/test_agent_runtime_prompts.py` covering instruction priority, citation metadata, and exclusion of unauthorized memory.
-- [ ] Create `phone_mem/agent_runtime/runtime.py` with one-turn orchestration over context assembly, fake-client model calls, memory tool execution, and final response shaping.
-- [ ] Add `tests/test_agent_runtime.py` covering a full deterministic chat turn with retrieved memory and a tool-writing turn that records a new memory.
-- [ ] Create `phone_mem/agent_runtime/openai_client.py` behind the `LLMClient` interface with environment-based configuration and clear missing-credential errors.
-- [ ] Add provider adapter tests that mock the SDK boundary and do not perform network calls.
-- [ ] Create `examples/llm_agent_chat.py` as the real-provider interactive demo.
-- [ ] Update `docs/PYTHON_REFERENCE.md` with setup, environment variables, fake-vs-real test policy, and example commands.
-- [ ] Update `README.md`, `README.zh-CN.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, and `docs/PLANS.md` as implementation status changes.
+- [x] Create `phone_mem/agent_runtime/__init__.py` exporting the public runtime interfaces.
+- [x] Create `phone_mem/agent_runtime/client.py` with provider-neutral request, response, message, and tool-call value objects.
+- [x] Add `tests/test_agent_runtime_client.py` covering request construction, response parsing, and tool-call representation without importing provider SDKs.
+- [x] Create `phone_mem/agent_runtime/tools.py` with `MemoryToolRegistry` methods for search, context build, remember, explain, correct, and delete.
+- [x] Add `tests/test_agent_runtime_tools.py` proving each memory tool uses service permissions, writes audit records through the service, and preserves structured domain errors.
+- [x] Create `phone_mem/agent_runtime/prompts.py` with system prompt assembly that treats retrieved memory as data and preserves source event IDs.
+- [x] Add `tests/test_agent_runtime_prompts.py` covering instruction priority, citation metadata, and exclusion of unauthorized memory.
+- [x] Create `phone_mem/agent_runtime/runtime.py` with one-turn orchestration over context assembly, fake-client model calls, memory tool execution, and final response shaping.
+- [x] Add `tests/test_agent_runtime.py` covering a full deterministic chat turn with retrieved memory and a tool-writing turn that records a new memory.
+- [x] Create `phone_mem/agent_runtime/openai_client.py` behind the `LLMClient` interface with environment-based configuration and clear missing-credential errors.
+- [x] Add provider adapter tests that mock the SDK boundary and do not perform network calls.
+- [x] Create `examples/llm_agent_chat.py` as the real-provider interactive demo.
+- [x] Update `docs/PYTHON_REFERENCE.md` with setup, environment variables, fake-vs-real test policy, and example commands.
+- [x] Update `README.md`, `README.zh-CN.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, and `docs/PLANS.md` as implementation status changes.
 
 ## Validation
 

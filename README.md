@@ -12,6 +12,7 @@ The repository now contains a completed deterministic Python reference Personal 
 uv run python main.py
 uv run python examples/agent_memory_demo.py
 uv run python examples/agent_memory_repl.py
+OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run python examples/llm_agent_chat.py
 uv run python scripts/validate_docs.py
 uv run python -m unittest discover -s tests
 ```
@@ -30,6 +31,6 @@ uv run python -m unittest discover -s tests
 
 ## Current Stage
 
-Stage 1 and the Python reference maturation track are complete. The Python code under `phone_mem/` is now the executable oracle for future mobile parity. The active Stage 1.5 plan adds a separate `phone_mem.agent_runtime` boundary for real LLM API demos while keeping the memory core provider-independent.
+Stage 1 and the Python reference maturation track are complete. The Python code under `phone_mem/` is now the executable oracle for future mobile parity. The active Stage 1.5 implementation adds a separate `phone_mem.agent_runtime` boundary for real LLM API demos while keeping the memory core provider-independent.
 
 Stage 2 mobile implementation is deferred. The repository currently has TypeScript boundary files and Python-backed contract fixtures, but no React Native app, mobile SQLite adapter, or TypeScript test toolchain yet.

@@ -1,0 +1,98 @@
+from __future__ import annotations
+
+from datetime import UTC, datetime
+import os
+from pathlib import Path
+import sys
+from typing import Protocol, TextIO
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from phone_mem.agent_runtime.openai_client import OpenAICompatibleClient
+from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
+from phone_mem.agent_runtime.tools import MemoryToolRegistry
+from phone_mem.governance.permissions import PermissionScope
+from phone_mem.personal_memory_service.events import (
+    AuditOperation,
+    MemoryLayer,
+    PrivacyLevel,
+)
+from phone_mem.personal_memory_service.service import PersonalMemoryService
+
+
+CALLER = "llm_memory_agent"
+SOURCE_APP = "system_assistant"
+
+
+class RuntimeLike(Protocol):
+    def run_turn(self, user_message: str) -> AgentTurnResponse:
+        raise NotImplementedError
+
+
+def run_chat(
+    *,
+    runtime: RuntimeLike | None = None,
+    input_stream: TextIO | None = None,
+    output_stream: TextIO | None = None,
+) -> None:
+    resolved_input = input_stream or sys.stdin
+    resolved_output = output_stream or sys.stdout
+    owned_service: PersonalMemoryService | None = None
+    resolved_runtime = runtime
+    if resolved_runtime is None:
+        owned_service = _service_with_grant()
+        resolved_runtime = _runtime_from_env(owned_service)
+
+    try:
+        print("Phone Memory LLM Agent", file=resolved_output)
+        print("Type 'quit' to exit.", file=resolved_output)
+        for raw_line in resolved_input:
+            user_message = raw_line.strip()
+            if not user_message:
+                continue
+            if user_message in {"quit", "exit"}:
+                print("bye", file=resolved_output)
+                return
+            response = resolved_runtime.run_turn(user_message)
+            print(response.text, file=resolved_output)
+            print(f"evidence: {response.evidence_event_ids}", file=resolved_output)
+    finally:
+        if owned_service is not None:
+            owned_service.close()
+
+
+def _runtime_from_env(service: PersonalMemoryService) -> AgentRuntime:
+    model = os.environ.get("PHONE_MEM_LLM_MODEL", "gpt-4.1")
+    return AgentRuntime(
+        client=OpenAICompatibleClient.from_env(),
+        model=model,
+        tools=MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP),
+    )
+
+
+def _service_with_grant() -> PersonalMemoryService:
+    now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
+    service = PersonalMemoryService.in_memory(clock=lambda: now)
+    service.grant(
+        CALLER,
+        PermissionScope(
+            operations=[
+                AuditOperation.WRITE,
+                AuditOperation.READ,
+                AuditOperation.UPDATE,
+                AuditOperation.DELETE,
+                AuditOperation.CONTEXT_BUILD,
+            ],
+            apps=[SOURCE_APP],
+            privacy_levels=[PrivacyLevel.PERSONAL],
+            memory_layers=[MemoryLayer.EPISODIC],
+        ),
+        duration_seconds=3_600,
+    )
+    return service
+
+
+if __name__ == "__main__":
+    run_chat()
