@@ -1,6 +1,6 @@
 # Python Reference Guide
 
-This guide is the practical entrypoint for using and iterating on the current Python Personal Memory Service before returning to mobile runtime work.
+This guide is the practical entrypoint for using and maintaining the completed Python Personal Memory Service reference.
 
 ## What Exists
 
@@ -15,6 +15,57 @@ The Python reference implements a local-only memory service under `phone_mem/`:
 - `governance`: permission grants, audit records, and memory views.
 
 The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime.
+
+## Product-Style Demo
+
+Run the product-style memory Agent demo:
+
+```bash
+uv run python examples/agent_memory_demo.py
+```
+
+The demo prints a readable story for the current reference behavior:
+
+1. grant a planner Agent scoped memory access;
+2. record a user planning preference;
+3. retrieve that memory for a later planning task;
+4. build a context bundle from the retrieved memory;
+5. correct the memory and explain the lifecycle transition;
+6. delete the corrected memory and confirm later retrieval returns nothing.
+
+The same flow is covered by:
+
+```bash
+uv run python -m unittest tests.test_agent_memory_demo
+```
+
+## Interactive REPL Demo
+
+Run the command-based interactive memory Agent demo:
+
+```bash
+uv run python examples/agent_memory_repl.py
+```
+
+The REPL keeps one in-memory service alive for the session. It supports:
+
+- `remember <memory text>`
+- `search <query>`
+- `context <query>`
+- `correct <event-id> <new memory text>`
+- `explain <event-id>`
+- `delete <event-id> [reason]`
+- `audit`
+- `metrics`
+- `quit`
+
+This is a command interface over the reference service, not an LLM chat runtime. It is meant to make memory lifecycle behavior easy to feel in one terminal session.
+
+The same flow is covered by:
+
+```bash
+uv run python -m unittest tests.test_agent_memory_repl
+```
 
 ## Quick Walkthrough
 
@@ -218,15 +269,14 @@ uv run python -m unittest tests.test_stage2_mobile_contract_fixtures
 
 Those fixtures cover canonical events, permission grants, retrieval results, context bundles, tombstones, audit records, lifecycle explanations for correction and quarantine, and structured service errors for permission denial and missing events.
 
-## Iteration Priorities
+## Maintenance Guidance
 
-Focus Python maturation work on behavior that improves the reference oracle:
+The Python reference is no longer the active product implementation track. Keep future Python changes scoped to behavior that preserves or clarifies the reference oracle:
 
-- richer examples and usage notes;
-- clearer error types and service API ergonomics;
-- persistent file-backed SQLite usage examples;
-- stronger lifecycle rules for correction, contradiction, rejection, and quarantine;
-- better retrieval scoring and query selectors while preserving permission-before-ranking;
+- bug fixes in reference behavior;
+- contract fixture updates needed for mobile parity;
+- small documentation or example clarifications;
+- lifecycle, retrieval, permission, or service-error clarifications discovered while implementing Stage 2;
 - tests for every behavior change.
 
-Do not resume mobile implementation until the Python API feels stable enough to mirror.
+Broader product implementation should move to Stage 2 only after a separate mobile execution plan is accepted.

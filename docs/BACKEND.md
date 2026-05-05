@@ -2,17 +2,17 @@
 
 ## Current State
 
-The repository currently contains only a placeholder Python entrypoint. The first implementation track should grow around a deterministic Python reference implementation of the Personal Memory Service before introducing model-runtime integrations, cloud sync, or third-party SDK access.
+The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification.
 
 The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
 
-The current Python reference covers the Stage 1 memory core: canonical event construction, SQLite persistence, scoped permissions, audit records, governed retrieval, runtime-neutral context assembly, correction, deletion tombstones, and MVP metrics hooks. It remains a reference implementation rather than the production mobile runtime.
+The Python reference covers the Stage 1 memory core and the completed maturation track: canonical event construction, SQLite persistence, scoped permissions, audit records, governed retrieval, runtime-neutral context assembly, correction, deletion tombstones, lifecycle explanations, structured service errors, mobile contract fixtures, and MVP metrics hooks. It remains a reference implementation rather than the production mobile runtime.
 
 ## Runtime Tracks
 
 ### Track 1: Python Reference Implementation
 
-Use Python on the development machine as the executable specification for the memory core:
+Use Python on the development machine as the completed executable specification for the memory core:
 
 - canonical event model;
 - local SQLite persistence;
@@ -22,7 +22,7 @@ Use Python on the development machine as the executable specification for the me
 - context bundle assembly;
 - deterministic lifecycle tests.
 
-This track should optimize for correctness, testability, and architecture feedback. It should not depend on iOS or Android runtime assumptions.
+This track is complete as an active implementation track. Continue to keep it correct, deterministic, and aligned with contract fixtures when bugs or mobile parity questions reveal a necessary reference change. It should not depend on iOS or Android runtime assumptions.
 
 ### Track 2: Real Mobile Runtime Prototype
 
@@ -86,7 +86,7 @@ phone_mem/
 
 ## Implementation Rules
 
-- Start with SQLite and deterministic Python interfaces before adding vector database or cloud dependencies.
+- Keep SQLite and deterministic Python interfaces as the reference baseline before adding vector database or cloud dependencies in later tracks.
 - Treat Python as the reference implementation and test oracle, not the final phone runtime.
 - Keep Python and TypeScript API contracts aligned around the same domain operations: record, search, explain, correct, delete, grant, revoke, audit, and build context.
 - Avoid Python-only architectural assumptions that would fight iOS or Android app lifecycles.

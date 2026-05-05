@@ -6,7 +6,7 @@
 - [DATA.md](DATA.md): memory event schema, retention, sync, and lifecycle.
 - [SECURITY.md](SECURITY.md): privacy, trust boundaries, access control, and abuse controls.
 - [BACKEND.md](BACKEND.md): implementation and runtime strategy for the Python reference core and future mobile runtime.
-- [PYTHON_REFERENCE.md](PYTHON_REFERENCE.md): practical guide for using and iterating on the Python reference service.
+- [PYTHON_REFERENCE.md](PYTHON_REFERENCE.md): practical guide for using and maintaining the completed Python reference service.
 - [PRODUCT_SENSE.md](PRODUCT_SENSE.md): user value, risks, and product principles.
 - [ROADMAP.md](ROADMAP.md): staged delivery plan.
 - [PLANS.md](PLANS.md): execution plan index.

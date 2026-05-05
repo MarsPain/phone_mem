@@ -4,7 +4,7 @@ Status: deferred
 Type: umbrella
 Deferred: 2026-05-04
 
-This plan is intentionally deferred until the Python reference API is mature enough to mirror in mobile TypeScript.
+This plan is intentionally deferred until a separate Stage 2 execution plan is accepted. The Python reference API and shared fixtures are now stable enough to serve as the mobile TypeScript contract baseline.
 
 ## Goal
 
@@ -67,4 +67,4 @@ Create the first mobile-runtime prototype plan that mirrors the completed Python
 - Shared fixtures define the Python-to-TypeScript contract for memory service behavior.
 - No mobile code path bypasses service-level permissions, audit, lifecycle, retrieval, or context assembly boundaries.
 - The first TypeScript implementation target is local and deterministic before SQLite, React Native UI, or model runtime integration.
-- Standard Python validation commands pass while Stage 2 planning docs are active.
+- Standard Python validation commands pass while Stage 2 planning docs remain deferred.

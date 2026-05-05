@@ -23,4 +23,4 @@
 ## Tech Debt
 
 - [Open architecture risks](exec-plans/tech-debt/open-architecture-risks.md)
-- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until the Python reference API is mature enough to mirror.
+- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until a separate Stage 2 execution plan is accepted.

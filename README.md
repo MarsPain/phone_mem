@@ -4,12 +4,14 @@ Language: English | [Chinese](README.zh-CN.md)
 
 `phone-mem` is the architecture and prototype repository for smartphone Agent Memory. The project goal is to build a local-first memory system on the phone that manages user memory with an agentic lifecycle: it understands and maintains long-term preferences, events, context, and operating habits from smartphone scenarios, then exposes governed memory capabilities to broader Agent applications.
 
-The current focus is to turn the source architecture proposal into executable development context: product goals, system boundaries, data model, safety constraints, SDK shape, and staged delivery.
+The repository now contains a completed deterministic Python reference Personal Memory Service plus architecture context for the future mobile runtime. There is no active execution plan; Stage 2 mobile implementation remains deferred until a separate plan is accepted.
 
 ## Quick Start
 
 ```bash
 uv run python main.py
+uv run python examples/agent_memory_demo.py
+uv run python examples/agent_memory_repl.py
 uv run python scripts/validate_docs.py
 uv run python -m unittest discover -s tests
 ```
@@ -27,4 +29,6 @@ uv run python -m unittest discover -s tests
 
 ## Current Stage
 
-Stage 1 is complete as a deterministic Python reference Personal Memory Service: canonical events, SQLite persistence, permission views, audit, deletion, governed retrieval, context assembly, lifecycle behavior, and MVP metrics hooks. The active focus is now Python reference maturation: learn the API, add examples, improve ergonomics, and stabilize behavior before resuming mobile implementation.
+Stage 1 and the Python reference maturation track are complete. The Python code under `phone_mem/` is now the executable oracle for future mobile parity: it should be maintained for fixes, contract fixtures, and small reference clarifications rather than treated as the active product implementation track.
+
+Stage 2 mobile implementation is deferred. The repository currently has TypeScript boundary files and Python-backed contract fixtures, but no React Native app, mobile SQLite adapter, or TypeScript test toolchain yet.
