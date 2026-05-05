@@ -8,7 +8,7 @@
 
 ## Active
 
-No active execution plan is currently accepted.
+- [Python Web Lab](exec-plans/active/2026-05-05-python-web-lab.md): active Stage 1.6 local developer Web Lab for real Agent chat, memory inspection, turn debugging, and file-backed SQLite exploration before mobile runtime work resumes.
 
 ## Completed
 
