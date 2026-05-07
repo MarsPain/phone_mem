@@ -154,6 +154,31 @@ class LocalMemoryRetrieverTest(unittest.TestCase):
         self.assertEqual(results[0].snippet.confidence, stronger.quality.confidence)
         self.assertEqual(results[0].explanation["matched_terms"], ["morning", "planning"])
 
+    def test_default_query_expansion_matches_basic_preference_synonyms(self) -> None:
+        store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
+        event = replace(
+            make_event("event-1", entity="planning"),
+            semantic_description="User prefers morning planning sessions.",
+        )
+        store.insert_event(event)
+        permissions.grant(
+            "calendar_agent",
+            PermissionScope(operations=[AuditOperation.READ], entities=["planning"]),
+            duration_seconds=60,
+        )
+        retriever = LocalMemoryRetriever(
+            store=store,
+            projector=MemoryViewProjector(permissions),
+            audit_log=audit,
+            clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC),
+        )
+
+        results = retriever.search("likes morning planning", caller="calendar_agent")
+
+        self.assertEqual([result.event_id for result in results], ["event-1"])
+        self.assertIn("prefers", results[0].explanation["expanded_terms"])
+
     def test_chinese_query_matches_chinese_memory_text(self) -> None:
         store, permissions, audit = make_retrieval_stack()
         self.addCleanup(store.close)

@@ -16,6 +16,19 @@ from phone_mem.personal_memory_service.events import (
     MemorySelector,
 )
 
+DEFAULT_TERM_EXPANSIONS: dict[str, list[str]] = {
+    "like": ["prefers"],
+    "likes": ["prefers"],
+    "prefer": ["likes"],
+    "prefers": ["likes"],
+    "喜欢": ["prefers", "likes"],
+    "偏好": ["prefers", "likes"],
+    "早上": ["morning"],
+    "上午": ["morning"],
+    "下午": ["afternoon"],
+    "晚上": ["evening"],
+}
+
 
 @dataclass(frozen=True)
 class MemorySnippet:
@@ -108,10 +121,12 @@ class LocalMemoryRetriever:
             )
 
     def _score_event(self, query: str, event: MemoryEvent) -> RetrievalResult | None:
-        query_terms = self._terms(query)
+        base_query_terms = self._terms(query)
+        query_terms = self._expanded_terms(base_query_terms)
         event_terms = self._event_terms(event)
         matched_terms = [term for term in query_terms if term in event_terms]
         entity_matches = [entity for entity in event.entities if entity.lower() in query_terms]
+        expanded_terms = [term for term in query_terms if term not in base_query_terms]
         lexical_score = sum(event_terms[term] for term in matched_terms)
         entity_score = len(entity_matches)
         if lexical_score == 0 and entity_score == 0:
@@ -132,6 +147,7 @@ class LocalMemoryRetriever:
             explanation={
                 "matched_terms": matched_terms,
                 "matched_entities": entity_matches,
+                "expanded_terms": expanded_terms,
                 "lexical_score": lexical_score,
                 "recency_score": recency_score,
             },
@@ -168,6 +184,16 @@ class LocalMemoryRetriever:
                 continue
             terms.extend(self._cjk_ngrams(token))
         return terms
+
+    def _expanded_terms(self, terms: list[str]) -> list[str]:
+        expanded: list[str] = []
+        for term in terms:
+            if term not in expanded:
+                expanded.append(term)
+            for synonym in DEFAULT_TERM_EXPANSIONS.get(term, []):
+                if synonym not in expanded:
+                    expanded.append(synonym)
+        return expanded
 
     def _cjk_ngrams(self, text: str) -> list[str]:
         grams: list[str] = []

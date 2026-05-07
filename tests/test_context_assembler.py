@@ -6,6 +6,7 @@ import unittest
 
 from phone_mem.context.assembler import ContextAssembler
 from phone_mem.context.budgets import ContextBudget
+from phone_mem.context.token_counter import ConservativeTokenCounter
 from phone_mem.governance.audit import AuditLog, AuditSelector
 from phone_mem.personal_memory_service.events import AuditOperation
 from phone_mem.personal_memory_service.retrieval import MemorySnippet, RetrievalResult
@@ -65,11 +66,37 @@ class ContextAssemblerTest(unittest.TestCase):
         bundle = assembler.build_context(
             results,
             task={"id": "task-1"},
-            budget=ContextBudget(max_tokens=35, safety_reserve_tokens=10, output_reserve_tokens=20),
+            budget=ContextBudget(max_tokens=45, safety_reserve_tokens=10, output_reserve_tokens=20),
             caller="calendar_agent",
         )
 
         self.assertEqual([snippet.event_id for snippet in bundle.snippets], ["event-1"])
+        self.assertEqual(bundle.omitted_memory, [{"event_id": "event-2", "reason": "budget_exhausted"}])
+
+    def test_default_token_counter_counts_cjk_text_conservatively(self) -> None:
+        counter = ConservativeTokenCounter()
+
+        self.assertGreater(counter.count("用户喜欢早上9点喝咖啡。"), 0)
+
+    def test_build_context_accepts_injected_token_counter(self) -> None:
+        class FixedTokenCounter:
+            def count(self, text: str) -> int:
+                return 4 if "small" in text else 100
+
+        assembler = ContextAssembler(token_counter=FixedTokenCounter())
+
+        bundle = assembler.build_context(
+            [
+                make_result("event-1", "small memory", score=20.0),
+                make_result("event-2", "large memory", score=10.0),
+            ],
+            task={"id": "task-1"},
+            budget=ContextBudget(max_tokens=14, safety_reserve_tokens=5, output_reserve_tokens=5),
+            caller="calendar_agent",
+        )
+
+        self.assertEqual([snippet.event_id for snippet in bundle.snippets], ["event-1"])
+        self.assertEqual(bundle.token_budget.used_tokens, 4)
         self.assertEqual(bundle.omitted_memory, [{"event_id": "event-2", "reason": "budget_exhausted"}])
 
     def test_context_build_can_write_audit_record(self) -> None:

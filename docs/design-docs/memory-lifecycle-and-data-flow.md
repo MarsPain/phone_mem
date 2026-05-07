@@ -59,6 +59,8 @@ Before storage, the service performs read-before-write checks:
 
 Conflict is a first-class lifecycle state. The service must not silently rewrite user memory.
 
+The Python reference narrows read-before-write validation through indexed selectors before applying duplicate or contradiction rules in memory. Duplicate checks use active events with the same source app, entity scope, and memory layer. Contradiction checks use active events with the same source app and overlapping entity scope, then apply the current deterministic preference parser across a small predicate family such as "prefers" and "likes." Later semantic contradiction detectors should keep the same candidate narrowing boundary.
+
 ## Lifecycle States
 
 - `active`: eligible for permission-filtered retrieval.
@@ -76,6 +78,8 @@ Deletion is selector-based and may target event ID, entity, time range, app sour
 - remove or invalidate derived projections;
 - hide affected memories from retrieval and context assembly;
 - queue later sync invalidation when cloud sync exists.
+
+Correction and deletion operations are transactional in the Python reference. A failed supersession update must not leave a new corrected event behind, and selector deletion must preflight permissions for every matched event before any lifecycle mutation or tombstone write occurs.
 
 ## Consolidation Boundary
 

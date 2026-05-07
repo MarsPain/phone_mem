@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from datetime import datetime
 import json
 import sqlite3
 from typing import Any
 
-from phone_mem.governance.permissions import PermissionGrant, PermissionScope
+from phone_mem.governance.models import PermissionGrant, PermissionScope
 from phone_mem.personal_memory_service.events import (
     Actor,
     Attribution,
@@ -42,9 +44,10 @@ class TombstoneRecord:
     selector: MemorySelector
 
 
-@dataclass(frozen=True)
+@dataclass
 class SQLiteMemoryStore:
     connection: sqlite3.Connection
+    _transaction_depth: int = 0
 
     @classmethod
     def connect(cls, path: str = ":memory:") -> SQLiteMemoryStore:
@@ -109,12 +112,57 @@ class SQLiteMemoryStore:
                 reason text not null,
                 selector_json text not null
             );
+
+            create table if not exists lineage_edges (
+                child_event_id text not null,
+                relation text not null,
+                parent_event_id text not null,
+                primary key (child_event_id, relation, parent_event_id),
+                foreign key (child_event_id) references memory_events(event_id)
+            );
+
+            create index if not exists idx_memory_events_lifecycle_app_layer_created
+            on memory_events(lifecycle_state, source_app, memory_layer, created_at);
+
+            create index if not exists idx_event_entities_entity_event
+            on event_entities(entity, event_id);
+
+            create index if not exists idx_permissions_caller_operation_expiry
+            on permissions(caller, operation, expires_at, revoked_at);
+
+            create index if not exists idx_audit_log_caller_operation_time
+            on audit_log(caller, operation, occurred_at);
+
+            create index if not exists idx_lineage_edges_parent_relation
+            on lineage_edges(parent_event_id, relation, child_event_id);
             """
         )
-        self.connection.commit()
+        self._commit_if_needed()
 
     def close(self) -> None:
         self.connection.close()
+
+    @contextmanager
+    def transaction(self) -> Iterator[None]:
+        if self._transaction_depth > 0:
+            self._transaction_depth += 1
+            try:
+                yield
+            finally:
+                self._transaction_depth -= 1
+            return
+
+        self.connection.execute("begin")
+        self._transaction_depth = 1
+        try:
+            yield
+        except Exception:
+            self.connection.rollback()
+            raise
+        else:
+            self.connection.commit()
+        finally:
+            self._transaction_depth = 0
 
     def insert_event(self, event: MemoryEvent) -> None:
         data = event.to_dict()
@@ -147,7 +195,8 @@ class SQLiteMemoryStore:
                 "insert or ignore into event_entities(event_id, entity) values (?, ?)",
                 (event.event_id, entity),
             )
-        self.connection.commit()
+        self._insert_lineage_edges(event)
+        self._commit_if_needed()
 
     def get_event(self, event_id: str) -> MemoryEvent | None:
         row = self.connection.execute(
@@ -215,7 +264,7 @@ class SQLiteMemoryStore:
                 event_id,
             ),
         )
-        self.connection.commit()
+        self._commit_if_needed()
 
     def write_tombstone(self, tombstone: TombstoneRecord) -> None:
         self.connection.execute(
@@ -232,7 +281,7 @@ class SQLiteMemoryStore:
                 json.dumps(tombstone.selector.to_dict(), sort_keys=True),
             ),
         )
-        self.connection.commit()
+        self._commit_if_needed()
 
     def list_tombstones(self) -> list[TombstoneRecord]:
         rows = self.connection.execute(
@@ -249,8 +298,20 @@ class SQLiteMemoryStore:
             for row in rows
         ]
 
+    def events_superseding(self, event_id: str) -> list[str]:
+        rows = self.connection.execute(
+            """
+            select child_event_id
+            from lineage_edges
+            where parent_event_id = ? and relation = 'supersedes'
+            order by child_event_id
+            """,
+            (event_id,),
+        ).fetchall()
+        return [row["child_event_id"] for row in rows]
+
     def insert_permission_grant(self, grant: PermissionGrant) -> None:
-        operation = grant.scope.operations[0].value if grant.scope.operations else "*"
+        operation = self._permission_operation_index_value(grant)
         self.connection.execute(
             """
             insert into permissions (
@@ -267,7 +328,7 @@ class SQLiteMemoryStore:
                 grant.revoked_at.isoformat() if grant.revoked_at is not None else None,
             ),
         )
-        self.connection.commit()
+        self._commit_if_needed()
 
     def update_permission_grant(self, grant: PermissionGrant) -> None:
         self.connection.execute(
@@ -284,7 +345,7 @@ class SQLiteMemoryStore:
                 grant.grant_id,
             ),
         )
-        self.connection.commit()
+        self._commit_if_needed()
 
     def list_permission_grants(self, caller: str | None = None) -> list[PermissionGrant]:
         if caller is None:
@@ -296,6 +357,29 @@ class SQLiteMemoryStore:
                 "select * from permissions where caller = ? order by granted_at, grant_id",
                 (caller,),
             ).fetchall()
+        return [self._permission_grant_from_row(row) for row in rows]
+
+    def list_active_permission_grants(
+        self,
+        caller: str,
+        operation: AuditOperation,
+        *,
+        at: datetime,
+    ) -> list[PermissionGrant]:
+        checked_at = at.isoformat()
+        rows = self.connection.execute(
+            """
+            select *
+            from permissions
+            where caller = ?
+              and (operation = ? or operation = '*')
+              and granted_at <= ?
+              and expires_at >= ?
+              and revoked_at is null
+            order by granted_at, grant_id
+            """,
+            (caller, operation.value, checked_at, checked_at),
+        ).fetchall()
         return [self._permission_grant_from_row(row) for row in rows]
 
     def insert_audit_record(self, record: AuditRecord) -> None:
@@ -317,7 +401,7 @@ class SQLiteMemoryStore:
                 record.denial_reason,
             ),
         )
-        self.connection.commit()
+        self._commit_if_needed()
 
     def query_audit_records(self, selector: object | None = None) -> list[AuditRecord]:
         sql = ["select * from audit_log"]
@@ -385,6 +469,31 @@ class SQLiteMemoryStore:
                 delete_reason=data["lifecycle"]["delete_reason"],
             ),
         )
+
+    def _commit_if_needed(self) -> None:
+        if self._transaction_depth == 0:
+            self.connection.commit()
+
+    def _insert_lineage_edges(self, event: MemoryEvent) -> None:
+        for relation, parent_event_ids in (
+            ("parent", event.lineage.parents),
+            ("derived_from", event.lineage.derived_from),
+            ("supersedes", event.lineage.supersedes),
+        ):
+            for parent_event_id in parent_event_ids:
+                self.connection.execute(
+                    """
+                    insert or ignore into lineage_edges (
+                        child_event_id, relation, parent_event_id
+                    ) values (?, ?, ?)
+                    """,
+                    (event.event_id, relation, parent_event_id),
+                )
+
+    def _permission_operation_index_value(self, grant: PermissionGrant) -> str:
+        if len(grant.scope.operations) == 1:
+            return grant.scope.operations[0].value
+        return "*"
 
     def _placeholders(self, values: list[object]) -> str:
         return ",".join("?" for _ in values)

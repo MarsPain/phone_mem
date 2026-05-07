@@ -24,6 +24,7 @@ Unauthorized memory must not be scored, ranked, embedded on demand, or leaked th
 The first implementation should use deterministic local retrieval:
 
 - normalized text matching over `semantic_description`, using English/digit terms and CJK character n-grams for deterministic multilingual recall;
+- deterministic query expansion for a small built-in preference vocabulary, with the retrieval explanation preserving expanded terms;
 - entity and source filters;
 - recency and confidence scoring;
 - lifecycle exclusion for deleted and superseded events;
@@ -58,6 +59,8 @@ The assembler reserves budget for:
 - retrieved memory snippets;
 - source and confidence metadata;
 - margin for tool calls and model output.
+
+Token counting is provider-adapter pluggable. When a runtime has an exact tokenizer or reliable usage accounting, the adapter should inject that counter. When only a remote model URL is known, the reference service uses a conservative fallback based on ASCII characters, non-ASCII characters, per-snippet overhead, and a safety multiplier. The fallback intentionally prefers omitting lower-ranked memory over risking context-window overflow.
 
 Priority order:
 

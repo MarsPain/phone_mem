@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 import sqlite3
 import unittest
 
+from phone_mem.governance.permissions import PermissionGrant, PermissionScope
 from phone_mem.personal_memory_service.events import (
     Actor,
     Attribution,
+    AuditOperation,
     EventSource,
     EventType,
     Lifecycle,
@@ -45,6 +48,25 @@ class SQLiteSchemaTest(unittest.TestCase):
         self.assertIn("permissions", table_names)
         self.assertIn("audit_log", table_names)
         self.assertIn("tombstones", table_names)
+        self.assertIn("lineage_edges", table_names)
+
+    def test_initialize_schema_creates_query_indexes(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
+        store.initialize_schema()
+
+        index_names = {
+            row[0]
+            for row in store.connection.execute(
+                "select name from sqlite_master where type = 'index'"
+            )
+        }
+
+        self.assertIn("idx_memory_events_lifecycle_app_layer_created", index_names)
+        self.assertIn("idx_event_entities_entity_event", index_names)
+        self.assertIn("idx_permissions_caller_operation_expiry", index_names)
+        self.assertIn("idx_audit_log_caller_operation_time", index_names)
+        self.assertIn("idx_lineage_edges_parent_relation", index_names)
 
     def test_connection_uses_row_factory(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
@@ -124,6 +146,59 @@ class SQLiteEventPersistenceTest(unittest.TestCase):
         )
 
         self.assertEqual([event.event_id for event in results], ["event-1"])
+
+    def test_insert_event_projects_supersession_lineage_edges(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
+        store.initialize_schema()
+        event = make_event("event-2")
+        corrected = replace(
+            event,
+            lineage=Lineage(parents=["event-1"], supersedes=["event-1"]),
+        )
+
+        store.insert_event(corrected)
+
+        self.assertEqual(store.events_superseding("event-1"), ["event-2"])
+
+
+class SQLitePermissionPersistenceTest(unittest.TestCase):
+    def test_list_active_permission_grants_prefilters_by_caller_operation_and_time(self) -> None:
+        now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
+        store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
+        store.initialize_schema()
+        store.insert_permission_grant(
+            PermissionGrant(
+                grant_id="grant-1",
+                caller="calendar_agent",
+                scope=PermissionScope(operations=[AuditOperation.READ, AuditOperation.WRITE]),
+                granted_at=now,
+                expires_at=now + timedelta(seconds=60),
+            )
+        )
+        store.insert_permission_grant(
+            PermissionGrant(
+                grant_id="grant-2",
+                caller="calendar_agent",
+                scope=PermissionScope(operations=[AuditOperation.READ]),
+                granted_at=now - timedelta(minutes=2),
+                expires_at=now - timedelta(minutes=1),
+            )
+        )
+        store.insert_permission_grant(
+            PermissionGrant(
+                grant_id="grant-3",
+                caller="health_agent",
+                scope=PermissionScope(operations=[AuditOperation.READ]),
+                granted_at=now,
+                expires_at=now + timedelta(seconds=60),
+            )
+        )
+
+        grants = store.list_active_permission_grants("calendar_agent", AuditOperation.READ, at=now)
+
+        self.assertEqual([grant.grant_id for grant in grants], ["grant-1"])
 
 
 class SQLiteLifecycleAndTombstoneTest(unittest.TestCase):

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import re
 from typing import Any
 
 from phone_mem.context.budgets import ContextBudget
+from phone_mem.context.token_counter import ConservativeTokenCounter, TokenCounter
 from phone_mem.governance.audit import AuditLog
 from phone_mem.personal_memory_service.events import AuditOperation
 from phone_mem.personal_memory_service.retrieval import MemorySnippet, RetrievalResult
@@ -31,8 +31,13 @@ class ContextBundle:
 
 
 class ContextAssembler:
-    def __init__(self, audit_log: AuditLog | None = None) -> None:
+    def __init__(
+        self,
+        audit_log: AuditLog | None = None,
+        token_counter: TokenCounter | None = None,
+    ) -> None:
         self._audit_log = audit_log
+        self._token_counter = token_counter or ConservativeTokenCounter()
 
     def build_context(
         self,
@@ -77,7 +82,7 @@ class ContextAssembler:
         return bundle
 
     def _estimate_tokens(self, snippet: MemorySnippet) -> int:
-        return len(re.findall(r"[A-Za-z0-9]+", snippet.text))
+        return self._token_counter.count(snippet.text)
 
     def _evidence_event_ids(self, snippets: list[MemorySnippet]) -> list[str]:
         event_ids: list[str] = []

@@ -2,6 +2,7 @@
   {
     "event_id": "event-1",
     "explanation": {
+      "expanded_terms": [],
       "lexical_score": 3,
       "matched_entities": [
         "planning"

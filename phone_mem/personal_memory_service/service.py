@@ -141,14 +141,15 @@ class PersonalMemoryService:
 
         memory_event = self.lifecycle_validator.quarantine_if_contradictory(memory_event)
 
-        self.store.insert_event(memory_event)
-        self.audit_log.record(
-            caller,
-            AuditOperation.WRITE,
-            {"event": memory_event.to_dict()},
-            [memory_event.event_id],
-            "allowed",
-        )
+        with self.store.transaction():
+            self.store.insert_event(memory_event)
+            self.audit_log.record(
+                caller,
+                AuditOperation.WRITE,
+                {"event": memory_event.to_dict()},
+                [memory_event.event_id],
+                "allowed",
+            )
         return memory_event.event_id
 
     def search(
@@ -260,86 +261,98 @@ class PersonalMemoryService:
                 lineage=self._correction_lineage(event_id),
             )
         )
-        self.store.insert_event(corrected)
-        self.store.update_lifecycle(event_id, Lifecycle(state=LifecycleState.SUPERSEDED))
-        self.audit_log.record(
-            caller,
-            AuditOperation.UPDATE,
-            {"event_id": event_id, "patch": dict(patch)},
-            [event_id, corrected.event_id],
-            "allowed",
-        )
+        with self.store.transaction():
+            self.store.insert_event(corrected)
+            self.store.update_lifecycle(event_id, Lifecycle(state=LifecycleState.SUPERSEDED))
+            self.audit_log.record(
+                caller,
+                AuditOperation.UPDATE,
+                {"event_id": event_id, "patch": dict(patch)},
+                [event_id, corrected.event_id],
+                "allowed",
+            )
         return corrected.event_id
 
     def delete(self, selector: MemorySelector, *, caller: str, reason: str) -> list[str]:
         deleted_at = self.clock()
-        deleted_event_ids: list[str] = []
-        for event in self.store.query_events(selector):
+        events = self.store.query_events(selector)
+        denied_decision: tuple[MemoryEvent, str | None] | None = None
+        for event in events:
             decision = self.permissions.can_access(caller, AuditOperation.DELETE, event)
             if not decision.allowed:
-                self.audit_log.record(
-                    caller,
-                    AuditOperation.DELETE,
-                    selector.to_dict(),
-                    [event.event_id],
-                    "denied",
-                    denial_reason=decision.reason,
-                )
-                raise MemoryPermissionDenied(
-                    operation=AuditOperation.DELETE,
-                    caller=caller,
-                    denial_reason=decision.reason,
-                    affected_event_ids=[event.event_id],
-                    selector=selector.to_dict(),
-                )
+                denied_decision = (event, decision.reason)
+                break
 
-            self.store.update_lifecycle(
-                event.event_id,
-                event.lifecycle.mark_deleted(deleted_at=deleted_at, reason=reason),
+        if denied_decision is not None:
+            event, reason_denied = denied_decision
+            self.audit_log.record(
+                caller,
+                AuditOperation.DELETE,
+                selector.to_dict(),
+                [event.event_id],
+                "denied",
+                denial_reason=reason_denied,
             )
-            self.store.write_tombstone(
-                TombstoneRecord(
-                    tombstone_id=self.tombstone_id_factory(),
-                    event_id=event.event_id,
-                    deleted_at=deleted_at,
-                    reason=reason,
-                    selector=selector,
-                )
+            raise MemoryPermissionDenied(
+                operation=AuditOperation.DELETE,
+                caller=caller,
+                denial_reason=reason_denied,
+                affected_event_ids=[event.event_id],
+                selector=selector.to_dict(),
             )
-            deleted_event_ids.append(event.event_id)
 
-        self.audit_log.record(
-            caller,
-            AuditOperation.DELETE,
-            selector.to_dict(),
-            deleted_event_ids,
-            "allowed",
-        )
+        deleted_event_ids: list[str] = []
+        with self.store.transaction():
+            for event in events:
+                self.store.update_lifecycle(
+                    event.event_id,
+                    event.lifecycle.mark_deleted(deleted_at=deleted_at, reason=reason),
+                )
+                self.store.write_tombstone(
+                    TombstoneRecord(
+                        tombstone_id=self.tombstone_id_factory(),
+                        event_id=event.event_id,
+                        deleted_at=deleted_at,
+                        reason=reason,
+                        selector=selector,
+                    )
+                )
+                deleted_event_ids.append(event.event_id)
+
+            self.audit_log.record(
+                caller,
+                AuditOperation.DELETE,
+                selector.to_dict(),
+                deleted_event_ids,
+                "allowed",
+            )
         return deleted_event_ids
 
     def delete_by_event_id(self, event_id: str, *, caller: str, reason: str) -> list[str]:
         return self.delete(MemorySelector(event_ids=[event_id]), caller=caller, reason=reason)
 
     def grant(self, caller: str, scope: PermissionScope, duration_seconds: int) -> str:
-        grant = self.permissions.grant(caller, scope, duration_seconds)
-        self.audit_log.record(
-            caller,
-            AuditOperation.GRANT,
-            scope.to_dict(),
-            [],
-            "allowed",
-        )
+        with self.store.transaction():
+            grant = self.permissions.grant(caller, scope, duration_seconds)
+            self.audit_log.record(
+                caller,
+                AuditOperation.GRANT,
+                scope.to_dict(),
+                [],
+                "allowed",
+            )
         return grant.grant_id
 
     def revoke(self, grant_id: str) -> None:
-        self.permissions.revoke(grant_id)
-        self.audit_log.record(
-            "system",
-            AuditOperation.REVOKE,
-            {"grant_id": grant_id},
-            [],
-            "allowed",
-        )
+        with self.store.transaction():
+            self.permissions.revoke(grant_id)
+            self.audit_log.record(
+                "system",
+                AuditOperation.REVOKE,
+                {"grant_id": grant_id},
+                [],
+                "allowed",
+            )
 
     def audit(self, selector: AuditSelector | None = None) -> list[AuditRecord]:
         return self.audit_log.query(selector)
@@ -430,8 +443,4 @@ class PersonalMemoryService:
         }
 
     def _events_superseding(self, event_id: str) -> list[str]:
-        return [
-            candidate.event_id
-            for candidate in self.store.query_events()
-            if event_id in candidate.lineage.supersedes
-        ]
+        return self.store.events_superseding(event_id)

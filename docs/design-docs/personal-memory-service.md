@@ -70,13 +70,19 @@ The product-level SDK facade is documented in [../product-specs/memory-sdk.md](.
 
 Indexes and summaries are projections. They must be rebuildable from canonical events and tombstones.
 
+The Python reference store keeps common selector, permission, entity, and audit lookups indexed so the reference does not normalize full-table scans as the expected mobile behavior. Multi-row lifecycle operations use a store transaction boundary; service-level corrections, selector deletes, grant changes, and record-plus-audit writes should either commit all affected rows or leave canonical memory unchanged.
+
+Lineage is also projected into an indexed edge table. Event JSON remains canonical, while `lineage_edges` supports explanation and deletion-propagation queries such as "which event supersedes this one" without scanning every event payload.
+
 ## Invariants
 
 - Permission projection happens before retrieval ranking.
 - Writes use read-before-write validation for dedupe and contradiction marking.
 - Derived memory keeps lineage to source events.
+- Lifecycle validation narrows duplicate and contradiction checks to active candidates that share source app and entity scope before applying in-memory equivalence rules.
 - Third-party writes remain app-scoped or quarantined until promoted by policy.
 - Deletion creates tombstones rather than only mutating rows.
+- Selector deletion preflights permissions across the full matched event set before mutating any event.
 - Service APIs return event IDs and evidence metadata for explainability.
 - Runtime adapters cannot bypass service permissions.
 

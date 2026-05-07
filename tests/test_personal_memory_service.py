@@ -180,6 +180,48 @@ class PersonalMemoryServiceTest(unittest.TestCase):
         result_ids = [result.event_id for result in service.search("window seats", caller="travel_agent")]
         self.assertNotIn(quarantined_id, result_ids)
 
+    def test_preference_synonyms_can_trigger_contradiction_quarantine(self) -> None:
+        now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
+        service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
+        service.grant(
+            "travel_agent",
+            PermissionScope(
+                operations=[AuditOperation.WRITE],
+                apps=["system_assistant"],
+                entities=["travel"],
+            ),
+            duration_seconds=60,
+        )
+
+        service.record(
+            MemoryCandidate(
+                semantic_description="User likes aisle seats for flights.",
+                source_app="system_assistant",
+                actor=Actor.USER,
+                modality=[Modality.TEXT],
+                attribution=Attribution.USER_STATED,
+                entities=["travel"],
+            ),
+            caller="travel_agent",
+        )
+        quarantined_id = service.record(
+            MemoryCandidate(
+                semantic_description="User prefers window seats for flights.",
+                source_app="system_assistant",
+                actor=Actor.USER,
+                modality=[Modality.TEXT],
+                attribution=Attribution.USER_STATED,
+                entities=["travel"],
+            ),
+            caller="travel_agent",
+        )
+
+        quarantined = service.store.get_event(quarantined_id)
+        self.assertIsNotNone(quarantined)
+        assert quarantined is not None
+        self.assertEqual(quarantined.lifecycle.state, LifecycleState.QUARANTINED)
+
     def test_correct_creates_new_event_and_supersedes_original(self) -> None:
         now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
         service = PersonalMemoryService.in_memory(clock=lambda: now)
@@ -220,6 +262,103 @@ class PersonalMemoryServiceTest(unittest.TestCase):
         self.assertEqual(original.lifecycle.state, LifecycleState.SUPERSEDED)
         self.assertEqual(corrected.lineage.supersedes, [original_id])
         self.assertEqual(service.search("afternoon planning", caller="calendar_agent")[0].event_id, corrected_id)
+
+    def test_correct_rolls_back_new_event_when_supersede_fails(self) -> None:
+        now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
+        service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
+        service.grant(
+            "calendar_agent",
+            PermissionScope(
+                operations=[AuditOperation.WRITE, AuditOperation.READ, AuditOperation.UPDATE],
+                apps=["system_assistant"],
+            ),
+            duration_seconds=60,
+        )
+        original_id = service.record(
+            MemoryCandidate(
+                semantic_description="User prefers morning planning sessions.",
+                source_app="system_assistant",
+                actor=Actor.USER,
+                modality=[Modality.TEXT],
+                attribution=Attribution.USER_STATED,
+                entities=["planning"],
+            ),
+            caller="calendar_agent",
+        )
+
+        def fail_update_lifecycle(event_id: str, lifecycle: object) -> None:
+            raise RuntimeError("simulated lifecycle failure")
+
+        object.__setattr__(service.store, "update_lifecycle", fail_update_lifecycle)
+
+        with self.assertRaisesRegex(RuntimeError, "simulated lifecycle failure"):
+            service.correct(
+                original_id,
+                {"semantic_description": "User prefers afternoon planning sessions."},
+                caller="calendar_agent",
+            )
+
+        original = service.store.get_event(original_id)
+        self.assertIsNotNone(original)
+        assert original is not None
+        self.assertEqual(original.lifecycle.state, LifecycleState.ACTIVE)
+        self.assertIsNone(service.store.get_event("event-2"))
+
+    def test_delete_preflights_permissions_before_mutating_any_event(self) -> None:
+        now = datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
+        service = PersonalMemoryService.in_memory(clock=lambda: now)
+        self.addCleanup(service.close)
+        service.grant(
+            "calendar_agent",
+            PermissionScope(
+                operations=[AuditOperation.WRITE],
+            ),
+            duration_seconds=60,
+        )
+        service.grant(
+            "calendar_agent",
+            PermissionScope(
+                operations=[AuditOperation.DELETE],
+                apps=["system_assistant"],
+            ),
+            duration_seconds=60,
+        )
+        first_id = service.record(
+            MemoryCandidate(
+                semantic_description="User prefers morning planning sessions.",
+                source_app="system_assistant",
+                actor=Actor.USER,
+                modality=[Modality.TEXT],
+                attribution=Attribution.USER_STATED,
+                entities=["planning"],
+            ),
+            caller="calendar_agent",
+        )
+        second_id = service.record(
+            MemoryCandidate(
+                semantic_description="User prefers evening workouts.",
+                source_app="health",
+                actor=Actor.USER,
+                modality=[Modality.TEXT],
+                attribution=Attribution.USER_STATED,
+                entities=["fitness"],
+            ),
+            caller="calendar_agent",
+        )
+
+        with self.assertRaises(PermissionError):
+            service.delete(MemorySelector(), caller="calendar_agent", reason="bulk cleanup")
+
+        first = service.store.get_event(first_id)
+        second = service.store.get_event(second_id)
+        self.assertIsNotNone(first)
+        self.assertIsNotNone(second)
+        assert first is not None
+        assert second is not None
+        self.assertEqual(first.lifecycle.state, LifecycleState.ACTIVE)
+        self.assertEqual(second.lifecycle.state, LifecycleState.ACTIVE)
+        self.assertEqual(service.store.list_tombstones(), [])
 
 
 if __name__ == "__main__":

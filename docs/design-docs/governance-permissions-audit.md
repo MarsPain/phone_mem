@@ -32,6 +32,8 @@ A grant is scoped by:
 
 Read grants do not imply write grants. Write grants do not imply promotion into trusted semantic memory.
 
+Permission scope and grant value objects live separately from the permission service so storage can persist grants without importing the policy service module. The SQLite reference adapter prefilters active grants by caller, operation, expiry, and revocation before the permission service applies full scope matching against app, entity, layer, privacy, valid time, and processing policy.
+
 ## Memory Views
 
 A memory view is a filtered projection of canonical memory for a caller and task. It may:
