@@ -26,3 +26,4 @@ No active execution plan.
 
 - [Open architecture risks](exec-plans/tech-debt/open-architecture-risks.md)
 - [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until a separate Stage 2 execution plan is accepted.
+- [OpenClaw-inspired memory optimizations](exec-plans/tech-debt/openclaw-inspired-memory-optimizations.md): proposed future track for governed capture, hot capsules, hybrid retrieval, graph projection, and maintenance workflows.

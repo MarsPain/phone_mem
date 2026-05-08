@@ -30,6 +30,7 @@
 
 - [references/source-review.md](references/source-review.md): review of the source PDF and architecture corrections.
 - [references/research-review-2026.md](references/research-review-2026.md): research-backed v2 review across agent memory, on-device LLM systems, and Apple/Android platform constraints.
+- [references/openclaw-memory-review.md](references/openclaw-memory-review.md): deep review of OpenClaw Memory design and implications for future optimization plans.
 
 ## Generated
 

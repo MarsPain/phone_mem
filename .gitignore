@@ -16,4 +16,4 @@ wheels/
 .phone-mem-lab/
 
 # Source materials kept outside git
-手机端Agent_Memory架构设计方案.pdf
+*.pdf
