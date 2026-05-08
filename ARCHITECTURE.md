@@ -14,6 +14,7 @@
 ## Canonical Design Docs
 
 - [docs/DESIGN.md](docs/DESIGN.md): system overview and key contracts.
+- [docs/AGENT_MEMORY_FLOW_ARCHITECTURE.md](docs/AGENT_MEMORY_FLOW_ARCHITECTURE.md): explanatory guide to the current Agent memory flow, algorithms, and architecture.
 - [docs/design-docs/smartphone-agent-memory.md](docs/design-docs/smartphone-agent-memory.md): detailed architecture and development guidance.
 - [docs/design-docs/personal-memory-service.md](docs/design-docs/personal-memory-service.md): local service boundary and MVP operations.
 - [docs/design-docs/memory-lifecycle-and-data-flow.md](docs/design-docs/memory-lifecycle-and-data-flow.md): memory event lifecycle and data flow.

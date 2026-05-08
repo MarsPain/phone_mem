@@ -7,6 +7,7 @@
 - [SECURITY.md](SECURITY.md): privacy, trust boundaries, access control, and abuse controls.
 - [BACKEND.md](BACKEND.md): implementation and runtime strategy for the Python reference core and future mobile runtime.
 - [PYTHON_REFERENCE.md](PYTHON_REFERENCE.md): practical guide for using and maintaining the completed Python reference service.
+- [AGENT_MEMORY_FLOW_ARCHITECTURE.md](AGENT_MEMORY_FLOW_ARCHITECTURE.md): explanatory report for the Agent memory flow, algorithms, and architecture.
 - [PRODUCT_SENSE.md](PRODUCT_SENSE.md): user value, risks, and product principles.
 - [ROADMAP.md](ROADMAP.md): staged delivery plan.
 - [PLANS.md](PLANS.md): execution plan index.
