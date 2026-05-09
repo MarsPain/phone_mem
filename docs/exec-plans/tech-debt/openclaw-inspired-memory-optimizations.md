@@ -1,10 +1,10 @@
 # OpenClaw-Inspired Memory Optimizations
 
-Status: promoted to active plan
+Status: completed through Stage 1.7
 
 Promoted: 2026-05-09
 
-This proposed tech-debt track has been promoted into the active [Python Agentic Memory Lifecycle Maturation](../active/2026-05-09-python-agentic-memory-lifecycle-maturation.md) plan. Keep this file as the original rationale and detailed idea source; use the active plan for execution status.
+This proposed tech-debt track was promoted into the completed [Python Agentic Memory Lifecycle Maturation](../completed/2026-05-09-python-agentic-memory-lifecycle-maturation.md) plan. Keep this file as the original rationale and detailed idea source; use the completed plan for execution status.
 
 ## Goal
 
@@ -12,7 +12,7 @@ Use the OpenClaw memory review to mature the Python reference from a determinist
 
 ## Scope
 
-This file is the historical future-work proposal that was accepted as active Stage 1.7 work after the Python reference API became stable enough to absorb retrieval, context, and lifecycle changes together.
+This file is the historical future-work proposal that was accepted as Stage 1.7 work after the Python reference API became stable enough to absorb retrieval, context, and lifecycle changes together.
 
 In scope:
 
@@ -190,7 +190,7 @@ Implementation notes:
 Validation:
 
 - `uv run python -m unittest tests.test_service_context_metrics`
-- Run the full suite before accepting the active plan: `uv run python -m unittest discover -s tests`.
+- Run the full suite before accepting a future follow-up plan: `uv run python -m unittest discover -s tests`.
 
 ## Acceptance
 

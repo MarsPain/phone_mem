@@ -2,9 +2,34 @@
   "evidence_event_ids": [
     "event-1"
   ],
+  "hot_memory_capsules": [
+    {
+      "attribution": "user_stated",
+      "category": "stable_user_confirmed_fact",
+      "confidence": 0.9,
+      "evidence_event_ids": [
+        "event-1"
+      ],
+      "lifecycle_state": "active",
+      "omitted_memory": [],
+      "text": "Fact."
+    }
+  ],
   "omitted_memory": [],
+  "relation_paths": [],
   "safety_metadata": {
+    "capsule_budget": {
+      "budget_tokens": 50,
+      "omitted_capsules": [],
+      "separate_from_snippets": true,
+      "used_tokens": 13
+    },
     "memory_is_data_not_instruction": true,
+    "relation_projection": {
+      "bounded": true,
+      "evidence_event_ids": [],
+      "path_count": 0
+    },
     "runtime_neutral": true
   },
   "snippets": [

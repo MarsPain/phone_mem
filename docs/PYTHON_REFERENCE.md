@@ -7,26 +7,26 @@ This guide is the practical entrypoint for using and maintaining the completed P
 The Python reference implements a local-only memory service under `phone_mem/`:
 
 - `personal_memory_service.constructor`: builds canonical events from structured candidates.
-- `personal_memory_service.service`: service facade for record, search, explain, correct, delete, grant, revoke, audit, build context, and metrics.
+- `personal_memory_service.service`: service facade for record, search, explain, correct, delete, grant, revoke, audit, build context, maintenance, and metrics.
 - `personal_memory_service.storage`: SQLite-backed event, permission, audit, and tombstone persistence.
 - `personal_memory_service.lifecycle`: duplicate detection and simple contradiction quarantine.
-- `personal_memory_service.retrieval`: governed lexical retrieval after permission projection, with deterministic English/digit terms and CJK character n-grams.
-- `context`: runtime-neutral context bundle assembly and budget accounting.
+- `personal_memory_service.retrieval`: governed hybrid retrieval after permission projection, with deterministic English/digit terms, CJK character n-grams, FTS5/BM25 projection, score explanations, and vector-style extension points.
+- `context`: runtime-neutral context bundle assembly, hot memory capsules, relation path support, and budget accounting.
 - `governance`: permission grants, audit records, and memory views.
 
-The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The completed Stage 1.5 track adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider. The active Stage 1.7 plan will deepen this Python oracle with runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before mobile implementation resumes.
+The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The completed Stage 1.5 track adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider. The completed Stage 1.7 track deepened this Python oracle with runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before mobile implementation resumes.
 
-## Active Maturation Plan
+## Completed Maturation Plan
 
-Stage 1.7 is tracked by [exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md](exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md). While that plan is active, treat Python as the only implementation target and do not maintain stale mobile TypeScript boundary files.
+Stage 1.7 is tracked by [exec-plans/completed/2026-05-09-python-agentic-memory-lifecycle-maturation.md](exec-plans/completed/2026-05-09-python-agentic-memory-lifecycle-maturation.md). Stage 2 mobile implementation remains deferred until a separate mobile plan is accepted; do not recreate mobile TypeScript boundary files without that plan.
 
-The active plan preserves these constraints:
+The completed plan preserves these constraints:
 
 - canonical memory events and SQLite-backed storage remain the source of truth;
 - runtime and context additions must use governed service APIs;
 - derived capsules, relation edges, summaries, and score explanations must retain evidence event IDs;
 - deletion tombstones must invalidate derived projections;
-- future-mobile fixtures are refreshed only after Python behavior stabilizes.
+- future-mobile fixtures are refreshed from the stabilized Python behavior.
 
 ## Product-Style Demo
 
@@ -287,6 +287,20 @@ service.delete_by_event_id(event_id, caller="calendar_agent", reason="user reque
 service.close()
 ```
 
+## Quality Metrics
+
+`service.metrics_snapshot()` returns a derived quality snapshot over the canonical store, latest retrieval call, latest context bundle, audit records, tombstones, capture-triggered events, and dry-run reflection proposals. It does not create a second memory store.
+
+The snapshot includes:
+
+- retrieval hit counts and score component distributions;
+- context compression ratio, capsule token use, omitted-memory reasons, and relation path count;
+- capture counts by trigger from persisted candidate metadata;
+- reflection proposal count and accepted reviewed semantic/procedural memories when present;
+- deletion propagation coverage and audit completeness.
+
+These metrics are intended for reference-oracle comparison, Web Lab inspection, and future mobile parity tests. They are not a user-visible privacy boundary; callers still need governed service APIs for memory reads and writes.
+
 ## File-Backed Service Usage
 
 ```python
@@ -353,7 +367,7 @@ The Python reference is also the executable oracle for future mobile behavior. S
 uv run python -m unittest tests.test_stage2_mobile_contract_fixtures
 ```
 
-Those fixtures cover canonical events, permission grants, retrieval results, context bundles, tombstones, audit records, lifecycle explanations for correction and quarantine, and structured service errors for permission denial and missing events. They are not a maintained TypeScript boundary during Stage 1.7; the mobile workspace should be recreated after Python behavior stabilizes.
+Those fixtures cover canonical events, permission grants, retrieval results, context bundles with hot memory capsule metadata, tombstones, audit records, lifecycle explanations for correction and quarantine, metrics snapshots, and structured service errors for permission denial and missing events. They are not a maintained TypeScript boundary; the mobile workspace should be recreated only under a separate accepted Stage 2 plan.
 
 ## Maintenance Guidance
 

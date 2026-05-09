@@ -4,16 +4,16 @@
 
 `phone-mem` 是智能手机 Agent Memory 的架构与原型仓库。项目目标是在手机上构建一个以 Agent 方式管理用户 memory 的本地优先系统：它理解并维护用户在手机场景中的长期偏好、事件、上下文和操作习惯，并把这些受控 memory 能力提供给更广泛的 Agent 应用。
 
-仓库现在包含已完成的确定性 Python 参考版 Personal Memory Service、已完成的 Stage 1.5 Python LLM Agent runtime spike、已完成的 Stage 1.6 本地 Python Web Lab，以及正在进行的 Stage 1.7 Python-only agentic memory lifecycle maturation 计划。Stage 1.5 用真实 provider-backed chat 验证受治理 memory API 上的 Agent 体验；Stage 1.6 在浏览器里提供 chat、memory inspection 和 turn debugging；Stage 2 移动端实现会等 Python oracle 稳定并且单独移动端计划被接受后再启动，旧的 mobile TypeScript boundary files 不再保留。
+仓库现在包含已完成的确定性 Python 参考版 Personal Memory Service、已完成的 Stage 1.5 Python LLM Agent runtime spike、已完成的 Stage 1.6 本地 Python Web Lab，以及已完成的 Stage 1.7 Python-only agentic memory lifecycle maturation track。Stage 1.5 用真实 provider-backed chat 验证受治理 memory API 上的 Agent 体验；Stage 1.6 在浏览器里提供 chat、memory inspection 和 turn debugging；Stage 2 移动端实现会等单独移动端计划被接受后再启动，旧的 mobile TypeScript boundary files 不再保留。
 
 ## 现在已有能力
 
-- `phone_mem.personal_memory_service`：canonical event 构造、SQLite 存储、受治理搜索、修正、删除、审计、生命周期解释和指标。
-- `phone_mem.context`：runtime-neutral context bundle 组装和 token/budget 统计。
+- `phone_mem.personal_memory_service`：canonical event 构造、SQLite 存储、受治理 hybrid search、修正、删除、审计、生命周期解释、maintenance reports 和质量指标。
+- `phone_mem.context`：runtime-neutral context bundle 组装、hot memory capsules、relation paths 和 token/budget 统计。
 - `phone_mem.governance`：permission scope、memory view、audit record 和访问检查。
 - `phone_mem.agent_runtime`：provider-neutral Agent runtime contract、memory tools、prompt assembly 和 OpenAI-compatible client adapter。
 - `phone_mem.web_lab`：本地浏览器实验台，支持 chat、memory inspection、context preview、修正、删除、审计、指标和 turn debugging。
-- `docs/exec-plans/active/`：当前 Stage 1.7 Python Agentic Memory Lifecycle Maturation 计划。
+- `docs/exec-plans/completed/`：已完成的 Stage 1.7 Python Agentic Memory Lifecycle Maturation 计划。
 
 ## 快速开始
 
@@ -64,8 +64,8 @@ Python reference 是未来移动端对齐的 executable oracle。`PersonalMemory
 
 ## 当前阶段
 
-Stage 1、Python reference maturation track、Stage 1.5 Python LLM Agent runtime spike 和 Stage 1.6 Python Web Lab 已完成。Stage 1.7 Python Agentic Memory Lifecycle Maturation 当前处于 active 状态。`phone_mem/` 下的 Python 代码仍是未来移动端对齐的 executable oracle；active plan 会先深化 runtime memory protocol、governed session capture、hot capsules、hybrid retrieval、relation projections、maintenance workflows、quality metrics 和 future-mobile fixtures。
+Stage 1、Python reference maturation track、Stage 1.5 Python LLM Agent runtime spike、Stage 1.6 Python Web Lab 和 Stage 1.7 Python Agentic Memory Lifecycle Maturation 均已完成。`phone_mem/` 下的 Python 代码仍是未来移动端对齐的 executable oracle，现在已包含 runtime memory protocol、governed session capture、hot capsules、hybrid retrieval、relation projections、maintenance workflows、quality metrics 和 refreshed future-mobile fixtures。
 
-Stage 2 移动端实现仍处于 deferred 状态。仓库目前不保留 mobile TypeScript boundary、React Native app、移动端 SQLite adapter 或 TypeScript 测试工具链。未来移动端工作应基于 Stage 1.7 完成后的稳定 Python oracle 重新创建这些边界。
+Stage 2 移动端实现仍处于 deferred 状态。仓库目前不保留 mobile TypeScript boundary、React Native app、移动端 SQLite adapter 或 TypeScript 测试工具链。未来移动端工作应基于单独接受的 Stage 2 plan，并从 Stage 1.7 完成后的稳定 Python oracle 重新创建这些边界。
 
-当前 active、completed 和 deferred 的计划见 [docs/PLANS.md](docs/PLANS.md)。
+执行计划状态见 [docs/PLANS.md](docs/PLANS.md)。

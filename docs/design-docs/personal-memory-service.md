@@ -25,6 +25,7 @@ The Stage 1 Python reference MVP package should grow around these modules from [
 - `personal_memory_service/retrieval.py`: permission-filtered search over local events.
 - `personal_memory_service/lifecycle.py`: correction, deletion, supersession, contradiction, and tombstone propagation.
 - `personal_memory_service/maintenance.py`: dry-run reflection, defrag, schema drift, and projection health reports.
+- `personal_memory_service/metrics.py`: derived quality metrics for retrieval, context compression, capture, reflection, deletion propagation, and audit completeness.
 - `personal_memory_service/service.py`: orchestration facade for callers.
 - `governance/permissions.py`, `governance/audit.py`, and `governance/views.py`: grants, audit writing, and memory view projection.
 - `context/assembler.py`: context bundle construction after governed retrieval.
@@ -65,6 +66,9 @@ class PersonalMemoryService:
 
     def schema_diff(self) -> object:
         ...
+
+    def metrics_snapshot(self) -> dict:
+        ...
 ```
 
 The product-level SDK facade is documented in [../product-specs/memory-sdk.md](../product-specs/memory-sdk.md).
@@ -93,6 +97,12 @@ Maintenance operations are dry-run report generators. They do not promote semant
 - `reflect()`: proposes semantic candidates from eligible active episodic clusters and procedural candidates from observed task patterns, always with evidence event IDs and review required.
 - `defrag()`: reports duplicate active event groups, stale superseded chains, missing lineage references, and orphaned projection edges.
 - `schema_diff()`: compares observed canonical event fields and relation types against [../DATA.md](../DATA.md) and reports drift.
+
+## Quality Metrics
+
+Quality metrics are derived from canonical events, audit records, tombstones, latest retrieval results, latest context bundles, capture metadata, and dry-run maintenance reports. They are exposed through `metrics_snapshot()` for inspection and future parity contracts, but they do not become a canonical memory store.
+
+The snapshot tracks retrieval hit counts and score component distributions, context compression ratio and capsule budget use, omitted-memory reasons, capture proposal counts by trigger, reflection proposal/acceptance visibility, deletion propagation coverage, and audit completeness.
 
 ## Invariants
 

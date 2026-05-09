@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Python Agentic Memory Lifecycle Maturation](exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md): active Stage 1.7 Python-only track for runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before Stage 2 mobile work resumes.
+- No active execution plan. Stage 2 mobile work remains deferred until a separate plan is accepted.
 
 ## Completed
 
@@ -21,9 +21,10 @@
 - [Python reference maturation](exec-plans/completed/2026-05-05-python-reference-maturation.md): completed the reference usage, lifecycle, retrieval selector, file-backed SQLite, service error, explainability, and mobile contract fixture maturation track.
 - [Python LLM Agent Runtime](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md): completed the Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs.
 - [Python Web Lab](exec-plans/completed/2026-05-05-python-web-lab.md): completed the Stage 1.6 local developer Web Lab for real Agent chat, memory inspection, turn debugging, and file-backed SQLite exploration before mobile runtime work resumes.
+- [Python Agentic Memory Lifecycle Maturation](exec-plans/completed/2026-05-09-python-agentic-memory-lifecycle-maturation.md): completed the Stage 1.7 Python-only maturation track for runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before Stage 2 mobile work resumes.
 
 ## Tech Debt
 
 - [Open architecture risks](exec-plans/tech-debt/open-architecture-risks.md)
-- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until Stage 1.7 stabilizes and a separate Stage 2 execution plan is accepted.
-- [OpenClaw-inspired memory optimizations](exec-plans/tech-debt/openclaw-inspired-memory-optimizations.md): original proposed track, now promoted into the active Stage 1.7 Python Agentic Memory Lifecycle Maturation plan.
+- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until a separate Stage 2 execution plan is accepted.
+- [OpenClaw-inspired memory optimizations](exec-plans/tech-debt/openclaw-inspired-memory-optimizations.md): original proposed track, completed through the Stage 1.7 Python Agentic Memory Lifecycle Maturation plan.

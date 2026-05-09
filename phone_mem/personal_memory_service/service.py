@@ -170,7 +170,9 @@ class PersonalMemoryService:
         scope: MemorySelector | None = None,
         top_k: int = 10,
     ) -> list[RetrievalResult]:
-        return self.retriever.search(query, caller=caller, selector=scope, top_k=top_k)
+        results = self.retriever.search(query, caller=caller, selector=scope, top_k=top_k)
+        self.metrics.record_retrieval_results(results)
+        return results
 
     def build_context(
         self,

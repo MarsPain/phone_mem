@@ -1,8 +1,9 @@
 # Python Agentic Memory Lifecycle Maturation
 
-Status: active
+Status: completed
 Type: implementation
 Started: 2026-05-09
+Completed: 2026-05-09
 
 ## Goal
 
@@ -146,7 +147,7 @@ Context Assembler
   - Prevent silent semantic or procedural promotion.
   - Validate with `uv run python -m unittest tests.test_personal_memory_service tests.test_memory_maintenance`.
 
-- [ ] Add quality metrics and fixture refresh.
+- [x] Add quality metrics and fixture refresh.
   - Files: `phone_mem/personal_memory_service/metrics.py`, `docs/PYTHON_REFERENCE.md`, `docs/ROADMAP.md`, `tests/fixtures/memory_service/*.json`.
   - Tests: `tests/test_service_context_metrics.py`, `tests/test_stage2_mobile_contract_fixtures.py`.
   - Track retrieval hit counts, score component distributions, context compression ratio, capsule token use, omitted-memory reasons, capture proposal counts, reflection acceptance rate, deletion propagation coverage, and audit completeness.
@@ -154,11 +155,11 @@ Context Assembler
   - Refresh future-mobile contract fixtures only after Python behavior stabilizes.
   - Validate with `uv run python -m unittest tests.test_service_context_metrics tests.test_stage2_mobile_contract_fixtures`.
 
-- [ ] Run final verification and close the plan.
+- [x] Run final verification and close the plan.
   - Commands:
     - `uv run python -m unittest discover -s tests`
     - `uv run python scripts/validate_docs.py`
-  - Move this plan to `docs/exec-plans/completed/` only after tests pass and docs reflect the final Stage 1.7 behavior.
+  - Move this plan to `docs/exec-plans/completed/` after tests pass and docs reflect the final Stage 1.7 behavior.
   - Keep mobile implementation deferred unless a separate Stage 2 plan is accepted after fixture refresh.
 
 ## Validation
@@ -183,4 +184,4 @@ Context Assembler
 - Maintenance workflows provide dry-run reflection, defrag, schema drift, and projection health reports before mutation.
 - Metrics make capture quality, retrieval quality, context compression, deletion propagation, and audit completeness visible.
 - Shared future-mobile fixtures are refreshed from the stabilized Python oracle.
-- Stage 2 mobile implementation remains deferred until this Python maturation plan is completed or explicitly superseded.
+- Stage 2 mobile implementation remains deferred until a separate Stage 2 plan is accepted.

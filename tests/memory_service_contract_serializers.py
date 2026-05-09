@@ -14,6 +14,19 @@ def context_bundle_to_dict(bundle: object) -> dict[str, object]:
     return {
         "task": bundle.task,
         "snippets": [snippet_to_dict(snippet) for snippet in bundle.snippets],
+        "hot_memory_capsules": [
+            hot_memory_capsule_to_dict(capsule)
+            for capsule in bundle.hot_memory_capsules
+        ],
+        "relation_paths": [
+            {
+                "nodes": path.nodes,
+                "edge_types": path.edge_types,
+                "evidence_event_ids": path.evidence_event_ids,
+                "compression_score": path.compression_score,
+            }
+            for path in bundle.relation_paths
+        ],
         "evidence_event_ids": bundle.evidence_event_ids,
         "token_budget": {
             "max_tokens": bundle.token_budget.max_tokens,
@@ -54,10 +67,27 @@ def snippet_to_dict(snippet: object) -> dict[str, object]:
     }
 
 
+def hot_memory_capsule_to_dict(capsule: object) -> dict[str, object]:
+    return {
+        "category": capsule.category,
+        "text": capsule.text,
+        "evidence_event_ids": capsule.evidence_event_ids,
+        "confidence": capsule.confidence,
+        "attribution": capsule.attribution,
+        "lifecycle_state": capsule.lifecycle_state,
+        "omitted_memory": capsule.omitted_memory,
+    }
+
+
 def _stable_context_safety_metadata(safety_metadata: dict[str, object]) -> dict[str, object]:
     return {
         key: safety_metadata[key]
-        for key in ["memory_is_data_not_instruction", "runtime_neutral"]
+        for key in [
+            "memory_is_data_not_instruction",
+            "runtime_neutral",
+            "capsule_budget",
+            "relation_projection",
+        ]
         if key in safety_metadata
     }
 

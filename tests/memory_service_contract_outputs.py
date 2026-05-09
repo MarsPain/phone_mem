@@ -111,6 +111,7 @@ def _happy_path_outputs() -> dict[str, object]:
                 ],
             },
             "audit_records": [record.to_dict() for record in service.audit()],
+            "metrics_snapshot": service.metrics_snapshot(),
         }
     finally:
         service.close()

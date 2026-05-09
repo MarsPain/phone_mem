@@ -4,16 +4,16 @@ Language: English | [中文](README.zh.md)
 
 `phone-mem` is the architecture and prototype repository for smartphone Agent Memory. The project goal is to build a local-first memory system on the phone that manages user memory with an agentic lifecycle: it understands and maintains long-term preferences, events, context, and operating habits from smartphone scenarios, then exposes governed memory capabilities to broader Agent applications.
 
-The repository now contains a completed deterministic Python reference Personal Memory Service, a completed Stage 1.5 Python LLM Agent runtime spike for real provider-backed chat over governed memory APIs, a completed Stage 1.6 local Python Web Lab for memory inspection and turn debugging, and an active Stage 1.7 Python-only maturation plan for deeper agentic memory lifecycle behavior. Stage 2 mobile implementation remains deferred until the Python oracle stabilizes and a separate mobile plan is accepted; stale mobile TypeScript boundary files are intentionally not retained.
+The repository now contains a completed deterministic Python reference Personal Memory Service, a completed Stage 1.5 Python LLM Agent runtime spike for real provider-backed chat over governed memory APIs, a completed Stage 1.6 local Python Web Lab for memory inspection and turn debugging, and a completed Stage 1.7 Python-only maturation track for deeper agentic memory lifecycle behavior. Stage 2 mobile implementation remains deferred until a separate mobile plan is accepted; stale mobile TypeScript boundary files are intentionally not retained.
 
 ## What Exists Now
 
-- `phone_mem.personal_memory_service`: canonical event construction, SQLite-backed storage, governed search, correction, deletion, audit, lifecycle explanation, and metrics.
-- `phone_mem.context`: runtime-neutral context bundle assembly and budget accounting.
+- `phone_mem.personal_memory_service`: canonical event construction, SQLite-backed storage, governed hybrid search, correction, deletion, audit, lifecycle explanation, maintenance reports, and quality metrics.
+- `phone_mem.context`: runtime-neutral context bundle assembly, hot memory capsules, relation paths, and budget accounting.
 - `phone_mem.governance`: permission scopes, memory views, audit records, and access checks.
 - `phone_mem.agent_runtime`: provider-neutral Agent runtime contracts, memory tools, prompt assembly, and an OpenAI-compatible client adapter.
 - `phone_mem.web_lab`: local browser lab for chat, memory inspection, context previews, correction, deletion, audit, metrics, and turn debugging.
-- `docs/exec-plans/active/`: active Stage 1.7 Python Agentic Memory Lifecycle Maturation plan.
+- `docs/exec-plans/completed/`: completed Stage 1.7 Python Agentic Memory Lifecycle Maturation plan.
 
 ## Quick Start
 
@@ -64,8 +64,8 @@ External agents should consume governed views and context bundles, not the raw g
 
 ## Current Stage
 
-Stage 1, the Python reference maturation track, the Stage 1.5 Python LLM Agent runtime spike, and the Stage 1.6 Python Web Lab are complete. Stage 1.7 Python Agentic Memory Lifecycle Maturation is active. The Python code under `phone_mem/` remains the executable oracle for future mobile parity, and the active plan will deepen runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and future-mobile fixtures before mobile implementation resumes.
+Stage 1, the Python reference maturation track, the Stage 1.5 Python LLM Agent runtime spike, the Stage 1.6 Python Web Lab, and Stage 1.7 Python Agentic Memory Lifecycle Maturation are complete. The Python code under `phone_mem/` remains the executable oracle for future mobile parity, now including runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures.
 
-Stage 2 mobile implementation is deferred. The repository currently has no retained mobile TypeScript boundary, React Native app, mobile SQLite adapter, or TypeScript test toolchain. Future mobile work should recreate those boundaries from the stabilized post-Stage 1.7 Python oracle.
+Stage 2 mobile implementation is deferred. The repository currently has no retained mobile TypeScript boundary, React Native app, mobile SQLite adapter, or TypeScript test toolchain. Future mobile work should start from a separate accepted Stage 2 plan and recreate those boundaries from the stabilized post-Stage 1.7 Python oracle.
 
-The active and deferred tracks are listed in [docs/PLANS.md](docs/PLANS.md).
+Execution plan status is listed in [docs/PLANS.md](docs/PLANS.md).

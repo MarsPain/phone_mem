@@ -53,6 +53,7 @@ class MemoryServiceFixtureContractTest(unittest.TestCase):
             "audit_records.json",
             "lifecycle_explanations.json",
             "service_errors.json",
+            "metrics_snapshot.json",
         ]
 
         for file_name in expected_files:
