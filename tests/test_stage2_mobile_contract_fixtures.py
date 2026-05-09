@@ -12,24 +12,9 @@ FIXTURE_DIR = ROOT / "tests" / "fixtures" / "memory_service"
 
 
 class Stage2MobileWorkspaceBoundaryTest(unittest.TestCase):
-    def test_mobile_workspace_documents_reference_service_domains(self) -> None:
-        readme = ROOT / "mobile" / "README.md"
-        self.assertTrue(readme.exists(), "mobile/README.md should describe Stage 2 scope")
-        text = readme.read_text(encoding="utf-8")
-
-        for expected in [
-            "memory_core",
-            "governance",
-            "storage",
-            "retrieval",
-            "context",
-            "service",
-            "Python reference",
-        ]:
-            self.assertIn(expected, text)
-
-    def test_mobile_type_boundaries_exist_without_toolchain_lock_in(self) -> None:
-        expected_files = [
+    def test_mobile_workspace_is_not_a_stale_implementation_boundary(self) -> None:
+        stale_files = [
+            "mobile/README.md",
             "mobile/memory_core/events.ts",
             "mobile/governance/permissions.ts",
             "mobile/governance/audit.ts",
@@ -39,34 +24,22 @@ class Stage2MobileWorkspaceBoundaryTest(unittest.TestCase):
             "mobile/service/personal_memory_service.ts",
         ]
 
-        for relative_path in expected_files:
-            self.assertTrue((ROOT / relative_path).exists(), relative_path)
+        for relative_path in stale_files:
+            self.assertFalse((ROOT / relative_path).exists(), relative_path)
 
         self.assertFalse((ROOT / "mobile" / "package.json").exists())
 
-    def test_mobile_service_contract_names_stabilized_python_api_shapes(self) -> None:
-        service_contract = (ROOT / "mobile" / "service" / "personal_memory_service.ts").read_text(
-            encoding="utf-8"
-        )
-        event_contract = (ROOT / "mobile" / "memory_core" / "events.ts").read_text(
-            encoding="utf-8"
-        )
+    def test_stage2_plan_explains_future_mobile_restart(self) -> None:
+        plan = ROOT / "docs" / "exec-plans" / "tech-debt" / "deferred-stage2-mobile-runtime-prototype.md"
+        text = plan.read_text(encoding="utf-8")
 
         for expected in [
-            "MemoryExplanation",
-            "ServiceErrorContract",
-            "SearchOptions",
-            "BuildContextOptions",
-            "delete(selector: MemorySelector",
+            "Status: deferred",
+            "Stage 1.7",
+            "recreated",
+            "No TypeScript boundary files are retained",
         ]:
-            self.assertIn(expected, service_contract)
-
-        for expected in [
-            "interface MemorySelector",
-            "interface LifecycleExplanation",
-            "interface MemoryExplanation",
-        ]:
-            self.assertIn(expected, event_contract)
+            self.assertIn(expected, text)
 
 
 class MemoryServiceFixtureContractTest(unittest.TestCase):

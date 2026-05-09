@@ -1,6 +1,10 @@
 # OpenClaw-Inspired Memory Optimizations
 
-Status: proposed tech-debt
+Status: promoted to active plan
+
+Promoted: 2026-05-09
+
+This proposed tech-debt track has been promoted into the active [Python Agentic Memory Lifecycle Maturation](../active/2026-05-09-python-agentic-memory-lifecycle-maturation.md) plan. Keep this file as the original rationale and detailed idea source; use the active plan for execution status.
 
 ## Goal
 

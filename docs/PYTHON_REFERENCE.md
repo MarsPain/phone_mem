@@ -14,7 +14,19 @@ The Python reference implements a local-only memory service under `phone_mem/`:
 - `context`: runtime-neutral context bundle assembly and budget accounting.
 - `governance`: permission grants, audit records, and memory views.
 
-The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The completed Stage 1.5 track adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider.
+The reference version is intentionally deterministic. It is the executable oracle for future mobile behavior, not the final phone runtime. The completed Stage 1.5 track adds a separate Python LLM Agent runtime around this service so real provider-backed demos can be built without making the memory core depend on a model provider. The active Stage 1.7 plan will deepen this Python oracle with runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before mobile implementation resumes.
+
+## Active Maturation Plan
+
+Stage 1.7 is tracked by [exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md](exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md). While that plan is active, treat Python as the only implementation target and do not maintain stale mobile TypeScript boundary files.
+
+The active plan preserves these constraints:
+
+- canonical memory events and SQLite-backed storage remain the source of truth;
+- runtime and context additions must use governed service APIs;
+- derived capsules, relation edges, summaries, and score explanations must retain evidence event IDs;
+- deletion tombstones must invalidate derived projections;
+- future-mobile fixtures are refreshed only after Python behavior stabilizes.
 
 ## Product-Style Demo
 
@@ -333,22 +345,22 @@ The lifecycle explanation contains:
 
 Rejected writes are not persisted as memory events. They are represented by denied audit records and `MemoryPermissionDenied`.
 
-## Mobile Contract Fixtures
+## Future-Mobile Contract Fixtures
 
-The Python reference is also the executable oracle for future mobile TypeScript behavior. Shared contract fixtures live under `tests/fixtures/memory_service/` and are validated by:
+The Python reference is also the executable oracle for future mobile behavior. Shared contract fixtures live under `tests/fixtures/memory_service/` and are validated by:
 
 ```bash
 uv run python -m unittest tests.test_stage2_mobile_contract_fixtures
 ```
 
-Those fixtures cover canonical events, permission grants, retrieval results, context bundles, tombstones, audit records, lifecycle explanations for correction and quarantine, and structured service errors for permission denial and missing events.
+Those fixtures cover canonical events, permission grants, retrieval results, context bundles, tombstones, audit records, lifecycle explanations for correction and quarantine, and structured service errors for permission denial and missing events. They are not a maintained TypeScript boundary during Stage 1.7; the mobile workspace should be recreated after Python behavior stabilizes.
 
 ## Maintenance Guidance
 
 The Python memory core remains the reference oracle. Keep future changes to `phone_mem.personal_memory_service`, `phone_mem.context`, and `phone_mem.governance` scoped to behavior that preserves or clarifies that oracle:
 
 - bug fixes in reference behavior;
-- contract fixture updates needed for mobile parity;
+- contract fixture updates needed for future mobile parity;
 - small documentation or example clarifications;
 - lifecycle, retrieval, permission, or service-error clarifications discovered while implementing Stage 2;
 - tests for every behavior change.

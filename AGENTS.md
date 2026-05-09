@@ -37,5 +37,6 @@ uv run python -m unittest discover -s tests
 - Stage 1 Python reference memory core is implemented under `phone_mem/`.
 - Stage 1.5 Python LLM Agent runtime is implemented under `phone_mem/agent_runtime/`.
 - Stage 1.6 local Python Web Lab is implemented under `phone_mem/web_lab/`.
+- Stage 1.7 Python Agentic Memory Lifecycle Maturation is active; keep mobile work deferred and do not preserve stale TypeScript mobile boundaries while the Python oracle deepens.
 - No production mobile runtime exists yet.
-- There is no active execution plan in [docs/PLANS.md](docs/PLANS.md); mobile work is deferred until a separate Stage 2 plan is accepted.
+- The active execution plan is tracked in [docs/PLANS.md](docs/PLANS.md); mobile work remains deferred until Stage 1.7 stabilizes and a separate Stage 2 plan is accepted.

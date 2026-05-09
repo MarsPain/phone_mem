@@ -8,7 +8,7 @@
 
 ## Active
 
-No active execution plan.
+- [Python Agentic Memory Lifecycle Maturation](exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md): active Stage 1.7 Python-only track for runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before Stage 2 mobile work resumes.
 
 ## Completed
 
@@ -25,5 +25,5 @@ No active execution plan.
 ## Tech Debt
 
 - [Open architecture risks](exec-plans/tech-debt/open-architecture-risks.md)
-- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until a separate Stage 2 execution plan is accepted.
-- [OpenClaw-inspired memory optimizations](exec-plans/tech-debt/openclaw-inspired-memory-optimizations.md): proposed future track for governed capture, hot capsules, hybrid retrieval, graph projection, and maintenance workflows.
+- [Deferred Stage 2 mobile runtime prototype](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md): parked until Stage 1.7 stabilizes and a separate Stage 2 execution plan is accepted.
+- [OpenClaw-inspired memory optimizations](exec-plans/tech-debt/openclaw-inspired-memory-optimizations.md): original proposed track, now promoted into the active Stage 1.7 Python Agentic Memory Lifecycle Maturation plan.

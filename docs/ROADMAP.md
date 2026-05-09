@@ -50,6 +50,17 @@ Status: completed on 2026-05-05. The Python runtime modules, fake-client tests, 
 
 Status: completed on 2026-05-05. The `phone_mem.web_lab` package, FastAPI routes, server-rendered UI, launch wrapper, and Web Lab tests now exist. Tracked by [PLANS.md](PLANS.md), [design-docs/python-web-lab.md](design-docs/python-web-lab.md), and [exec-plans/completed/2026-05-05-python-web-lab.md](exec-plans/completed/2026-05-05-python-web-lab.md).
 
+## Active Track: Stage 1.7 Python Agentic Memory Lifecycle Maturation
+
+- Add runtime memory protocol rules so the Python Agent knows when to search, capture, correct, and delete memory through governed tools.
+- Add governed session flush capture that turns transcript summaries, user corrections, tool observations, and task state into memory candidates without storing raw transcripts by default.
+- Add hot memory capsules for compact startup context with evidence IDs, omitted-memory reasons, lifecycle state, and separate budget accounting.
+- Upgrade retrieval toward permission-first hybrid ranking with FTS5/BM25, entity, recency, confidence, importance, vector-style extension points, MMR diversity, and score explanations.
+- Add relation graph projections derived from canonical events, plus tombstone-aware invalidation.
+- Add dry-run reflection, defrag, schema maintenance, quality metrics, and refreshed future-mobile contract fixtures after Python behavior stabilizes.
+
+Status: active as of 2026-05-09. This Python-only track intentionally precedes Stage 2 mobile work so the mobile runtime can later target the latest stabilized Python oracle instead of chasing concurrent Python and TypeScript architecture changes. Tracked by [PLANS.md](PLANS.md) and [exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md](exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md).
+
 ## Stage 2: Mobile Runtime Prototype
 
 - React Native and TypeScript app shell for iPhone and Android.
@@ -58,7 +69,7 @@ Status: completed on 2026-05-05. The `phone_mem.web_lab` package, FastAPI routes
 - Governance, audit, correction, deletion, retrieval, and context assembly flows exposed through mobile UI.
 - Contract tests or shared fixtures to keep mobile behavior aligned with the Python reference.
 
-Status: deferred planning. Stage 2 has a documented `mobile/` boundary and Python-backed contract fixtures, but implementation work remains parked until a separate Stage 2 execution plan is accepted. The deferred plan is tracked in [exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
+Status: deferred planning. Stage 2 has no retained TypeScript boundary files while Stage 1.7 is active; implementation work remains parked until Stage 1.7 stabilizes and a separate Stage 2 execution plan is accepted. The deferred plan is tracked in [exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
 
 ## Stage 3: Retrieval, Context, And Semantic Layer
 

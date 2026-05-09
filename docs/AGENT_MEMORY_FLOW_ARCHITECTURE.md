@@ -377,7 +377,7 @@ Embedding 对产品有价值，但不是 canonical memory，也不应该成为 M
 - privacy classification 默认较粗，缺少真实手机端敏感数据分类器。
 - context assembly 只选择 snippets，没有摘要压缩。
 - Web Lab 和 LLM runtime 是开发机体验，不是生产手机运行时。
-- [../mobile/](../mobile/) 还没有完整运行时、SQLite adapter 或测试工具链。
+- Stage 2 mobile 当前不保留 TypeScript boundary、完整运行时、SQLite adapter 或测试工具链；未来应基于 Stage 1.7 后稳定的 Python oracle 重新创建。
 
 如果要继续深入代码，建议按这条路径读：
 

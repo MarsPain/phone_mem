@@ -2,11 +2,11 @@
 
 ## Current State
 
-The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The completed Stage 1.5 track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core. The completed Stage 1.6 track adds a local FastAPI Web Lab for browser-based chat, memory inspection, and turn debugging over the same service and runtime boundaries.
+The repository contains a completed deterministic Python reference implementation of the Personal Memory Service under `phone_mem/`. `main.py` remains a placeholder entrypoint, but the reference package, examples, tests, and contract fixtures are the current executable specification. The completed Stage 1.5 track adds a real LLM-backed Python Agent runtime around this service without moving provider concerns into the memory core. The completed Stage 1.6 track adds a local FastAPI Web Lab for browser-based chat, memory inspection, and turn debugging over the same service and runtime boundaries. The active Stage 1.7 track deepens the Python reference before mobile implementation by adding an agentic memory lifecycle: runtime memory protocol, governed session capture, hot memory capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures.
 
 The product target is still a phone-local Personal Memory Service. Python is not the intended production mobile runtime. It is the fastest way to make the architecture executable, prove lifecycle invariants, and create a test oracle that the mobile runtime can follow.
 
-The Python reference covers the Stage 1 memory core and the completed maturation track: canonical event construction, SQLite persistence, scoped permissions, audit records, governed retrieval, runtime-neutral context assembly, correction, deletion tombstones, lifecycle explanations, structured service errors, mobile contract fixtures, and MVP metrics hooks. It remains a reference implementation rather than the production mobile runtime.
+The Python reference covers the Stage 1 memory core and the completed maturation track: canonical event construction, SQLite persistence, scoped permissions, audit records, governed retrieval, runtime-neutral context assembly, correction, deletion tombstones, lifecycle explanations, structured service errors, future-mobile contract fixtures, and MVP metrics hooks. During Stage 1.7, Python remains the only active implementation target; stale `mobile/` TypeScript boundary files are not retained while the Python oracle is changing.
 
 ## Runtime Tracks
 
@@ -49,11 +49,29 @@ Use FastAPI on the development machine as a local inspection shell around the Py
 
 This track may own app startup, templates, static assets, and in-process turn snapshots. It must not become a parallel memory implementation, and route handlers must keep using `PersonalMemoryService`, `MemoryToolRegistry`, and `AgentRuntime`.
 
+### Track 2.7: Python Agentic Memory Lifecycle Maturation
+
+Use Python to make the memory lifecycle deeper before mobile work resumes. This active track is documented in [exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md](exec-plans/active/2026-05-09-python-agentic-memory-lifecycle-maturation.md) and is intentionally Python-only.
+
+The track adds:
+
+- runtime memory protocol rules in `phone_mem.agent_runtime`;
+- governed session flush capture into `MemoryCandidate` proposals;
+- hot memory capsules in the context layer;
+- permission-first hybrid retrieval and score explanations;
+- relation graph projections derived from canonical events;
+- dry-run reflection, defrag, schema drift, and projection maintenance workflows;
+- quality metrics and refreshed shared fixtures for future mobile parity.
+
+This track may add projections and runtime hooks, but it must not create another canonical memory store. `PersonalMemoryService` and SQLite canonical events remain the source of truth, and all projections must be rebuildable from events, lineage, permissions, and tombstones.
+
 ### Track 3: Real Mobile Runtime Prototype
 
 Use React Native, TypeScript, and on-device SQLite for the first iPhone and Android runtime prototype. In this stage, "service" means an app-internal local service module with clear APIs, not a background daemon.
 
-The TypeScript mobile runtime should mirror the Python reference boundaries:
+This track remains deferred while Stage 1.7 is active. The first mobile implementation should target the refreshed Python oracle after agentic memory lifecycle behavior stabilizes, rather than evolving TypeScript in parallel with large Python retrieval, capture, and context changes.
+
+No TypeScript mobile boundary files are retained during Stage 1.7. When Stage 2 restarts, it should recreate the mobile workspace from the then-current Python oracle. The expected shape remains:
 
 ```text
 mobile/
@@ -123,7 +141,7 @@ phone_mem/
 
 - Keep SQLite and deterministic Python interfaces as the reference baseline before adding vector database or cloud dependencies in later tracks.
 - Treat Python as the reference implementation and test oracle, not the final phone runtime.
-- Keep Python and TypeScript API contracts aligned around the same domain operations: record, search, explain, correct, delete, grant, revoke, audit, and build context.
+- Keep future Python and TypeScript API contracts aligned around the same domain operations: record, search, explain, correct, delete, grant, revoke, audit, and build context.
 - Avoid Python-only architectural assumptions that would fight iOS or Android app lifecycles.
 - Keep event construction separate from storage so ingestion can be tested without persistence.
 - Keep permission filtering inside the retrieval path before ranking output is returned to callers.
