@@ -58,7 +58,7 @@ Provider adapters must not import storage modules or query memory directly. Runt
 - [x] Add provider adapter tests that mock the SDK boundary and do not perform network calls.
 - [x] Create `examples/llm_agent_chat.py` as the real-provider interactive demo.
 - [x] Update `docs/PYTHON_REFERENCE.md` with setup, environment variables, fake-vs-real test policy, and example commands.
-- [x] Update `README.md`, `README.zh-CN.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, and `docs/PLANS.md` as implementation status changes.
+- [x] Update `README.md`, `README.zh.md`, `ARCHITECTURE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, and `docs/PLANS.md` as implementation status changes.
 
 ## Validation
 

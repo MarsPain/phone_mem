@@ -15,6 +15,9 @@ This repository is currently a small Python project plus architecture documents 
 
 ```bash
 uv run python main.py
+uv run python examples/agent_memory_demo.py
+uv run python examples/agent_memory_repl.py
+uv run python examples/web_lab.py --reload
 uv run python scripts/validate_docs.py
 uv run python -m unittest discover -s tests
 ```
@@ -32,5 +35,7 @@ uv run python -m unittest discover -s tests
 
 - `main.py` is still only a placeholder.
 - Stage 1 Python reference memory core is implemented under `phone_mem/`.
+- Stage 1.5 Python LLM Agent runtime is implemented under `phone_mem/agent_runtime/`.
+- Stage 1.6 local Python Web Lab is implemented under `phone_mem/web_lab/`.
 - No production mobile runtime exists yet.
-- The active planning track is Python reference maturation under [docs/PLANS.md](docs/PLANS.md); mobile work is deferred.
+- There is no active execution plan in [docs/PLANS.md](docs/PLANS.md); mobile work is deferred until a separate Stage 2 plan is accepted.

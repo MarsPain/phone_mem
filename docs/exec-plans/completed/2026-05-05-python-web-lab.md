@@ -78,7 +78,7 @@ phone_mem.web_lab
 - Create `tests/test_web_lab_inspector.py`: cover inspector operations through service APIs.
 - Create `tests/test_web_lab_routes.py`: cover HTML and JSON routes with fake clients and temporary databases.
 - Modify `docs/PYTHON_REFERENCE.md`: document Web Lab setup, run command, environment variables, database path, and test policy.
-- Modify `README.md`, `README.zh-CN.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, and `docs/PLANS.md`: mark Stage 1.6 Web Lab as active developer experience work while keeping Stage 2 mobile deferred.
+- Modify `README.md`, `README.zh.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, and `docs/PLANS.md`: mark Stage 1.6 Web Lab as active developer experience work while keeping Stage 2 mobile deferred.
 
 ## Steps
 
@@ -141,7 +141,7 @@ phone_mem.web_lab
   - Validate with an import-only or argument-level test that does not start a network server.
 
 - [x] Update user-facing documentation.
-  - Files: `README.md`, `README.zh-CN.md`, `docs/PYTHON_REFERENCE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, `docs/PLANS.md`.
+  - Files: `README.md`, `README.zh.md`, `docs/PYTHON_REFERENCE.md`, `docs/BACKEND.md`, `docs/ROADMAP.md`, `docs/PLANS.md`.
   - Document the Web Lab as Stage 1.6 active developer experience work.
   - Document run commands, environment variables, default database path, reset caution, and fake-client test policy.
   - Keep mobile runtime status deferred.
