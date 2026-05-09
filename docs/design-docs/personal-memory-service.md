@@ -24,6 +24,7 @@ The Stage 1 Python reference MVP package should grow around these modules from [
 - `personal_memory_service/storage.py`: SQLite persistence for events, entities, tombstones, permissions, and audit records.
 - `personal_memory_service/retrieval.py`: permission-filtered search over local events.
 - `personal_memory_service/lifecycle.py`: correction, deletion, supersession, contradiction, and tombstone propagation.
+- `personal_memory_service/maintenance.py`: dry-run reflection, defrag, schema drift, and projection health reports.
 - `personal_memory_service/service.py`: orchestration facade for callers.
 - `governance/permissions.py`, `governance/audit.py`, and `governance/views.py`: grants, audit writing, and memory view projection.
 - `context/assembler.py`: context bundle construction after governed retrieval.
@@ -55,6 +56,15 @@ class PersonalMemoryService:
 
     def audit(self, selector: dict) -> list[dict]:
         ...
+
+    def reflect(self) -> object:
+        ...
+
+    def defrag(self) -> object:
+        ...
+
+    def schema_diff(self) -> object:
+        ...
 ```
 
 The product-level SDK facade is documented in [../product-specs/memory-sdk.md](../product-specs/memory-sdk.md).
@@ -74,6 +84,16 @@ The Python reference store keeps common selector, permission, entity, and audit 
 
 Lineage is also projected into an indexed edge table. Event JSON remains canonical, while `lineage_edges` supports explanation and deletion-propagation queries such as "which event supersedes this one" without scanning every event payload.
 
+Relation nodes and relation edges are also local projections. They are rebuildable from canonical event `relations` plus lineage, retain evidence event IDs, and are invalidated when source events become deleted, superseded, or quarantined.
+
+## Maintenance Workflows
+
+Maintenance operations are dry-run report generators. They do not promote semantic or procedural memory, delete duplicates, repair lineage, or rewrite projection state without a separate reviewed operation.
+
+- `reflect()`: proposes semantic candidates from eligible active episodic clusters and procedural candidates from observed task patterns, always with evidence event IDs and review required.
+- `defrag()`: reports duplicate active event groups, stale superseded chains, missing lineage references, and orphaned projection edges.
+- `schema_diff()`: compares observed canonical event fields and relation types against [../DATA.md](../DATA.md) and reports drift.
+
 ## Invariants
 
 - Permission projection happens before retrieval ranking.
@@ -83,6 +103,7 @@ Lineage is also projected into an indexed edge table. Event JSON remains canonic
 - Third-party writes remain app-scoped or quarantined until promoted by policy.
 - Deletion creates tombstones rather than only mutating rows.
 - Selector deletion preflights permissions across the full matched event set before mutating any event.
+- Reflection, defrag, and schema drift checks are non-mutating until a reviewed maintenance action is explicitly accepted.
 - Service APIs return event IDs and evidence metadata for explainability.
 - Runtime adapters cannot bypass service permissions.
 

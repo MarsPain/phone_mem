@@ -49,6 +49,8 @@ class SQLiteSchemaTest(unittest.TestCase):
         self.assertIn("audit_log", table_names)
         self.assertIn("tombstones", table_names)
         self.assertIn("lineage_edges", table_names)
+        self.assertIn("relation_nodes", table_names)
+        self.assertIn("relation_edges", table_names)
 
     def test_initialize_schema_creates_query_indexes(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
@@ -67,6 +69,8 @@ class SQLiteSchemaTest(unittest.TestCase):
         self.assertIn("idx_permissions_caller_operation_expiry", index_names)
         self.assertIn("idx_audit_log_caller_operation_time", index_names)
         self.assertIn("idx_lineage_edges_parent_relation", index_names)
+        self.assertIn("idx_relation_edges_source_event", index_names)
+        self.assertIn("idx_relation_edges_active_nodes", index_names)
 
     def test_connection_uses_row_factory(self) -> None:
         store = SQLiteMemoryStore.connect(":memory:")
@@ -160,6 +164,89 @@ class SQLiteEventPersistenceTest(unittest.TestCase):
         store.insert_event(corrected)
 
         self.assertEqual(store.events_superseding("event-1"), ["event-2"])
+
+    def test_rebuild_relation_projection_derives_active_edges_from_event_relations(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
+        store.initialize_schema()
+        event = replace(
+            make_event("event-1", entity="Project Atlas"),
+            entities=["Project Atlas", "Mira", "calendar_tool"],
+            relations=[
+                {
+                    "type": "person_assigned_to_project",
+                    "source": "Mira",
+                    "source_type": "person",
+                    "target": "Project Atlas",
+                    "target_type": "project",
+                },
+                {
+                    "type": "tool_supports_project",
+                    "source": "calendar_tool",
+                    "source_type": "tool",
+                    "target": "Project Atlas",
+                    "target_type": "project",
+                },
+            ],
+        )
+        store.insert_event(event)
+
+        summary = store.rebuild_relation_projection()
+
+        self.assertEqual(summary, {"events_scanned": 1, "nodes_upserted": 3, "edges_upserted": 2})
+        self.assertEqual(
+            [edge.to_dict() for edge in store.list_relation_edges()],
+            [
+                {
+                    "edge_id": "event-1:person_assigned_to_project:Mira:Project Atlas",
+                    "source_node": "Mira",
+                    "source_type": "person",
+                    "relation_type": "person_assigned_to_project",
+                    "target_node": "Project Atlas",
+                    "target_type": "project",
+                    "evidence_event_ids": ["event-1"],
+                    "lifecycle_state": "active",
+                },
+                {
+                    "edge_id": "event-1:tool_supports_project:calendar_tool:Project Atlas",
+                    "source_node": "calendar_tool",
+                    "source_type": "tool",
+                    "relation_type": "tool_supports_project",
+                    "target_node": "Project Atlas",
+                    "target_type": "project",
+                    "evidence_event_ids": ["event-1"],
+                    "lifecycle_state": "active",
+                },
+            ],
+        )
+
+    def test_relation_projection_edges_are_invalidated_when_source_lifecycle_changes(self) -> None:
+        store = SQLiteMemoryStore.connect(":memory:")
+        self.addCleanup(store.close)
+        store.initialize_schema()
+        event = replace(
+            make_event("event-1"),
+            entities=["bug-42", "credential refresh"],
+            relations=[
+                {
+                    "type": "solved_by",
+                    "source": "bug-42",
+                    "source_type": "error",
+                    "target": "credential refresh",
+                    "target_type": "decision",
+                }
+            ],
+        )
+        store.insert_event(event)
+        store.rebuild_relation_projection()
+
+        store.update_lifecycle("event-1", Lifecycle(state=LifecycleState.QUARANTINED))
+
+        self.assertEqual(store.list_relation_edges(), [])
+        self.assertEqual(
+            [edge.lifecycle_state for edge in store.list_relation_edges(include_inactive=True)],
+            [LifecycleState.QUARANTINED.value],
+        )
 
 
 class SQLitePermissionPersistenceTest(unittest.TestCase):

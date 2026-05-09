@@ -8,6 +8,7 @@ from phone_mem.context.assembler import ContextAssembler
 from phone_mem.context.budgets import ContextBudget
 from phone_mem.context.token_counter import ConservativeTokenCounter
 from phone_mem.governance.audit import AuditLog, AuditSelector
+from phone_mem.personal_memory_service.relations import RelationPath
 from phone_mem.personal_memory_service.events import AuditOperation
 from phone_mem.personal_memory_service.retrieval import MemorySnippet, RetrievalResult
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore
@@ -211,6 +212,34 @@ class ContextAssemblerTest(unittest.TestCase):
         self.assertEqual(bundle.hot_memory_capsules[0].omitted_memory, bundle.omitted_memory)
         self.assertEqual(bundle.safety_metadata["capsule_budget"]["used_tokens"], 4)
         self.assertEqual(bundle.token_budget.used_tokens, 4)
+
+    def test_build_context_accepts_bounded_relation_paths_as_auditable_context(self) -> None:
+        assembler = ContextAssembler()
+        relation_path = RelationPath(
+            nodes=["Mira", "Project Atlas", "credential refresh"],
+            edge_types=["person_assigned_to_project", "solved_by"],
+            evidence_event_ids=["event-2", "event-3"],
+            compression_score=0.67,
+        )
+
+        bundle = assembler.build_context(
+            [make_result("event-1", "User prefers morning planning sessions.")],
+            task={"id": "task-1"},
+            budget=ContextBudget(max_tokens=80, safety_reserve_tokens=10, output_reserve_tokens=20),
+            caller="calendar_agent",
+            relation_paths=[relation_path],
+        )
+
+        self.assertEqual(bundle.relation_paths, [relation_path])
+        self.assertEqual(bundle.evidence_event_ids, ["event-1", "event-2", "event-3"])
+        self.assertEqual(
+            bundle.safety_metadata["relation_projection"],
+            {
+                "bounded": True,
+                "path_count": 1,
+                "evidence_event_ids": ["event-2", "event-3"],
+            },
+        )
 
 
 if __name__ == "__main__":

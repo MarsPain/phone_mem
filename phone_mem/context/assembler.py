@@ -8,6 +8,7 @@ from phone_mem.context.capsules import HotMemoryCapsule, HotMemoryCapsuleBuilder
 from phone_mem.context.token_counter import ConservativeTokenCounter, TokenCounter
 from phone_mem.governance.audit import AuditLog
 from phone_mem.personal_memory_service.events import AuditOperation
+from phone_mem.personal_memory_service.relations import RelationPath
 from phone_mem.personal_memory_service.retrieval import MemorySnippet, RetrievalResult
 
 
@@ -26,6 +27,7 @@ class ContextBundle:
     task: dict[str, Any]
     snippets: list[MemorySnippet]
     hot_memory_capsules: list[HotMemoryCapsule]
+    relation_paths: list[RelationPath]
     evidence_event_ids: list[str]
     token_budget: ContextTokenBudget
     omitted_memory: list[dict[str, str]]
@@ -48,10 +50,12 @@ class ContextAssembler:
         task: dict[str, Any],
         budget: ContextBudget,
         caller: str,
+        relation_paths: list[RelationPath] | None = None,
     ) -> ContextBundle:
         selected: list[MemorySnippet] = []
         omitted: list[dict[str, str]] = []
         used_tokens = 0
+        relation_paths = list(relation_paths or [])
 
         for result in retrieval_results:
             snippet_tokens = self._estimate_tokens(result.snippet)
@@ -66,11 +70,13 @@ class ContextAssembler:
             omitted_memory=omitted,
             available_memory_tokens=budget.available_memory_tokens,
         )
-        evidence_event_ids = self._evidence_event_ids(selected)
+        relation_evidence_event_ids = self._relation_evidence_event_ids(relation_paths)
+        evidence_event_ids = self._evidence_event_ids(selected, relation_evidence_event_ids)
         bundle = ContextBundle(
             task=dict(task),
             snippets=selected,
             hot_memory_capsules=capsule_result.capsules,
+            relation_paths=relation_paths,
             evidence_event_ids=evidence_event_ids,
             token_budget=ContextTokenBudget(
                 max_tokens=budget.max_tokens,
@@ -90,6 +96,11 @@ class ContextAssembler:
                     "used_tokens": capsule_result.used_tokens,
                     "omitted_capsules": capsule_result.omitted_capsules,
                 },
+                "relation_projection": {
+                    "bounded": True,
+                    "path_count": len(relation_paths),
+                    "evidence_event_ids": relation_evidence_event_ids,
+                },
             },
         )
         self._record_audit(caller, task, evidence_event_ids, budget)
@@ -98,10 +109,25 @@ class ContextAssembler:
     def _estimate_tokens(self, snippet: MemorySnippet) -> int:
         return self._token_counter.count(snippet.text)
 
-    def _evidence_event_ids(self, snippets: list[MemorySnippet]) -> list[str]:
+    def _evidence_event_ids(
+        self,
+        snippets: list[MemorySnippet],
+        relation_event_ids: list[str],
+    ) -> list[str]:
         event_ids: list[str] = []
         for snippet in snippets:
             for event_id in snippet.evidence_event_ids:
+                if event_id not in event_ids:
+                    event_ids.append(event_id)
+        for event_id in relation_event_ids:
+            if event_id not in event_ids:
+                event_ids.append(event_id)
+        return event_ids
+
+    def _relation_evidence_event_ids(self, relation_paths: list[RelationPath]) -> list[str]:
+        event_ids: list[str] = []
+        for path in relation_paths:
+            for event_id in path.evidence_event_ids:
                 if event_id not in event_ids:
                     event_ids.append(event_id)
         return event_ids

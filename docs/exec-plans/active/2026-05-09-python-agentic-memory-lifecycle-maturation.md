@@ -128,7 +128,7 @@ Context Assembler
   - Add MMR diversity and score-component explanation metadata.
   - Validate with `uv run python -m unittest tests.test_retrieval tests.test_governance`.
 
-- [ ] Add relation graph projection.
+- [x] Add relation graph projection.
   - Files: `phone_mem/personal_memory_service/relations.py`, `phone_mem/personal_memory_service/storage.py`, `phone_mem/context/assembler.py`, `docs/DATA.md`.
   - Tests: `tests/test_storage.py`, `tests/test_context_assembler.py`.
   - Derive typed relation projections for people, projects, decisions, tasks, tools, errors, and solved-by links from canonical event JSON.
@@ -137,7 +137,7 @@ Context Assembler
   - Track context compression and relation evidence quality before adding heavier ranking strategies such as personalized PageRank.
   - Validate with `uv run python -m unittest tests.test_storage tests.test_context_assembler`.
 
-- [ ] Add reflection, defrag, and schema maintenance.
+- [x] Add reflection, defrag, and schema maintenance.
   - Files: `phone_mem/personal_memory_service/maintenance.py`, `phone_mem/personal_memory_service/service.py`, `docs/design-docs/personal-memory-service.md`.
   - Tests: `tests/test_personal_memory_service.py`, `tests/test_memory_maintenance.py`.
   - Implement dry-run `reflect()` proposals for semantic and procedural candidates from eligible episodic clusters.

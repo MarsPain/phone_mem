@@ -56,6 +56,14 @@ Every persisted memory item must be represented as a structured event before ind
 - Context bundles are projections, not canonical memory. They must preserve event IDs so later correction or deletion remains traceable.
 - Private-compute eligibility is explicit metadata. It is not implied by `personal` privacy level.
 
+## Relation Projection
+
+Relation nodes and edges are rebuildable projections from canonical event JSON and lineage, not a second memory store. The Python reference stores them in SQLite only to support bounded context compression and future ranking experiments.
+
+Structured event `relations` may declare typed links with `type`, `source`, `target`, and optional `source_type` or `target_type`. Supported node categories include `person`, `project`, `decision`, `task`, `tool`, `error`, `memory_event`, and generic `entity`. Lineage is projected as event-to-event links such as `lineage_parent`, `derived_from`, and `supersedes`.
+
+Relation edges must retain evidence event IDs and the source event lifecycle state. Active relation reads exclude edges whose source event has become `deleted`, `superseded`, or `quarantined`; rebuilding the projection from active canonical events must produce the same active graph.
+
 ## Lifecycle
 
 1. Filter: reject low-signal or unauthorized input.

@@ -29,6 +29,7 @@ from phone_mem.personal_memory_service.events import (
     Quality,
     ValidTime,
 )
+from phone_mem.personal_memory_service.relations import RelationEdge, RelationProjectionBuilder
 
 
 class StorageError(RuntimeError):
@@ -122,6 +123,24 @@ class SQLiteMemoryStore:
                 foreign key (child_event_id) references memory_events(event_id)
             );
 
+            create table if not exists relation_nodes (
+                node text primary key,
+                node_type text not null
+            );
+
+            create table if not exists relation_edges (
+                edge_id text primary key,
+                source_node text not null,
+                source_type text not null,
+                relation_type text not null,
+                target_node text not null,
+                target_type text not null,
+                source_event_id text not null,
+                evidence_event_ids_json text not null,
+                lifecycle_state text not null,
+                foreign key (source_event_id) references memory_events(event_id)
+            );
+
             create index if not exists idx_memory_events_lifecycle_app_layer_created
             on memory_events(lifecycle_state, source_app, memory_layer, created_at);
 
@@ -136,6 +155,12 @@ class SQLiteMemoryStore:
 
             create index if not exists idx_lineage_edges_parent_relation
             on lineage_edges(parent_event_id, relation, child_event_id);
+
+            create index if not exists idx_relation_edges_source_event
+            on relation_edges(source_event_id, lifecycle_state);
+
+            create index if not exists idx_relation_edges_active_nodes
+            on relation_edges(lifecycle_state, source_node, target_node, relation_type);
             """
         )
         self._initialize_fts_projection()
@@ -291,6 +316,14 @@ class SQLiteMemoryStore:
                 event_id,
             ),
         )
+        self.connection.execute(
+            """
+            update relation_edges
+            set lifecycle_state = ?
+            where source_event_id = ?
+            """,
+            (lifecycle.state.value, event_id),
+        )
         self._commit_if_needed()
 
     def write_tombstone(self, tombstone: TombstoneRecord) -> None:
@@ -336,6 +369,77 @@ class SQLiteMemoryStore:
             (event_id,),
         ).fetchall()
         return [row["child_event_id"] for row in rows]
+
+    def rebuild_relation_projection(self) -> dict[str, int]:
+        builder = RelationProjectionBuilder()
+        events = self.query_events(MemorySelector(lifecycle_states=[LifecycleState.ACTIVE]))
+        nodes_upserted = 0
+        edges_upserted = 0
+
+        with self.transaction():
+            self.connection.execute("delete from relation_edges")
+            self.connection.execute("delete from relation_nodes")
+            for event in events:
+                projection = builder.build_for_event(event)
+                for node in projection.nodes:
+                    self.connection.execute(
+                        """
+                        insert or replace into relation_nodes (node, node_type)
+                        values (?, ?)
+                        """,
+                        (node.node, node.node_type),
+                    )
+                    nodes_upserted += 1
+                for edge in projection.edges:
+                    self.connection.execute(
+                        """
+                        insert or replace into relation_edges (
+                            edge_id, source_node, source_type, relation_type,
+                            target_node, target_type, source_event_id,
+                            evidence_event_ids_json, lifecycle_state
+                        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            edge.edge_id,
+                            edge.source_node,
+                            edge.source_type,
+                            edge.relation_type,
+                            edge.target_node,
+                            edge.target_type,
+                            event.event_id,
+                            json.dumps(edge.evidence_event_ids, sort_keys=True),
+                            edge.lifecycle_state,
+                        ),
+                    )
+                    edges_upserted += 1
+
+        return {
+            "events_scanned": len(events),
+            "nodes_upserted": nodes_upserted,
+            "edges_upserted": edges_upserted,
+        }
+
+    def list_relation_edges(self, *, include_inactive: bool = False) -> list[RelationEdge]:
+        sql = ["select * from relation_edges"]
+        params: list[str] = []
+        if not include_inactive:
+            sql.append("where lifecycle_state = ?")
+            params.append(LifecycleState.ACTIVE.value)
+        sql.append("order by edge_id")
+        rows = self.connection.execute(" ".join(sql), params).fetchall()
+        return [
+            RelationEdge(
+                edge_id=row["edge_id"],
+                source_node=row["source_node"],
+                source_type=row["source_type"],
+                relation_type=row["relation_type"],
+                target_node=row["target_node"],
+                target_type=row["target_type"],
+                evidence_event_ids=list(json.loads(row["evidence_event_ids_json"])),
+                lifecycle_state=row["lifecycle_state"],
+            )
+            for row in rows
+        ]
 
     def insert_permission_grant(self, grant: PermissionGrant) -> None:
         operation = self._permission_operation_index_value(grant)

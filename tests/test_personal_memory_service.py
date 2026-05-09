@@ -360,6 +360,20 @@ class PersonalMemoryServiceTest(unittest.TestCase):
         self.assertEqual(second.lifecycle.state, LifecycleState.ACTIVE)
         self.assertEqual(service.store.list_tombstones(), [])
 
+    def test_maintenance_facade_exposes_dry_run_reports(self) -> None:
+        service = PersonalMemoryService.in_memory(
+            clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC)
+        )
+        self.addCleanup(service.close)
+
+        reflection = service.reflect()
+        defrag = service.defrag()
+        schema_diff = service.schema_diff()
+
+        self.assertEqual(reflection.mutates_store, False)
+        self.assertEqual(defrag.mutates_store, False)
+        self.assertEqual(schema_diff.mutates_store, False)
+
 
 if __name__ == "__main__":
     unittest.main()

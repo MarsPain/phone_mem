@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from itertools import count
+from pathlib import Path
 from uuid import uuid4
 
 from phone_mem.governance.audit import AuditLog, AuditSelector
@@ -22,6 +23,12 @@ from phone_mem.personal_memory_service.events import (
 )
 from phone_mem.personal_memory_service.errors import MemoryEventNotFound, MemoryPermissionDenied
 from phone_mem.personal_memory_service.lifecycle import MemoryLifecycleValidator
+from phone_mem.personal_memory_service.maintenance import MemoryMaintenance
+from phone_mem.personal_memory_service.maintenance_reports import (
+    DefragReport,
+    ReflectionReport,
+    SchemaDiffReport,
+)
 from phone_mem.personal_memory_service.metrics import MemoryServiceMetrics
 from phone_mem.personal_memory_service.retrieval import LocalMemoryRetriever, RetrievalResult
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore, TombstoneRecord
@@ -36,6 +43,7 @@ class PersonalMemoryService:
     retriever: LocalMemoryRetriever
     context_assembler: ContextAssembler
     lifecycle_validator: MemoryLifecycleValidator
+    maintenance: MemoryMaintenance
     metrics: MemoryServiceMetrics
     clock: Callable[[], datetime]
     tombstone_id_factory: Callable[[], str]
@@ -75,6 +83,7 @@ class PersonalMemoryService:
         context_assembler = ContextAssembler(audit_log=audit_log)
         metrics = MemoryServiceMetrics(store)
         lifecycle_validator = MemoryLifecycleValidator(store)
+        maintenance = MemoryMaintenance(store)
         return cls(
             store=store,
             constructor=constructor,
@@ -83,6 +92,7 @@ class PersonalMemoryService:
             retriever=retriever,
             context_assembler=context_assembler,
             lifecycle_validator=lifecycle_validator,
+            maintenance=maintenance,
             metrics=metrics,
             clock=resolved_clock,
             tombstone_id_factory=tombstone_id_factory or (lambda: str(uuid4())),
@@ -359,6 +369,15 @@ class PersonalMemoryService:
 
     def metrics_snapshot(self) -> dict[str, dict[str, object]]:
         return self.metrics.snapshot()
+
+    def reflect(self) -> ReflectionReport:
+        return self.maintenance.reflect()
+
+    def defrag(self) -> DefragReport:
+        return self.maintenance.defrag()
+
+    def schema_diff(self, *, data_doc_path: Path | None = None) -> SchemaDiffReport:
+        return self.maintenance.schema_diff(data_doc_path=data_doc_path)
 
     def close(self) -> None:
         self.store.close()
