@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from phone_mem.context.budgets import ContextBudget
+from phone_mem.context.capsules import HotMemoryCapsule, HotMemoryCapsuleBuilder
 from phone_mem.context.token_counter import ConservativeTokenCounter, TokenCounter
 from phone_mem.governance.audit import AuditLog
 from phone_mem.personal_memory_service.events import AuditOperation
@@ -24,6 +25,7 @@ class ContextTokenBudget:
 class ContextBundle:
     task: dict[str, Any]
     snippets: list[MemorySnippet]
+    hot_memory_capsules: list[HotMemoryCapsule]
     evidence_event_ids: list[str]
     token_budget: ContextTokenBudget
     omitted_memory: list[dict[str, str]]
@@ -59,10 +61,16 @@ class ContextAssembler:
             selected.append(result.snippet)
             used_tokens += snippet_tokens
 
+        capsule_result = HotMemoryCapsuleBuilder(self._token_counter).build(
+            selected,
+            omitted_memory=omitted,
+            available_memory_tokens=budget.available_memory_tokens,
+        )
         evidence_event_ids = self._evidence_event_ids(selected)
         bundle = ContextBundle(
             task=dict(task),
             snippets=selected,
+            hot_memory_capsules=capsule_result.capsules,
             evidence_event_ids=evidence_event_ids,
             token_budget=ContextTokenBudget(
                 max_tokens=budget.max_tokens,
@@ -76,6 +84,12 @@ class ContextAssembler:
             safety_metadata={
                 "memory_is_data_not_instruction": True,
                 "runtime_neutral": True,
+                "capsule_budget": {
+                    "separate_from_snippets": True,
+                    "budget_tokens": capsule_result.budget_tokens,
+                    "used_tokens": capsule_result.used_tokens,
+                    "omitted_capsules": capsule_result.omitted_capsules,
+                },
             },
         )
         self._record_audit(caller, task, evidence_event_ids, budget)

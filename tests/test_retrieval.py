@@ -16,7 +16,7 @@ from phone_mem.personal_memory_service.events import (
     MemorySelector,
     PrivacyLevel,
 )
-from phone_mem.personal_memory_service.retrieval import LocalMemoryRetriever
+from phone_mem.personal_memory_service.retrieval import HybridRetrievalWeights, LocalMemoryRetriever
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore
 from tests.test_storage import make_event
 
@@ -204,6 +204,124 @@ class LocalMemoryRetrieverTest(unittest.TestCase):
 
         self.assertEqual([result.event_id for result in results], ["event-1"])
         self.assertIn("喝咖啡", results[0].explanation["matched_terms"])
+
+    def test_hybrid_ranking_explains_bm25_and_weighted_score_components(self) -> None:
+        store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
+        weak = replace(
+            make_event("event-1", entity="planning"),
+            semantic_description="User mentioned planning.",
+        )
+        strong_bm25 = replace(
+            make_event("event-2", entity="planning"),
+            semantic_description="planning planning planning launch review",
+        )
+        store.insert_event(weak)
+        store.insert_event(strong_bm25)
+        permissions.grant(
+            "calendar_agent",
+            PermissionScope(operations=[AuditOperation.READ], entities=["planning"]),
+            duration_seconds=60,
+        )
+        retriever = LocalMemoryRetriever(
+            store=store,
+            projector=MemoryViewProjector(permissions),
+            audit_log=audit,
+            clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC),
+            weights=HybridRetrievalWeights(lexical=0.2, bm25=1.0, entity=0.0),
+        )
+
+        results = retriever.search("planning launch", caller="calendar_agent")
+
+        self.assertEqual(results[0].event_id, "event-2")
+        self.assertIn("bm25_score", results[0].explanation)
+        self.assertIn("score_components", results[0].explanation)
+        self.assertEqual(results[0].explanation["score_weights"]["bm25"], 1.0)
+        self.assertGreater(results[0].explanation["score_components"]["bm25"], 0.0)
+
+    def test_vector_ranker_runs_after_permission_filtering(self) -> None:
+        class RecordingVectorRanker:
+            def __init__(self) -> None:
+                self.seen_event_ids: list[str] = []
+
+            def rank(self, query: str, events: list[object]) -> dict[str, float]:
+                self.seen_event_ids = [event.event_id for event in events]
+                return {event.event_id: 1.0 for event in events}
+
+        store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
+        authorized = replace(
+            make_event("event-1", app="system_assistant", entity="planning"),
+            semantic_description="User prefers morning planning sessions.",
+        )
+        denied = replace(
+            make_event("event-2", app="health", entity="health"),
+            semantic_description="User takes insulin before breakfast.",
+        )
+        store.insert_event(authorized)
+        store.insert_event(denied)
+        permissions.grant(
+            "calendar_agent",
+            PermissionScope(
+                operations=[AuditOperation.READ],
+                apps=["system_assistant"],
+                privacy_levels=[PrivacyLevel.PERSONAL],
+            ),
+            duration_seconds=60,
+        )
+        vector_ranker = RecordingVectorRanker()
+        retriever = LocalMemoryRetriever(
+            store=store,
+            projector=MemoryViewProjector(permissions),
+            audit_log=audit,
+            clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC),
+            vector_ranker=vector_ranker,
+            weights=HybridRetrievalWeights(lexical=0.0, bm25=0.0, vector=1.0),
+        )
+
+        results = retriever.search("insulin planning", caller="calendar_agent")
+
+        self.assertEqual(vector_ranker.seen_event_ids, ["event-1"])
+        self.assertEqual([result.event_id for result in results], ["event-1"])
+        self.assertEqual(results[0].explanation["score_components"]["vector"], 1.0)
+
+    def test_mmr_diversifies_top_k_when_high_ranked_results_share_entities(self) -> None:
+        store, permissions, audit = make_retrieval_stack()
+        self.addCleanup(store.close)
+        launch_first = replace(
+            make_event("event-1", entity="launch"),
+            semantic_description="planning launch checklist review",
+            entities=["launch"],
+        )
+        launch_duplicate = replace(
+            make_event("event-2", entity="launch"),
+            semantic_description="planning launch checklist review followup",
+            entities=["launch"],
+        )
+        calendar = replace(
+            make_event("event-3", entity="calendar"),
+            semantic_description="planning calendar review",
+            entities=["calendar"],
+        )
+        store.insert_event(launch_first)
+        store.insert_event(launch_duplicate)
+        store.insert_event(calendar)
+        permissions.grant(
+            "calendar_agent",
+            PermissionScope(operations=[AuditOperation.READ], entities=["launch", "calendar"]),
+            duration_seconds=60,
+        )
+        retriever = LocalMemoryRetriever(
+            store=store,
+            projector=MemoryViewProjector(permissions),
+            audit_log=audit,
+            clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC),
+        )
+
+        results = retriever.search("planning review", caller="calendar_agent", top_k=2)
+
+        self.assertEqual([result.event_id for result in results], ["event-1", "event-3"])
+        self.assertLess(results[1].explanation["mmr_diversity_penalty"], 0.5)
 
 
 if __name__ == "__main__":

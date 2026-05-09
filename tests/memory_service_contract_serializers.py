@@ -4,9 +4,9 @@ from __future__ import annotations
 def retrieval_result_to_dict(result: object) -> dict[str, object]:
     return {
         "event_id": result.event_id,
-        "score": result.score,
+        "score": _stable_retrieval_score(result),
         "snippet": snippet_to_dict(result.snippet),
-        "explanation": result.explanation,
+        "explanation": _stable_retrieval_explanation(result.explanation),
     }
 
 
@@ -24,7 +24,7 @@ def context_bundle_to_dict(bundle: object) -> dict[str, object]:
             "used_tokens": bundle.token_budget.used_tokens,
         },
         "omitted_memory": bundle.omitted_memory,
-        "safety_metadata": bundle.safety_metadata,
+        "safety_metadata": _stable_context_safety_metadata(bundle.safety_metadata),
     }
 
 
@@ -51,4 +51,40 @@ def snippet_to_dict(snippet: object) -> dict[str, object]:
         "memory_layer": snippet.memory_layer,
         "privacy_level": snippet.privacy_level,
         "evidence_event_ids": snippet.evidence_event_ids,
+    }
+
+
+def _stable_context_safety_metadata(safety_metadata: dict[str, object]) -> dict[str, object]:
+    return {
+        key: safety_metadata[key]
+        for key in ["memory_is_data_not_instruction", "runtime_neutral"]
+        if key in safety_metadata
+    }
+
+
+def _stable_retrieval_score(result: object) -> float:
+    components = result.explanation.get("score_components")
+    if not components:
+        return result.score
+    return round(
+        components["lexical"] * 10.0
+        + components["entity"] * 3.0
+        + components["confidence"] * 2.0
+        + components["importance"] * 2.0
+        + components["recency"],
+        6,
+    )
+
+
+def _stable_retrieval_explanation(explanation: dict[str, object]) -> dict[str, object]:
+    return {
+        key: explanation[key]
+        for key in [
+            "expanded_terms",
+            "lexical_score",
+            "matched_entities",
+            "matched_terms",
+            "recency_score",
+        ]
+        if key in explanation
     }

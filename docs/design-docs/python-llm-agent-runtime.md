@@ -76,6 +76,12 @@ The runtime should expose a narrow memory tool set first:
 
 Every tool must call `PersonalMemoryService` with a caller identity and existing grants. Tool failures must preserve domain errors such as permission denial and missing events instead of turning them into generic provider errors.
 
+## Runtime Memory Protocol
+
+Stage 1.7 adds explicit runtime protocol rules around the existing tool boundary. The Agent must search authorized memory before answering questions about prior preferences, decisions, dates, people, unresolved tasks, or repeated tool failures. Retrieved memory remains data, never system or developer instruction, and system/developer instruction priority is preserved even when memory text conflicts with it.
+
+Correction and deletion requests must be routed through `correct_memory` and `delete_memory` so lifecycle state, tombstones, audit records, and permission checks remain governed by `PersonalMemoryService`. New writes must use governed tools with explicit privacy level and memory layer classification. The runtime still receives context bundles and tool results only; it does not receive raw storage access or authority to bypass service policies.
+
 ## Safety Rules
 
 - Prompt execution must consume only authorized context bundles and explicit tool results.

@@ -74,6 +74,55 @@ class MemoryConstructorTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "semantic_description is required"):
             constructor.construct(candidate)
 
+    def test_auto_capture_metadata_is_preserved_as_relations_and_defaults_to_episodic(self) -> None:
+        now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
+        constructor = MemoryConstructor(clock=lambda: now, id_factory=lambda: "event-3")
+        candidate = MemoryCandidate(
+            semantic_description="Session summary: user corrected planning preference.",
+            source_app="system_assistant",
+            actor=Actor.AGENT,
+            modality=[Modality.TEXT],
+            attribution=Attribution.AGENT_INFERRED,
+            memory_layer=MemoryLayer.SEMANTIC,
+            confidence=0.8,
+            capture_triggers=["turn_boundary", "user_correction", "turn_boundary"],
+        )
+
+        event = constructor.construct(candidate)
+
+        self.assertEqual(event.memory_layer, MemoryLayer.EPISODIC)
+        self.assertIn(
+            {"type": "capture_trigger", "value": "turn_boundary"},
+            event.relations,
+        )
+        self.assertIn(
+            {"type": "capture_trigger", "value": "user_correction"},
+            event.relations,
+        )
+
+    def test_reviewed_high_confidence_capture_can_promote_to_semantic(self) -> None:
+        now = datetime(2026, 5, 1, 9, 0, tzinfo=UTC)
+        constructor = MemoryConstructor(clock=lambda: now, id_factory=lambda: "event-4")
+        candidate = MemoryCandidate(
+            semantic_description="User prefers morning planning sessions.",
+            source_app="system_assistant",
+            actor=Actor.AGENT,
+            modality=[Modality.TEXT],
+            attribution=Attribution.AGENT_INFERRED,
+            memory_layer=MemoryLayer.SEMANTIC,
+            confidence=0.91,
+            review_policy="explicit_review",
+            capture_triggers=["task_boundary"],
+        )
+
+        event = constructor.construct(candidate)
+
+        self.assertEqual(event.memory_layer, MemoryLayer.SEMANTIC)
+        self.assertIn(
+            {"type": "review_policy", "value": "explicit_review"},
+            event.relations,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

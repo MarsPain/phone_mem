@@ -62,6 +62,18 @@ class MemoryToolRegistry:
                 }
                 for snippet in bundle.snippets
             ],
+            "hot_memory_capsules": [
+                {
+                    "category": capsule.category,
+                    "text": capsule.text,
+                    "evidence_event_ids": list(capsule.evidence_event_ids),
+                    "confidence": capsule.confidence,
+                    "attribution": capsule.attribution,
+                    "lifecycle_state": capsule.lifecycle_state,
+                    "omitted_memory": list(capsule.omitted_memory),
+                }
+                for capsule in bundle.hot_memory_capsules
+            ],
             "safety_metadata": dict(bundle.safety_metadata),
             "token_budget": {
                 "max_tokens": bundle.token_budget.max_tokens,
@@ -91,6 +103,10 @@ class MemoryToolRegistry:
             ),
             caller=self.caller,
         )
+        return {"event_id": event_id}
+
+    def record_candidate(self, candidate: MemoryCandidate) -> dict[str, str]:
+        event_id = self.service.record(candidate, caller=self.caller)
         return {"event_id": event_id}
 
     def explain_memory(self, event_id: str) -> dict[str, Any]:
@@ -138,11 +154,19 @@ class MemoryToolRegistry:
             ),
             ToolDefinition(
                 name="remember",
-                description="Record a user-stated memory through the governed memory service.",
+                description="Record a user-stated memory through the governed memory service with explicit classification.",
                 parameters=_object_schema(
                     {
                         "text": {"type": "string"},
                         "entities": {"type": "array", "items": {"type": "string"}},
+                        "privacy_level": {
+                            "type": "string",
+                            "enum": [level.value for level in PrivacyLevel],
+                        },
+                        "memory_layer": {
+                            "type": "string",
+                            "enum": [layer.value for layer in MemoryLayer],
+                        },
                     },
                     ["text"],
                 ),
@@ -191,6 +215,8 @@ class MemoryToolRegistry:
             return self.remember(
                 str(arguments["text"]),
                 entities=list(arguments.get("entities", [])),
+                privacy_level=str(arguments.get("privacy_level", "personal")),
+                memory_layer=str(arguments.get("memory_layer", "episodic")),
             )
         if name == "explain_memory":
             return self.explain_memory(str(arguments["event_id"]))

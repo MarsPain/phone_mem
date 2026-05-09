@@ -61,6 +61,12 @@ Conflict is a first-class lifecycle state. The service must not silently rewrite
 
 The Python reference narrows read-before-write validation through indexed selectors before applying duplicate or contradiction rules in memory. Duplicate checks use active events with the same source app, entity scope, and memory layer. Contradiction checks use active events with the same source app and overlapping entity scope, then apply the current deterministic preference parser across a small predicate family such as "prefers" and "likes." Later semantic contradiction detectors should keep the same candidate narrowing boundary.
 
+## Governed Session Flush Capture
+
+Stage 1.7 introduces a Python runtime session capture hook that converts otherwise transient interaction state into governed `MemoryCandidate` proposals. Capture can be triggered at turn boundaries, task boundaries, user corrections, context pressure, or tool observations. The runtime captures summaries and observations rather than raw transcript dumps, then writes only through `PersonalMemoryService` so permission checks, duplicate detection, contradiction quarantine, lifecycle state, and audit records remain centralized.
+
+Auto-captured candidates default to episodic memory. Captured semantic or procedural promotion requires explicit review policy metadata and high confidence; otherwise the constructor keeps the event episodic. Capture trigger and review policy metadata are stored as bounded relation entries on the canonical event, preserving the existing event schema while keeping later projection rebuilds traceable.
+
 ## Lifecycle States
 
 - `active`: eligible for permission-filtered retrieval.

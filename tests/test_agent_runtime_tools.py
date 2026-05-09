@@ -90,6 +90,51 @@ class AgentRuntimeMemoryToolsTest(unittest.TestCase):
         self.assertEqual(definitions["search_memory"].parameters["type"], "object")
         self.assertIn("query", definitions["search_memory"].parameters["properties"])
 
+    def test_remember_tool_schema_exposes_governed_classification_fields(self) -> None:
+        tools = MemoryToolRegistry(
+            service=PersonalMemoryService.in_memory(),
+            caller=CALLER,
+            source_app=SOURCE_APP,
+        )
+        self.addCleanup(tools.service.close)
+
+        definitions = {definition.name: definition for definition in tools.tool_definitions()}
+        remember_properties = definitions["remember"].parameters["properties"]
+
+        self.assertIn("privacy_level", remember_properties)
+        self.assertIn("memory_layer", remember_properties)
+        self.assertIn("enum", remember_properties["privacy_level"])
+        self.assertIn("enum", remember_properties["memory_layer"])
+
+    def test_execute_remember_passes_privacy_and_layer_through_governed_service(self) -> None:
+        service = PersonalMemoryService.in_memory(clock=lambda: datetime(2026, 5, 3, tzinfo=UTC))
+        self.addCleanup(service.close)
+        service.grant(
+            CALLER,
+            PermissionScope(
+                operations=[AuditOperation.WRITE, AuditOperation.READ],
+                apps=[SOURCE_APP],
+                privacy_levels=[PrivacyLevel.PUBLIC],
+                memory_layers=[MemoryLayer.SEMANTIC],
+            ),
+            duration_seconds=3_600,
+        )
+        tools = MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP)
+
+        remembered = tools.execute(
+            "remember",
+            {
+                "text": "The beta launch date is May 20.",
+                "entities": ["beta launch"],
+                "privacy_level": "public",
+                "memory_layer": "semantic",
+            },
+        )
+        explanation = tools.explain_memory(remembered["event_id"])
+
+        self.assertEqual(explanation["memory_layer"], "semantic")
+        self.assertEqual(explanation["privacy"]["level"], "public")
+
 
 def _service_with_grant() -> PersonalMemoryService:
     service = PersonalMemoryService.in_memory(clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC))

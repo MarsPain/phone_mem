@@ -8,6 +8,7 @@ from phone_mem.agent_runtime.client import (
     ToolDefinition,
 )
 from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
+from phone_mem.agent_runtime.session_capture import SessionCapture, SessionCaptureInput
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.agent_runtime.openai_client import (
     OpenAICompatibleClient,
@@ -27,6 +28,8 @@ __all__ = [
     "OpenAICompatibleClient",
     "OpenAICompatibleConfigurationError",
     "OpenAICompatibleRequestError",
+    "SessionCapture",
+    "SessionCaptureInput",
     "ToolCall",
     "ToolDefinition",
 ]

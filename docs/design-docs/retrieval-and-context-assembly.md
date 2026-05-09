@@ -32,6 +32,12 @@ The first implementation should use deterministic local retrieval:
 
 The retrieval interface should leave room for embeddings, but embeddings are not canonical memory and should not be required for MVP correctness.
 
+## Hybrid Ranking Projection
+
+Stage 1.7 upgrades retrieval to a hybrid ranking pipeline while preserving the permission-first boundary. Candidate events are still selected and projected through the caller's authorized memory view before ranking-specific signals are used. SQLite FTS5/BM25 is maintained as a rebuildable projection over canonical event text and entities; deterministic lexical and CJK n-gram scoring remain the fallback when FTS does not match or is unavailable.
+
+The Python retriever now merges lexical, BM25, replaceable vector-style, entity, recency, confidence, and importance signals through configurable weights. Defaults are runtime/reference choices, not architecture constants. Vector-style ranking is an injected interface that receives only authorized events, so unauthorized memory is never embedded, scored, or leaked through rank explanations. Final `top_k` selection applies bounded MMR diversity and records score components, weights, BM25/vector contributions, and diversity penalties in explanation metadata.
+
 ## Context Bundle
 
 ```python
@@ -43,12 +49,15 @@ class ContextAssembler:
 A `ContextBundle` contains:
 
 - selected memory snippets;
+- hot memory capsules derived only from selected authorized snippets;
 - source event IDs;
 - confidence and attribution;
 - evidence lineage when available;
 - token budget accounting;
 - safety and system-priority metadata;
 - omitted-memory notes when budget limits require dropping otherwise relevant results.
+
+Hot memory capsules are compact startup projections for stable user-confirmed facts, active constraints, recent decisions, and procedural candidates. They preserve evidence event IDs, confidence, attribution, lifecycle state, and omitted-memory reasons. Capsule construction runs after permission-filtered retrieval and snippet selection, and uses a small budget recorded separately from ordinary retrieval snippet budget so capsules cannot hide context-window pressure.
 
 ## Budget Policy
 

@@ -90,7 +90,7 @@ Context Assembler
   - Keep Stage 2 mobile runtime deferred until this plan is completed or explicitly superseded, and do not preserve stale mobile TypeScript boundary files.
   - Validate with `uv run python scripts/validate_docs.py`.
 
-- [ ] Add runtime memory protocol.
+- [x] Add runtime memory protocol.
   - Files: `phone_mem/agent_runtime/prompts.py`, `phone_mem/agent_runtime/tools.py`, `docs/design-docs/python-llm-agent-runtime.md`.
   - Tests: `tests/test_agent_runtime_prompts.py`, `tests/test_agent_runtime_tools.py`.
   - Add prompt rules requiring memory search before answering questions about prior preferences, decisions, dates, people, unresolved tasks, or repeated tool failures.
@@ -98,16 +98,18 @@ Context Assembler
   - Route correction and deletion through governed tools instead of transient chat context.
   - Validate with `uv run python -m unittest tests.test_agent_runtime_prompts tests.test_agent_runtime_tools`.
 
-- [ ] Add governed session flush capture.
+- [x] Add governed session flush capture.
   - Files: `phone_mem/agent_runtime/session_capture.py`, `phone_mem/agent_runtime/runtime.py`, `phone_mem/personal_memory_service/constructor.py`, `docs/design-docs/memory-lifecycle-and-data-flow.md`.
   - Tests: `tests/test_agent_runtime.py`, `tests/test_memory_constructor.py`.
   - Convert transcript summaries, user corrections, tool observations, and task state into `MemoryCandidate` proposals.
+  - Trigger capture on context budget pressure, turn boundaries, task boundaries, user corrections, and tool observations where important state would otherwise remain transient.
   - Classify captures as episodic by default.
   - Require explicit review policy and sufficient confidence before semantic or procedural promotion.
+  - Treat auto-capture as a system-level fallback for candidate generation, not automatic durable semantic or procedural memory.
   - Reject empty captures, deduplicate repeated captures, quarantine contradictions, and audit accepted writes.
   - Validate with `uv run python -m unittest tests.test_agent_runtime tests.test_memory_constructor`.
 
-- [ ] Add hot memory capsules.
+- [x] Add hot memory capsules.
   - Files: `phone_mem/context/capsules.py`, `phone_mem/context/assembler.py`, `docs/design-docs/retrieval-and-context-assembly.md`.
   - Tests: `tests/test_context_assembler.py`.
   - Build compact capsules from permission-authorized retrieval results.
@@ -115,13 +117,14 @@ Context Assembler
   - Enforce a small capsule budget separate from ordinary retrieval snippets.
   - Validate with `uv run python -m unittest tests.test_context_assembler`.
 
-- [ ] Upgrade retrieval to hybrid ranking.
+- [x] Upgrade retrieval to hybrid ranking.
   - Files: `phone_mem/personal_memory_service/storage.py`, `phone_mem/personal_memory_service/retrieval.py`, `docs/design-docs/retrieval-and-context-assembly.md`.
   - Tests: `tests/test_retrieval.py`, `tests/test_governance.py`.
   - Add SQLite FTS5/BM25 projection over authorized event text.
   - Keep deterministic lexical and CJK retrieval as fallback.
   - Add replaceable vector-ranking interface after permission filtering.
   - Merge lexical, vector-style, entity, recency, confidence, and importance signals through weighted union.
+  - Make score weights configurable; evaluate defaults such as semantic 0.7 and BM25 0.3 through deterministic fixtures instead of treating them as architecture constants.
   - Add MMR diversity and score-component explanation metadata.
   - Validate with `uv run python -m unittest tests.test_retrieval tests.test_governance`.
 
@@ -131,6 +134,7 @@ Context Assembler
   - Derive typed relation projections for people, projects, decisions, tasks, tools, errors, and solved-by links from canonical event JSON.
   - Keep relation nodes and edges rebuildable from canonical events and lineage.
   - Invalidate relation paths when source events are deleted, superseded, or quarantined.
+  - Track context compression and relation evidence quality before adding heavier ranking strategies such as personalized PageRank.
   - Validate with `uv run python -m unittest tests.test_storage tests.test_context_assembler`.
 
 - [ ] Add reflection, defrag, and schema maintenance.
@@ -146,6 +150,7 @@ Context Assembler
   - Files: `phone_mem/personal_memory_service/metrics.py`, `docs/PYTHON_REFERENCE.md`, `docs/ROADMAP.md`, `tests/fixtures/memory_service/*.json`.
   - Tests: `tests/test_service_context_metrics.py`, `tests/test_stage2_mobile_contract_fixtures.py`.
   - Track retrieval hit counts, score component distributions, context compression ratio, capsule token use, omitted-memory reasons, capture proposal counts, reflection acceptance rate, deletion propagation coverage, and audit completeness.
+  - Use compression metrics to compare flat retrieval, capsule assembly, bounded relation paths, and any later graph-ranking experiments.
   - Refresh future-mobile contract fixtures only after Python behavior stabilizes.
   - Validate with `uv run python -m unittest tests.test_service_context_metrics tests.test_stage2_mobile_contract_fixtures`.
 

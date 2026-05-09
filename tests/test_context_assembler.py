@@ -31,6 +31,32 @@ def make_result(event_id: str, text: str, *, score: float = 10.0) -> RetrievalRe
     )
 
 
+def make_snippet_result(
+    event_id: str,
+    text: str,
+    *,
+    attribution: str = "user_stated",
+    confidence: float = 0.9,
+    memory_layer: str = "episodic",
+    score: float = 10.0,
+) -> RetrievalResult:
+    return RetrievalResult(
+        event_id=event_id,
+        score=score,
+        snippet=MemorySnippet(
+            event_id=event_id,
+            text=text,
+            source_app="system_assistant",
+            attribution=attribution,
+            confidence=confidence,
+            memory_layer=memory_layer,
+            privacy_level="personal",
+            evidence_event_ids=[event_id],
+        ),
+        explanation={"matched_terms": ["planning"]},
+    )
+
+
 class ContextAssemblerTest(unittest.TestCase):
     def test_build_context_preserves_evidence_and_budget_accounting(self) -> None:
         assembler = ContextAssembler()
@@ -124,6 +150,67 @@ class ContextAssemblerTest(unittest.TestCase):
         )
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0].affected_event_ids, ["event-1"])
+
+    def test_build_context_adds_hot_memory_capsules_from_authorized_snippets(self) -> None:
+        assembler = ContextAssembler()
+
+        bundle = assembler.build_context(
+            [
+                make_snippet_result(
+                    "event-1",
+                    "User prefers morning planning sessions.",
+                    attribution="user_stated",
+                    confidence=0.96,
+                ),
+                make_snippet_result(
+                    "event-2",
+                    "User decided to move the launch review to Friday.",
+                    confidence=0.91,
+                ),
+                make_snippet_result(
+                    "event-3",
+                    "When calendar sync fails twice, retry after refreshing credentials.",
+                    attribution="agent_inferred",
+                    confidence=0.86,
+                    memory_layer="procedural",
+                ),
+            ],
+            task={"id": "task-1"},
+            budget=ContextBudget(max_tokens=150, safety_reserve_tokens=10, output_reserve_tokens=20),
+            caller="calendar_agent",
+        )
+
+        capsule_categories = [capsule.category for capsule in bundle.hot_memory_capsules]
+        self.assertIn("stable_user_confirmed_fact", capsule_categories)
+        self.assertIn("recent_decision", capsule_categories)
+        self.assertIn("procedural_candidate", capsule_categories)
+        self.assertEqual(bundle.hot_memory_capsules[0].lifecycle_state, "active")
+        self.assertEqual(bundle.hot_memory_capsules[0].evidence_event_ids, ["event-1"])
+        self.assertEqual(bundle.safety_metadata["capsule_budget"]["separate_from_snippets"], True)
+
+    def test_capsules_include_budget_omission_reasons_under_separate_budget(self) -> None:
+        class FixedTokenCounter:
+            def count(self, text: str) -> int:
+                if text.startswith("capsule:"):
+                    return 4
+                return 4 if "short" in text else 100
+
+        assembler = ContextAssembler(token_counter=FixedTokenCounter())
+
+        bundle = assembler.build_context(
+            [
+                make_snippet_result("event-1", "short memory", confidence=0.95),
+                make_snippet_result("event-2", "large memory", confidence=0.95),
+            ],
+            task={"id": "task-1"},
+            budget=ContextBudget(max_tokens=18, safety_reserve_tokens=5, output_reserve_tokens=5),
+            caller="calendar_agent",
+        )
+
+        self.assertEqual(bundle.omitted_memory, [{"event_id": "event-2", "reason": "budget_exhausted"}])
+        self.assertEqual(bundle.hot_memory_capsules[0].omitted_memory, bundle.omitted_memory)
+        self.assertEqual(bundle.safety_metadata["capsule_budget"]["used_tokens"], 4)
+        self.assertEqual(bundle.token_budget.used_tokens, 4)
 
 
 if __name__ == "__main__":

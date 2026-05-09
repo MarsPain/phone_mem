@@ -42,6 +42,8 @@ class MemoryCandidate:
     freshness_half_life_days: int = 30
     valid_at: datetime | None = None
     lineage: Lineage = field(default_factory=Lineage)
+    capture_triggers: list[str] = field(default_factory=list)
+    review_policy: str | None = None
 
 
 class MemoryConstructor:
@@ -70,10 +72,10 @@ class MemoryConstructor:
             created_at=created_at,
             valid_time=ValidTime(start=valid_at),
             event_type=candidate.event_type or self._default_event_type(candidate),
-            memory_layer=candidate.memory_layer or self._default_memory_layer(candidate),
+            memory_layer=self._memory_layer(candidate),
             semantic_description=description,
             entities=self._normalize_strings(candidate.entities),
-            relations=list(candidate.relations),
+            relations=self._relations(candidate),
             source=EventSource(
                 app=candidate.source_app.strip(),
                 actor=candidate.actor,
@@ -104,6 +106,16 @@ class MemoryConstructor:
             return MemoryLayer.SEMANTIC
         return MemoryLayer.EPISODIC
 
+    def _memory_layer(self, candidate: MemoryCandidate) -> MemoryLayer:
+        requested = candidate.memory_layer or self._default_memory_layer(candidate)
+        if not candidate.capture_triggers:
+            return requested
+        if requested not in {MemoryLayer.SEMANTIC, MemoryLayer.PROCEDURAL}:
+            return requested
+        if candidate.review_policy and candidate.confidence >= 0.9:
+            return requested
+        return MemoryLayer.EPISODIC
+
     def _default_privacy_level(self, candidate: MemoryCandidate) -> PrivacyLevel:
         if candidate.attribution == Attribution.APP_SYNCED:
             return PrivacyLevel.PERSONAL
@@ -131,3 +143,17 @@ class MemoryConstructor:
             if stripped and stripped not in normalized:
                 normalized.append(stripped)
         return normalized
+
+    def _relations(self, candidate: MemoryCandidate) -> list[dict[str, object]]:
+        relations = list(candidate.relations)
+        for trigger in self._normalize_strings(candidate.capture_triggers):
+            relation = {"type": "capture_trigger", "value": trigger}
+            if relation not in relations:
+                relations.append(relation)
+        if candidate.review_policy is not None:
+            review_policy = candidate.review_policy.strip()
+            if review_policy:
+                relation = {"type": "review_policy", "value": review_policy}
+                if relation not in relations:
+                    relations.append(relation)
+        return relations

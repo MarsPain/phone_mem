@@ -12,7 +12,7 @@ Use the OpenClaw memory review to mature the Python reference from a determinist
 
 ## Scope
 
-This plan is future work. It should be accepted as an active plan only after the current Python reference API remains stable enough to absorb retrieval, context, and lifecycle changes together.
+This file is the historical future-work proposal that was accepted as active Stage 1.7 work after the Python reference API became stable enough to absorb retrieval, context, and lifecycle changes together.
 
 In scope:
 
@@ -95,6 +95,7 @@ Files:
 Implementation notes:
 
 - Convert transcript summaries, user corrections, tool observations, and task state into `MemoryCandidate` objects.
+- Trigger flush capture on context budget pressure, turn boundaries, task boundaries, user corrections, and tool observations where important state would otherwise stay transient.
 - Classify captures as episodic by default; semantic or procedural promotion must require explicit confidence and review policy.
 - Store tool observations with source attribution and caller identity.
 - Do not persist raw transcript payloads by default.
@@ -119,6 +120,7 @@ Implementation notes:
 - Keep deterministic lexical/entity retrieval as a fallback.
 - Add a replaceable vector-ranking interface, but run it only after permission filtering.
 - Merge lexical, vector-style, entity, recency, confidence, and importance scores through weighted union.
+- Treat candidate ratios such as semantic 0.7 and BM25 0.3 as configurable experiment defaults, not fixed architecture.
 - Add MMR diversity and candidate expansion before final `top_k`.
 - Preserve explanation metadata for each score component.
 
@@ -142,6 +144,7 @@ Implementation notes:
 - Extend existing lineage edge indexing with typed relation projections for people, projects, decisions, tasks, tools, errors, and solved-by links.
 - Keep graph nodes and edges derived from canonical event JSON.
 - Add a context builder that can include bounded relation paths with event evidence IDs.
+- Track context compression before committing to heavier graph-ranking strategies such as personalized PageRank.
 - Invalidate relation projections when events are deleted or superseded.
 
 Validation:

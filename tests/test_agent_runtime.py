@@ -5,6 +5,7 @@ import unittest
 
 from phone_mem.agent_runtime.client import FakeLLMClient, LLMResponse, ToolCall
 from phone_mem.agent_runtime.runtime import AgentRuntime
+from phone_mem.agent_runtime.session_capture import SessionCapture, SessionCaptureInput
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.governance.permissions import PermissionScope
 from phone_mem.personal_memory_service.constructor import MemoryCandidate
@@ -126,6 +127,82 @@ class AgentRuntimeTest(unittest.TestCase):
         final_request_text = "\n".join(message.content for message in client.requests[1].messages)
         self.assertIn("Tool results:", final_request_text)
         self.assertIn("event-1", final_request_text)
+
+    def test_session_capture_flushes_user_correction_as_governed_episodic_memory(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        client = FakeLLMClient([LLMResponse(text="I updated that preference.")])
+        runtime = AgentRuntime(
+            client=client,
+            model="fake-memory-model",
+            tools=MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP),
+            session_capture=SessionCapture(),
+        )
+
+        response = runtime.run_turn("Actually, I prefer afternoon planning sessions.")
+
+        self.assertEqual(response.captured_event_ids, ["event-1"])
+        captured_event = service.store.get_event("event-1")
+        assert captured_event is not None
+        self.assertEqual(captured_event.memory_layer, MemoryLayer.EPISODIC)
+        self.assertIn(
+            {"type": "capture_trigger", "value": "user_correction"},
+            captured_event.relations,
+        )
+        audit_operations = [record.operation for record in service.audit()]
+        self.assertIn(AuditOperation.WRITE, audit_operations)
+
+    def test_session_capture_rejects_empty_inputs_and_deduplicates_repeated_captures(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        tools = MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP)
+        capture = SessionCapture()
+
+        empty = capture.flush(
+            SessionCaptureInput(trigger="turn_boundary", transcript_summary="  "),
+            tools=tools,
+        )
+        first = capture.flush(
+            SessionCaptureInput(
+                trigger="task_boundary",
+                transcript_summary="User decided to move the launch review to Friday.",
+                task_state={"project": "launch review"},
+            ),
+            tools=tools,
+        )
+        duplicate = capture.flush(
+            SessionCaptureInput(
+                trigger="task_boundary",
+                transcript_summary="User decided to move the launch review to Friday.",
+                task_state={"project": "launch review"},
+            ),
+            tools=tools,
+        )
+
+        self.assertEqual(empty, [])
+        self.assertEqual(first, ["event-1"])
+        self.assertEqual(duplicate, [])
+        self.assertEqual(len(service.search("launch review Friday", caller=CALLER)), 1)
+
+    def test_session_capture_quarantines_contradictory_corrections_through_service_lifecycle(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        tools = MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP)
+        capture = SessionCapture()
+        tools.remember("User prefers morning planning sessions.", entities=["planning sessions"])
+
+        captured = capture.flush(
+            SessionCaptureInput(
+                trigger="user_correction",
+                user_correction="User prefers afternoon planning sessions.",
+                entities=["planning sessions"],
+            ),
+            tools=tools,
+        )
+
+        self.assertEqual(captured, ["event-2"])
+        explanation = service.explain("event-2", caller=CALLER)
+        self.assertEqual(explanation["lifecycle"]["state"], "quarantined")
 
 
 def _service_with_grant() -> PersonalMemoryService:

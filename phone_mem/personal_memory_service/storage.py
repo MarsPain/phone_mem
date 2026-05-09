@@ -48,6 +48,7 @@ class TombstoneRecord:
 class SQLiteMemoryStore:
     connection: sqlite3.Connection
     _transaction_depth: int = 0
+    _fts_enabled: bool = False
 
     @classmethod
     def connect(cls, path: str = ":memory:") -> SQLiteMemoryStore:
@@ -137,6 +138,7 @@ class SQLiteMemoryStore:
             on lineage_edges(parent_event_id, relation, child_event_id);
             """
         )
+        self._initialize_fts_projection()
         self._commit_if_needed()
 
     def close(self) -> None:
@@ -196,6 +198,7 @@ class SQLiteMemoryStore:
                 (event.event_id, entity),
             )
         self._insert_lineage_edges(event)
+        self._upsert_fts_event(event)
         self._commit_if_needed()
 
     def get_event(self, event_id: str) -> MemoryEvent | None:
@@ -245,6 +248,30 @@ class SQLiteMemoryStore:
 
         rows = self.connection.execute(" ".join(sql), params).fetchall()
         return [self._event_from_dict(json.loads(row["event_json"])) for row in rows]
+
+    def bm25_scores(self, query: str, event_ids: list[str]) -> dict[str, float]:
+        if not self._fts_enabled or not event_ids:
+            return {}
+        match_query = self._fts_query(query)
+        if not match_query:
+            return {}
+        placeholders = self._placeholders(event_ids)
+        try:
+            rows = self.connection.execute(
+                f"""
+                select event_id, bm25(memory_event_fts) as rank
+                from memory_event_fts
+                where memory_event_fts match ?
+                and event_id in ({placeholders})
+                """,
+                [match_query, *event_ids],
+            ).fetchall()
+        except sqlite3.OperationalError:
+            return {}
+        return {
+            row["event_id"]: round(max(-float(row["rank"]), 0.0), 6)
+            for row in rows
+        }
 
     def update_lifecycle(self, event_id: str, lifecycle: Lifecycle) -> None:
         event = self.get_event(event_id)
@@ -473,6 +500,42 @@ class SQLiteMemoryStore:
     def _commit_if_needed(self) -> None:
         if self._transaction_depth == 0:
             self.connection.commit()
+
+    def _initialize_fts_projection(self) -> None:
+        try:
+            self.connection.execute(
+                """
+                create virtual table if not exists memory_event_fts
+                using fts5(event_id unindexed, semantic_description, entities)
+                """
+            )
+        except sqlite3.OperationalError:
+            self._fts_enabled = False
+            return
+        self._fts_enabled = True
+
+    def _upsert_fts_event(self, event: MemoryEvent) -> None:
+        if not self._fts_enabled:
+            return
+        self.connection.execute(
+            "delete from memory_event_fts where event_id = ?",
+            (event.event_id,),
+        )
+        self.connection.execute(
+            """
+            insert into memory_event_fts(event_id, semantic_description, entities)
+            values (?, ?, ?)
+            """,
+            (event.event_id, event.semantic_description, " ".join(event.entities)),
+        )
+
+    def _fts_query(self, query: str) -> str:
+        terms: list[str] = []
+        for raw_term in query.lower().replace('"', " ").split():
+            term = "".join(character for character in raw_term if character.isalnum())
+            if term:
+                terms.append(term)
+        return " ".join(terms)
 
     def _insert_lineage_edges(self, event: MemoryEvent) -> None:
         for relation, parent_event_ids in (

@@ -30,11 +30,11 @@ The strongest transfer is not "use Markdown as the database." Smartphone Agent M
 
 OpenClaw's bootstrap memory maps well to a governed "hot memory capsule" in this project: a small, permission-filtered, token-budgeted projection of stable user facts, active constraints, recent decisions, and procedural hints. It should be generated from canonical events, preserve evidence IDs, and never bypass read permissions.
 
-OpenClaw's daily logs and flush mechanism map to session-to-episodic capture. For this project, a flush should not silently write raw transcripts. It should summarize current interaction state into candidate memory events, apply read-before-write validation, classify privacy, and record audit entries. User correction and high-impact semantic promotion should remain reviewable.
+OpenClaw's daily logs and flush mechanism map to session-to-episodic capture. For this project, a flush should not silently write raw transcripts. It should summarize current interaction state into candidate memory events when context budget pressure, turn boundaries, task boundaries, tool observations, or user corrections make loss likely. The capture path should apply read-before-write validation, classify privacy, and record audit entries. User correction and high-impact semantic promotion should remain reviewable.
 
-The retrieval guidance is directly useful. The current reference retriever is deterministic lexical/entity/recency scoring. A next version can add permission-first FTS5/BM25, a replaceable embedding projection, weighted union, MMR diversity, temporal decay, and candidate expansion, while preserving the invariant that unauthorized memory is never scored or embedded on demand.
+The retrieval guidance is directly useful. The current reference retriever is deterministic lexical/entity/recency scoring. A next version can add permission-first FTS5/BM25, a replaceable embedding projection, weighted union, MMR diversity, temporal decay, and candidate expansion, while preserving the invariant that unauthorized memory is never scored or embedded on demand. Ratios such as semantic 0.7 and BM25 0.3 are useful experiment defaults, not architectural invariants; the reference should expose weights as configuration and validate them with deterministic fixtures.
 
-Graph memory should be a projection, not canonical state. The repository already has lineage edges; OpenClaw suggests extending this into typed relation projections for tasks, skills, people, projects, decisions, errors, and solved-by links. This would improve context assembly for relational questions without weakening deletion propagation, because graph nodes and edges can be rebuilt or invalidated from canonical event lineage and tombstones.
+Graph memory should be a projection, not canonical state. The repository already has lineage edges; OpenClaw suggests extending this into typed relation projections for tasks, skills, people, projects, decisions, errors, and solved-by links. This would improve context assembly for relational questions without weakening deletion propagation, because graph nodes and edges can be rebuilt or invalidated from canonical event lineage and tombstones. Personalized PageRank and community summaries are promising ranking strategies for later experiments, but Stage 1.7 should first make relation evidence, invalidation, and context compression metrics reliable.
 
 OpenClaw's skills and memory protocols are also relevant. This project's agent runtime should learn operational rules such as: search memory before answering past-work questions, record user corrections as candidate memory, record repeated tool failures as procedural candidates, and explain which memory influenced an answer. These rules belong at the runtime/prompt/tool boundary, while actual writes remain governed service operations.
 
@@ -52,7 +52,7 @@ Adopt:
 Adapt:
 
 - Markdown should be an export and review surface, not the canonical phone memory store.
-- Auto-capture should produce candidate events with permissions, privacy classification, audit, and review gates.
+- Auto-capture should be a system-level fallback that produces candidate events with permissions, privacy classification, audit, and review gates; it should not automatically promote high-impact semantic or procedural memory.
 - Bootstrap memory should become permission-scoped hot capsules with evidence IDs, not raw global memory injection.
 - Graph memory should remain a derived projection tied to tombstone propagation.
 - Retrieval-as-tool should coexist with system-triggered recall, both mediated by permissioned service APIs.
@@ -69,10 +69,10 @@ Avoid:
 
 The next architecture improvement should add a layer of "agentic memory operations" above the current deterministic reference core:
 
-1. Session memory capture and flush creates candidate episodic events from runtime transcripts and tool observations.
+1. Session memory capture and flush creates candidate episodic events from runtime summaries and tool observations when context pressure, turn boundaries, task boundaries, corrections, or tool feedback make memory loss likely.
 2. Hot memory capsules provide compact startup context for allowed callers.
-3. Hybrid retrieval improves recall without relaxing permission-first filtering.
-4. Relation projections and graph context builders support multi-hop context assembly.
+3. Hybrid retrieval improves recall without relaxing permission-first filtering, with configurable score weights and deterministic quality fixtures.
+4. Relation projections and graph context builders support multi-hop context assembly before adding heavier graph-ranking strategies such as personalized PageRank.
 5. Reflection and defrag commands produce auditable proposals before changing durable semantic or procedural memory.
 6. Metrics track retrieval quality, context compression, capture precision, deletion propagation, and audit completeness.
 
