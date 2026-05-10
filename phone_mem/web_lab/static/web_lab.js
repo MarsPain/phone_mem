@@ -104,6 +104,20 @@ const addMessage = (role, text, className = "") => {
   log.scrollTop = log.scrollHeight;
 };
 
+const clearChatLog = () => {
+  document.getElementById("chat-log").replaceChildren();
+};
+
+const refreshChat = async () => {
+  const payload = await requestJson("/api/chat/refresh", { method: "POST" });
+  if (payload.ok === false) {
+    addMessage("Error", payload.error.message, "error");
+    return;
+  }
+  clearChatLog();
+  await refreshDebugger();
+};
+
 document.getElementById("chat-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const input = document.getElementById("chat-message");
@@ -182,7 +196,7 @@ document.getElementById("delete-event").addEventListener("click", async () => {
 
 document.getElementById("refresh-memory").addEventListener("click", refreshMemory);
 document.getElementById("refresh-debugger").addEventListener("click", refreshDebugger);
-document.getElementById("refresh-chat").addEventListener("click", refreshDebugger);
+document.getElementById("refresh-chat").addEventListener("click", refreshChat);
 document.getElementById("debug-help-toggle").addEventListener("click", toggleDebuggerHelp);
 document.querySelectorAll("[data-debug-tab]").forEach((tab) => {
   tab.addEventListener("click", () => selectDebuggerTab(tab.dataset.debugTab));

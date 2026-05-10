@@ -69,6 +69,25 @@ class AgentRuntimeSessionTest(unittest.TestCase):
         self.assertIn("user: Question two.", request_text)
         self.assertIn("assistant: Answer two.", request_text)
 
+    def test_clear_history_removes_prior_conversation_context(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        client = FakeLLMClient(
+            [
+                LLMResponse(text="First answer."),
+                LLMResponse(text="Fresh answer."),
+            ]
+        )
+        session = AgentSession(_runtime(client, service))
+
+        session.run_turn("Remember this turn.")
+        session.clear_history()
+        session.run_turn("Start fresh.")
+
+        request_text = "\n".join(message.content for message in client.requests[1].messages)
+        self.assertNotIn("Transient conversation context", request_text)
+        self.assertNotIn("Remember this turn.", request_text)
+
 
 def _runtime(client: FakeLLMClient, service: PersonalMemoryService) -> AgentRuntime:
     return AgentRuntime(

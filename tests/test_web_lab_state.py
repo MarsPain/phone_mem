@@ -97,6 +97,30 @@ class WebLabStateTest(unittest.TestCase):
             self.assertIn("user: Let's plan the launch review.", request_text)
             self.assertIn("assistant: We can prepare a checklist first.", request_text)
 
+    def test_clear_chat_history_removes_snapshots_and_session_context(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            client = FakeLLMClient(
+                [
+                    LLMResponse(text="We can prepare a checklist first."),
+                    LLMResponse(text="Continuing from the checklist."),
+                    LLMResponse(text="Starting fresh."),
+                ]
+            )
+            state = LabState.create(db_path=Path(tmpdir) / "memory.sqlite3", client=client)
+            self.addCleanup(state.close)
+
+            state.run_chat_turn("Let's plan the launch review.")
+            state.run_chat_turn("Continue that.")
+            cleared = state.clear_chat_history()
+            state.run_chat_turn("Start over.")
+
+            request_text = "\n".join(message.content for message in client.requests[2].messages)
+            self.assertEqual(cleared["cleared_turns"], 2)
+            self.assertNotIn("Transient conversation context", request_text)
+            self.assertEqual(len(state.turn_snapshots), 1)
+            self.assertEqual(state.turn_snapshots[0].index, 1)
+            self.assertEqual(state.turn_snapshots[0].user_message, "Start over.")
+
 
 if __name__ == "__main__":
     unittest.main()

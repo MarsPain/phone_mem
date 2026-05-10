@@ -134,6 +134,12 @@ class LabState:
     def snapshots_payload(self) -> dict[str, Any]:
         return {"turns": [snapshot.to_dict() for snapshot in self.turn_snapshots]}
 
+    def clear_chat_history(self) -> dict[str, int]:
+        cleared_turns = len(self.turn_snapshots)
+        self.session.clear_history()
+        self.turn_snapshots.clear()
+        return {"cleared_turns": cleared_turns}
+
     def close(self) -> None:
         self.service.close()
 

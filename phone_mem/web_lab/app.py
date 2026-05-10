@@ -76,6 +76,10 @@ def create_app(state: LabState | None = None) -> FastAPI:
     def turns() -> dict[str, Any]:
         return lab_state.snapshots_payload()
 
+    @app.post("/api/chat/refresh")
+    def refresh_chat() -> dict[str, Any]:
+        return ok_payload(**lab_state.clear_chat_history(), turns=[])
+
     @app.get("/api/memories")
     def memories(include_deleted: bool = False) -> dict[str, Any]:
         return _inspector(lab_state).list_memories(include_deleted=include_deleted)

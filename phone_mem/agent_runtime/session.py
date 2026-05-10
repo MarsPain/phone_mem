@@ -25,6 +25,9 @@ class AgentSession:
         )
         return response
 
+    def clear_history(self) -> None:
+        self._history.clear()
+
     def _recent_history(self) -> list[LLMMessage]:
         if self.max_history_messages <= 0:
             return []

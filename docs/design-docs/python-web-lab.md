@@ -87,7 +87,7 @@ The Chat Panel sends natural-language user messages through an in-process `Agent
 - turn-level errors;
 - a selectable turn history for the current browser session.
 
-The lab supports session-scoped multi-turn chat by default. Recent conversation is transient provider context, not durable memory. The first version does not need persistent chat sessions or multi-conversation management. The SQLite memory store is persistent; browser turn history can remain process or session state.
+The lab supports session-scoped multi-turn chat by default. Recent conversation is transient provider context, not durable memory. The Chat Panel refresh control clears the current transient chat history and turn snapshots without deleting SQLite-backed durable memory. The first version does not need persistent chat sessions or multi-conversation management. The SQLite memory store is persistent; browser turn history can remain process or session state.
 
 ### Memory Inspector
 

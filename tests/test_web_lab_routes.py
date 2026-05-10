@@ -131,6 +131,32 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertEqual(payload["turn"]["captured_event_ids"], payload["captured_event_ids"])
         self.assertEqual(turns.json()["turns"][0]["captured_event_ids"], payload["captured_event_ids"])
 
+    def test_chat_refresh_route_clears_turns_and_session_context(self) -> None:
+        fake_client = FakeLLMClient(
+            [
+                LLMResponse(text="We can prepare a checklist first."),
+                LLMResponse(text="Continuing from the checklist."),
+                LLMResponse(text="Starting fresh."),
+            ]
+        )
+        state = self._state(fake_client)
+        self.addCleanup(state.close)
+
+        with TestClient(create_app(state)) as client:
+            client.post("/api/chat", json={"message": "Let's plan the launch review."})
+            client.post("/api/chat", json={"message": "Continue that."})
+            refresh = client.post("/api/chat/refresh")
+            cleared_turns = client.get("/api/turns")
+            fresh = client.post("/api/chat", json={"message": "Start over."})
+
+        request_text = "\n".join(message.content for message in fake_client.requests[2].messages)
+        self.assertEqual(refresh.status_code, 200)
+        self.assertEqual(refresh.json()["ok"], True)
+        self.assertEqual(refresh.json()["cleared_turns"], 2)
+        self.assertEqual(cleared_turns.json()["turns"], [])
+        self.assertNotIn("Transient conversation context", request_text)
+        self.assertEqual(fresh.json()["turn"]["index"], 1)
+
     def test_memory_inspector_routes_expose_operations(self) -> None:
         state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
         self.addCleanup(state.close)
