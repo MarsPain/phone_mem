@@ -8,7 +8,7 @@
 
 ## Active
 
-- No active execution plan. Stage 2 mobile work remains deferred until a separate plan is accepted.
+- [Stage 1.7 Web Lab Alignment](exec-plans/active/2026-05-10-stage-1-7-web-lab-alignment.md): align the local Python Web Lab with the completed Stage 1.7 Python oracle so runtime capture, hybrid retrieval explanations, hot capsules, relation context, maintenance reports, and quality metrics are inspectable before Stage 2 mobile work resumes.
 
 ## Completed
 
