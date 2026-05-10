@@ -95,7 +95,8 @@ h2 {
 }
 
 .panel-title,
-.row {
+.row,
+.inspector-tools {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -109,6 +110,16 @@ h2 {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.inspector-tools {
+  flex-wrap: wrap;
+}
+
+.inspector-tools span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .stack {
@@ -153,7 +164,7 @@ button[type="button"] {
 
 .debug-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
 }
 

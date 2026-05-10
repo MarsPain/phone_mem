@@ -55,6 +55,15 @@ class MemoryInspector:
     def metrics(self) -> dict[str, Any]:
         return to_jsonable(self._state.service.metrics_snapshot())
 
+    def reflect(self) -> dict[str, Any]:
+        return to_jsonable(self._state.service.reflect())
+
+    def defrag(self) -> dict[str, Any]:
+        return to_jsonable(self._state.service.defrag())
+
+    def schema_diff(self) -> dict[str, Any]:
+        return to_jsonable(self._state.service.schema_diff())
+
     def _guard(self, action: Callable[[], dict[str, Any]]) -> dict[str, Any]:
         try:
             return to_jsonable(action())

@@ -61,6 +61,23 @@ class WebLabStateTest(unittest.TestCase):
             with self.assertRaises(Exception):
                 state.service.store.query_events()
 
+    def test_run_chat_turn_records_captured_event_ids_in_snapshot(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            state = LabState.create(
+                db_path=Path(tmpdir) / "memory.sqlite3",
+                client=FakeLLMClient([LLMResponse(text="Updated.")]),
+            )
+            self.addCleanup(state.close)
+
+            response = state.run_chat_turn("Actually, I prefer afternoon planning sessions.")
+
+            self.assertEqual(state.turn_snapshots[0].captured_event_ids, response.captured_event_ids)
+            self.assertEqual(len(response.captured_event_ids), 1)
+            self.assertEqual(
+                state.snapshots_payload()["turns"][0]["captured_event_ids"],
+                response.captured_event_ids,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

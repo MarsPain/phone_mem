@@ -17,6 +17,7 @@ class TurnSnapshot:
     user_message: str
     response_text: str
     evidence_event_ids: list[str]
+    captured_event_ids: list[str]
     memory_context: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
     error: dict[str, Any] | None = None

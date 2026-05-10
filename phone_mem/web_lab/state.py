@@ -106,6 +106,7 @@ class LabState:
                     user_message=user_message,
                     response_text="",
                     evidence_event_ids=[],
+                    captured_event_ids=[],
                     memory_context=None,
                     tool_results=[],
                     error=serialize_error(exc),
@@ -119,6 +120,7 @@ class LabState:
                 user_message=user_message,
                 response_text=response.text,
                 evidence_event_ids=list(response.evidence_event_ids),
+                captured_event_ids=list(response.captured_event_ids),
                 memory_context=response.memory_context,
                 tool_results=list(response.tool_results),
             )

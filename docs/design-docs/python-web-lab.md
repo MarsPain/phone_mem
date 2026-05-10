@@ -4,6 +4,8 @@
 
 The Python Web Lab is a local developer experience layer over the completed Python Personal Memory Service and Python LLM Agent Runtime. Its job is to make the current Agent feel inspectable in a browser so algorithm and lifecycle problems can be discovered before mobile runtime work resumes.
 
+The Stage 1.6 browser shell is now aligned with the completed Stage 1.7 Python oracle. It exposes runtime capture, hybrid retrieval explanations, hot memory capsules, relation context metadata, dry-run maintenance reports, metrics, audit, correction, and deletion through the existing service/runtime boundary.
+
 This track is a developer-machine lab. It is not the production mobile runtime, not a hosted web product, and not a parallel memory implementation.
 
 ## Product Goal
@@ -12,8 +14,9 @@ The first useful experience should be a single-screen Hybrid Lab where a develop
 
 - chat with a real provider-backed Agent;
 - inspect the memory context and evidence that shaped each answer;
-- search, explain, correct, and delete memory through governed service APIs;
+- search with hybrid retrieval explanations, explain, correct, and delete memory through governed service APIs;
 - see tool calls, tool results, recent audit records, and domain errors for each turn;
+- inspect turn-boundary capture event IDs, hot capsules, omitted-memory reasons, relation paths, token/capsule budget metadata, quality metrics, and maintenance dry-run reports;
 - keep memory across restarts using a local SQLite file.
 
 The lab should help answer questions such as:
@@ -91,12 +94,13 @@ The first version does not need persistent chat sessions or multi-conversation m
 The Memory Inspector exposes current memory state and service operations:
 
 - memory list from reference domain objects, serialized through `to_dict()`;
-- search over authorized memory;
-- context preview for a query;
+- search over authorized memory with score explanations, score components, and score weights from `MemoryToolRegistry.search_memory(...)`;
+- context preview for a query, including hot memory capsules, omitted-memory reasons, relation paths, evidence IDs, safety metadata, and token budget metadata from `MemoryToolRegistry.build_memory_context(...)`;
 - explain by event ID;
 - correct by event ID and replacement text;
 - delete by event ID and reason;
 - metrics and recent audit records.
+- dry-run `reflect()`, `defrag()`, and `schema_diff()` maintenance reports with `mutates_store` visible.
 
 Inspector operations must call `PersonalMemoryService` or `MemoryToolRegistry`. They must not write SQL, bypass grants, or mutate storage directly.
 
@@ -105,9 +109,12 @@ Inspector operations must call `PersonalMemoryService` or `MemoryToolRegistry`. 
 The Turn Debugger displays the selected chat turn's internal evidence:
 
 - memory context snippets and token budget;
+- captured event IDs from runtime session capture;
+- hot memory capsules, omitted-memory reasons, relation paths, capsule budget metadata, and safety metadata;
 - tool calls and tool results;
 - evidence event IDs;
 - recent audit records;
+- dry-run maintenance reports and aggregate quality metrics;
 - provider request errors;
 - domain errors such as permission denial or missing memory.
 
@@ -144,7 +151,7 @@ Suggested responsibilities:
 - `app.py`: FastAPI app factory, route registration, and static/template wiring.
 - `state.py`: `LabState` for service, runtime, tools, database path, caller, source app, and in-process turn snapshots.
 - `schemas.py`: request and response DTOs for routes.
-- `inspector.py`: use cases for memory list, audit list, context preview, and safe reset orchestration if implemented.
+- `inspector.py`: use cases for memory list, audit list, context preview, dry-run maintenance reports, and safe reset orchestration if implemented.
 - `templates/`: server-rendered HTML.
 - `static/`: CSS and small vanilla JavaScript for form submission and panel updates.
 
@@ -177,8 +184,8 @@ Default tests must remain deterministic and network-free:
 
 - state tests should verify file-backed SQLite initialization, permission grants, runtime construction, and shutdown behavior;
 - route tests should use fake clients and a temporary SQLite file;
-- turn tests should verify that memory context, tool results, evidence IDs, and recent audit records are exposed;
-- inspector tests should cover search, context preview, explain, correct, delete, audit, and metrics through service APIs;
+- turn tests should verify that memory context, captured event IDs, tool results, evidence IDs, and recent audit records are exposed;
+- inspector tests should cover search, context preview, explain, correct, delete, audit, metrics, and dry-run maintenance through service APIs;
 - provider-backed manual testing should remain opt-in through environment variables.
 
 Existing full-suite tests and documentation validation should continue to pass:
@@ -218,7 +225,7 @@ uv run python examples/web_lab.py
 - Chat turns use the existing Python `AgentRuntime`.
 - The default provider path is real-first and OpenAI-compatible.
 - Memory persists across restarts through a local SQLite file.
-- The Memory Inspector can search, preview context, explain, correct, and delete memory.
-- The Turn Debugger shows memory context, tool results, evidence IDs, recent audit records, and errors.
+- The Memory Inspector can search with retrieval explanations, preview context, explain, correct, delete memory, and inspect dry-run maintenance reports.
+- The Turn Debugger shows memory context, captured event IDs, hot capsules, omitted-memory reasons, relation paths, maintenance reports, tool results, evidence IDs, recent audit records, metrics, and errors.
 - Default automated tests require no API key and no network access.
-- Documentation makes clear that this is a Stage 1.6 developer experience track and that Stage 2 mobile remains deferred.
+- Documentation makes clear that this is a Stage 1.6 developer experience shell aligned to the Stage 1.7 Python oracle and that Stage 2 mobile remains deferred.

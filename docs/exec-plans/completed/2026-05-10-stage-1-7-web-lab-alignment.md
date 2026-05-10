@@ -2,9 +2,10 @@
 
 > **For agentic workers:** Use `subagent-driven-development` or `executing-plans` to implement this plan task by task. Steps use checkbox syntax for tracking.
 
-Status: active
+Status: completed
 Type: implementation
 Started: 2026-05-10
+Completed: 2026-05-10
 
 ## Goal
 
@@ -75,7 +76,7 @@ The alignment work should expose already-implemented Stage 1.7 behavior, not rei
 
 ## Steps
 
-- [ ] Add captured event IDs to turn snapshots.
+- [x] Add captured event IDs to turn snapshots.
   - Files: `phone_mem/web_lab/schemas.py`, `phone_mem/web_lab/state.py`, `phone_mem/web_lab/app.py`.
   - Tests: `tests/test_web_lab_state.py`, `tests/test_web_lab_routes.py`.
   - Add `captured_event_ids: list[str]` to `TurnSnapshot`.
@@ -84,7 +85,7 @@ The alignment work should expose already-implemented Stage 1.7 behavior, not rei
   - Add a fake-client test where `AgentRuntime` captures a turn-boundary event and the route payload plus `/api/turns` both expose that event ID.
   - Validate with `uv run python -m unittest tests.test_web_lab_state tests.test_web_lab_routes`.
 
-- [ ] Complete Stage 1.7 context serialization for the lab.
+- [x] Complete Stage 1.7 context serialization for the lab.
   - Files: `phone_mem/agent_runtime/tools.py`, `tests/test_agent_runtime_tools.py`, `tests/test_web_lab_inspector.py`.
   - Extend `MemoryToolRegistry.build_memory_context(...)` output to include:
     - `omitted_memory` from the `ContextBundle`;
@@ -94,7 +95,7 @@ The alignment work should expose already-implemented Stage 1.7 behavior, not rei
   - Add tests that call context preview through `MemoryInspector` and assert the payload contains `hot_memory_capsules`, `omitted_memory`, `relation_paths`, `safety_metadata["capsule_budget"]`, and evidence IDs.
   - Validate with `uv run python -m unittest tests.test_agent_runtime_tools tests.test_web_lab_inspector`.
 
-- [ ] Add maintenance report use cases and routes.
+- [x] Add maintenance report use cases and routes.
   - Files: `phone_mem/web_lab/inspector.py`, `phone_mem/web_lab/app.py`, `tests/test_web_lab_inspector.py`, `tests/test_web_lab_routes.py`.
   - Add `MemoryInspector.reflect()`, `MemoryInspector.defrag()`, and `MemoryInspector.schema_diff()` methods.
   - Route them as:
@@ -105,14 +106,14 @@ The alignment work should expose already-implemented Stage 1.7 behavior, not rei
   - Add tests proving all three routes return `200`, are JSON serializable, and do not add memory events when run.
   - Validate with `uv run python -m unittest tests.test_web_lab_inspector tests.test_web_lab_routes`.
 
-- [ ] Make retrieval explanations easy to inspect.
+- [x] Make retrieval explanations easy to inspect.
   - Files: `phone_mem/web_lab/templates/index.html`, `phone_mem/web_lab/static/web_lab.js`, `tests/test_web_lab_routes.py`.
   - Keep `/api/search` backed by `MemoryToolRegistry.search_memory(...)`.
   - Add UI affordance in the Memory Inspector for search output that keeps `score`, `explanation`, `score_components`, and `score_weights` visible in the rendered JSON.
   - Add route/UI tests that assert the HTML contains the retrieval explanation control text or tab target, and API tests that search output includes `explanation`.
   - Validate with `uv run python -m unittest tests.test_web_lab_routes`.
 
-- [ ] Add Stage 1.7 debugger tabs.
+- [x] Add Stage 1.7 debugger tabs.
   - Files: `phone_mem/web_lab/templates/index.html`, `phone_mem/web_lab/static/web_lab.js`, `phone_mem/web_lab/static/web_lab.css`, `tests/test_web_lab_routes.py`.
   - Keep the existing Turns, Audit, and Metrics tabs.
   - Add tabs or equivalent compact controls for:
@@ -123,7 +124,7 @@ The alignment work should expose already-implemented Stage 1.7 behavior, not rei
   - Update JavaScript refresh behavior so one refresh updates turns, audit, metrics, and maintenance payloads without requiring a chat turn.
   - Validate with `uv run python -m unittest tests.test_web_lab_routes`.
 
-- [ ] Update Web Lab documentation for Stage 1.7 alignment.
+- [x] Update Web Lab documentation for Stage 1.7 alignment.
   - Files: `docs/design-docs/python-web-lab.md`, `docs/PYTHON_REFERENCE.md`.
   - Describe the Web Lab as a Stage 1.6 developer shell that has been aligned to the completed Stage 1.7 Python oracle.
   - Document that the lab can inspect runtime capture, hybrid retrieval explanations, hot capsules, relation context metadata, dry-run maintenance reports, metrics, audit, correction, and deletion.
@@ -131,13 +132,13 @@ The alignment work should expose already-implemented Stage 1.7 behavior, not rei
   - Keep Stage 2 mobile runtime deferred.
   - Validate with `uv run python scripts/validate_docs.py`.
 
-- [ ] Run focused verification.
+- [x] Run focused verification.
   - Commands:
     - `uv run python -m unittest tests.test_agent_runtime_tools tests.test_web_lab_state tests.test_web_lab_inspector tests.test_web_lab_routes`
     - `uv run python scripts/validate_docs.py`
   - Confirm all focused Web Lab and tool-boundary tests pass.
 
-- [ ] Run final verification and close the plan.
+- [x] Run final verification and close the plan.
   - Commands:
     - `uv run python -m unittest discover -s tests`
     - `uv run python scripts/validate_docs.py`

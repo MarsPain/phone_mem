@@ -8,7 +8,7 @@
 
 ## Active
 
-- [Stage 1.7 Web Lab Alignment](exec-plans/active/2026-05-10-stage-1-7-web-lab-alignment.md): align the local Python Web Lab with the completed Stage 1.7 Python oracle so runtime capture, hybrid retrieval explanations, hot capsules, relation context, maintenance reports, and quality metrics are inspectable before Stage 2 mobile work resumes.
+- No active execution plan.
 
 ## Completed
 
@@ -22,6 +22,7 @@
 - [Python LLM Agent Runtime](exec-plans/completed/2026-05-05-python-llm-agent-runtime.md): completed the Stage 1.5 developer-machine runtime spike for real LLM chat over governed Python memory service APIs.
 - [Python Web Lab](exec-plans/completed/2026-05-05-python-web-lab.md): completed the Stage 1.6 local developer Web Lab for real Agent chat, memory inspection, turn debugging, and file-backed SQLite exploration before mobile runtime work resumes.
 - [Python Agentic Memory Lifecycle Maturation](exec-plans/completed/2026-05-09-python-agentic-memory-lifecycle-maturation.md): completed the Stage 1.7 Python-only maturation track for runtime memory protocol, governed session capture, hot capsules, hybrid retrieval, relation projections, maintenance workflows, quality metrics, and refreshed future-mobile fixtures before Stage 2 mobile work resumes.
+- [Stage 1.7 Web Lab Alignment](exec-plans/completed/2026-05-10-stage-1-7-web-lab-alignment.md): aligned the local Python Web Lab with the completed Stage 1.7 Python oracle so runtime capture, hybrid retrieval explanations, hot capsules, relation context, maintenance reports, and quality metrics are inspectable before Stage 2 mobile work resumes.
 
 ## Tech Debt
 

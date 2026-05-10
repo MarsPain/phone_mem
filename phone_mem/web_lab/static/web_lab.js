@@ -20,10 +20,54 @@ const refreshMemory = async () => {
   setOutput("memory-output", await requestJson("/api/memories"));
 };
 
+const latestTurn = (turnsPayload) => {
+  const turns = turnsPayload.turns || [];
+  return turns.length ? turns[turns.length - 1] : null;
+};
+
+const capturePayload = (turnsPayload, auditPayload) => {
+  const turns = turnsPayload.turns || [];
+  const latestCaptureTurn = [...turns].reverse().find((turn) => (turn.captured_event_ids || []).length);
+  return {
+    latest_captured_event_ids: latestCaptureTurn ? latestCaptureTurn.captured_event_ids : [],
+    latest_capture_turn: latestCaptureTurn,
+    audit_records: (auditPayload.audit_records || []).filter((record) =>
+      (latestCaptureTurn?.captured_event_ids || []).some((eventId) =>
+        (record.affected_event_ids || []).includes(eventId),
+      ),
+    ),
+  };
+};
+
+const contextPayload = (turnsPayload) => {
+  const turn = latestTurn(turnsPayload);
+  const context = turn?.memory_context || null;
+  return {
+    latest_turn_index: turn?.index || null,
+    evidence_event_ids: context?.evidence_event_ids || [],
+    hot_memory_capsules: context?.hot_memory_capsules || [],
+    omitted_memory: context?.omitted_memory || [],
+    relation_paths: context?.relation_paths || [],
+    safety_metadata: context?.safety_metadata || {},
+    token_budget: context?.token_budget || {},
+  };
+};
+
+const maintenancePayload = async () => ({
+  reflect: await requestJson("/api/maintenance/reflect"),
+  defrag: await requestJson("/api/maintenance/defrag"),
+  schema_diff: await requestJson("/api/maintenance/schema-diff"),
+});
+
 const refreshDebugger = async () => {
-  setOutput("debug-panel-turns", await requestJson("/api/turns"));
-  setOutput("debug-panel-audit", await requestJson("/api/audit"));
+  const turns = await requestJson("/api/turns");
+  const audit = await requestJson("/api/audit");
+  setOutput("debug-panel-turns", turns);
+  setOutput("debug-panel-capture", capturePayload(turns, audit));
+  setOutput("debug-panel-context", contextPayload(turns));
+  setOutput("debug-panel-audit", audit);
   setOutput("debug-panel-metrics", await requestJson("/api/metrics"));
+  setOutput("debug-panel-maintenance", await maintenancePayload());
 };
 
 const selectDebuggerTab = (selectedTab) => {
@@ -89,6 +133,20 @@ document.getElementById("search-form").addEventListener("submit", async (event) 
 document.getElementById("preview-context").addEventListener("click", async () => {
   const query = document.getElementById("search-query").value.trim();
   if (query) setOutput("memory-output", await requestJson(`/api/context?query=${encodeURIComponent(query)}`));
+});
+
+document.getElementById("refresh-maintenance").addEventListener("click", async () => {
+  const payload = await maintenancePayload();
+  setOutput("memory-output", payload);
+  setOutput("debug-panel-maintenance", payload);
+});
+
+document.querySelectorAll("[data-maintenance-report]").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const report = button.dataset.maintenanceReport;
+    const path = report === "schema-diff" ? "schema-diff" : report;
+    setOutput("memory-output", await requestJson(`/api/maintenance/${path}`));
+  });
 });
 
 document.getElementById("explain-event").addEventListener("click", async () => {

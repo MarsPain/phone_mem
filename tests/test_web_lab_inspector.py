@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tempfile import TemporaryDirectory
 from pathlib import Path
+import json
 import unittest
 
 from phone_mem.agent_runtime.client import FakeLLMClient, LLMResponse
@@ -27,6 +28,11 @@ class WebLabInspectorTest(unittest.TestCase):
         self.assertEqual(memories["memories"][0]["event_id"], event_id)
         self.assertEqual(search["results"][0]["event_id"], event_id)
         self.assertEqual(preview["evidence_event_ids"], [event_id])
+        self.assertIn("hot_memory_capsules", preview)
+        self.assertIn("omitted_memory", preview)
+        self.assertIn("relation_paths", preview)
+        self.assertIn("capsule_budget", preview["safety_metadata"])
+        self.assertEqual(preview["hot_memory_capsules"][0]["evidence_event_ids"], [event_id])
         self.assertEqual(explanation["event_id"], event_id)
         self.assertEqual(explanation["lifecycle"]["state"], "active")
 
@@ -55,6 +61,30 @@ class WebLabInspectorTest(unittest.TestCase):
         self.assertEqual(payload["ok"], False)
         self.assertEqual(payload["error"]["type"], "MemoryEventNotFound")
         self.assertEqual(payload["error"]["event_id"], "missing-event")
+
+    def test_maintenance_reports_are_json_safe_dry_runs(self) -> None:
+        state = self._state()
+        self.addCleanup(state.close)
+        state.tools.remember("User prefers morning planning sessions.", entities=["planning"])
+        state.tools.remember("User wants calendar summaries before lunch.", entities=["planning"])
+        inspector = MemoryInspector(state)
+        before_event_ids = [event.event_id for event in state.service.store.query_events()]
+
+        reflection = inspector.reflect()
+        defrag = inspector.defrag()
+        schema_diff = inspector.schema_diff()
+        after_event_ids = [event.event_id for event in state.service.store.query_events()]
+
+        json.dumps(reflection)
+        json.dumps(defrag)
+        json.dumps(schema_diff)
+        self.assertEqual(after_event_ids, before_event_ids)
+        self.assertEqual(reflection["mutates_store"], False)
+        self.assertEqual(defrag["mutates_store"], False)
+        self.assertEqual(schema_diff["mutates_store"], False)
+        self.assertIn("proposals", reflection)
+        self.assertIn("duplicate_event_groups", defrag)
+        self.assertIn("unexpected_relation_types", schema_diff)
 
     def _state(self) -> LabState:
         tmpdir = TemporaryDirectory()

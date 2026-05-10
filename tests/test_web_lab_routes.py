@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from tempfile import TemporaryDirectory
 from pathlib import Path
+import json
 import unittest
 
 from fastapi.testclient import TestClient
@@ -37,11 +38,17 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertEqual(html.status_code, 200)
         self.assertIn('role="tablist"', html.text)
         self.assertIn('data-debug-tab="turns"', html.text)
+        self.assertIn('data-debug-tab="capture"', html.text)
+        self.assertIn('data-debug-tab="context"', html.text)
         self.assertIn('data-debug-tab="audit"', html.text)
         self.assertIn('data-debug-tab="metrics"', html.text)
+        self.assertIn('data-debug-tab="maintenance"', html.text)
         self.assertIn('id="debug-panel-turns"', html.text)
+        self.assertIn('id="debug-panel-capture"', html.text)
+        self.assertIn('id="debug-panel-context"', html.text)
         self.assertIn('id="debug-panel-audit"', html.text)
         self.assertIn('id="debug-panel-metrics"', html.text)
+        self.assertIn('id="debug-panel-maintenance"', html.text)
 
     def test_html_renders_turn_debugger_help(self) -> None:
         state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
@@ -54,8 +61,25 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertIn('id="debug-help-toggle"', html.text)
         self.assertIn('id="debug-help"', html.text)
         self.assertIn("Turns shows each chat turn snapshot", html.text)
+        self.assertIn("Capture shows captured event IDs", html.text)
+        self.assertIn("Context shows hot capsules", html.text)
         self.assertIn("Audit shows permissioned memory-service operations", html.text)
         self.assertIn("Metrics shows aggregate service counters", html.text)
+        self.assertIn("Maintenance shows dry-run reports", html.text)
+
+    def test_html_renders_retrieval_explanation_and_maintenance_controls(self) -> None:
+        state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
+        self.addCleanup(state.close)
+
+        with TestClient(create_app(state)) as client:
+            html = client.get("/")
+
+        self.assertEqual(html.status_code, 200)
+        self.assertIn("Retrieval Explanation", html.text)
+        self.assertIn('id="refresh-maintenance"', html.text)
+        self.assertIn('data-maintenance-report="reflect"', html.text)
+        self.assertIn('data-maintenance-report="defrag"', html.text)
+        self.assertIn('data-maintenance-report="schema-diff"', html.text)
 
     def test_chat_route_returns_turn_debugger_payload_and_records_snapshot(self) -> None:
         state = self._state(
@@ -89,6 +113,24 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertEqual(payload["evidence_event_ids"], [event_id])
         self.assertEqual(turns.json()["turns"][0]["evidence_event_ids"], [event_id])
 
+    def test_chat_route_exposes_turn_boundary_capture_event_ids(self) -> None:
+        state = self._state(FakeLLMClient([LLMResponse(text="Updated.")]))
+        self.addCleanup(state.close)
+
+        with TestClient(create_app(state)) as client:
+            response = client.post(
+                "/api/chat",
+                json={"message": "Actually, I prefer afternoon planning sessions."},
+            )
+            turns = client.get("/api/turns")
+
+        payload = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(payload["ok"], True)
+        self.assertEqual(len(payload["captured_event_ids"]), 1)
+        self.assertEqual(payload["turn"]["captured_event_ids"], payload["captured_event_ids"])
+        self.assertEqual(turns.json()["turns"][0]["captured_event_ids"], payload["captured_event_ids"])
+
     def test_memory_inspector_routes_expose_operations(self) -> None:
         state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
         self.addCleanup(state.close)
@@ -112,11 +154,35 @@ class WebLabRoutesTest(unittest.TestCase):
 
         self.assertEqual(memories.json()["memories"][0]["event_id"], event_id)
         self.assertEqual(search.json()["results"][0]["event_id"], event_id)
+        self.assertIn("explanation", search.json()["results"][0])
         self.assertEqual(context.json()["evidence_event_ids"], [event_id])
         self.assertEqual(explanation.json()["event_id"], event_id)
         self.assertEqual(deleted.json()["deleted_event_ids"], [corrected.json()["event_id"]])
         self.assertGreaterEqual(len(audit.json()["audit_records"]), 5)
         self.assertEqual(metrics.json()["deletion"]["deleted_event_count"], 1)
+
+    def test_maintenance_routes_expose_json_safe_dry_run_reports(self) -> None:
+        state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
+        self.addCleanup(state.close)
+        state.tools.remember("User prefers morning planning sessions.", entities=["planning"])
+        before_event_ids = [event.event_id for event in state.service.store.query_events()]
+
+        with TestClient(create_app(state)) as client:
+            reflection = client.get("/api/maintenance/reflect")
+            defrag = client.get("/api/maintenance/defrag")
+            schema_diff = client.get("/api/maintenance/schema-diff")
+
+        after_event_ids = [event.event_id for event in state.service.store.query_events()]
+        self.assertEqual(reflection.status_code, 200)
+        self.assertEqual(defrag.status_code, 200)
+        self.assertEqual(schema_diff.status_code, 200)
+        json.dumps(reflection.json())
+        json.dumps(defrag.json())
+        json.dumps(schema_diff.json())
+        self.assertEqual(after_event_ids, before_event_ids)
+        self.assertEqual(reflection.json()["mutates_store"], False)
+        self.assertEqual(defrag.json()["mutates_store"], False)
+        self.assertEqual(schema_diff.json()["mutates_store"], False)
 
     def test_domain_errors_are_serialized_for_routes(self) -> None:
         state = self._state(FakeLLMClient([LLMResponse(text="ok")]))

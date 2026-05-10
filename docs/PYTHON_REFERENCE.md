@@ -130,11 +130,11 @@ Or use the optional wrapper:
 OPENAI_API_KEY=... PHONE_MEM_LLM_MODEL=gpt-4.1 uv run python examples/web_lab.py --reload
 ```
 
-The Web Lab is the Stage 1.6 developer-machine experience over the Python reference service and LLM Agent runtime. It opens a single-screen Hybrid Lab with:
+The Web Lab is the Stage 1.6 developer-machine experience over the Python reference service and LLM Agent runtime, now aligned to the completed Stage 1.7 Python oracle. It opens a single-screen Hybrid Lab with:
 
 - Chat Panel: sends turns through `AgentRuntime.run_turn(...)`;
-- Memory Inspector: lists memories, searches, previews context, explains, corrects, deletes, and shows audit and metrics through governed service APIs;
-- Turn Debugger: shows the memory context attached to `AgentTurnResponse`, evidence event IDs, tool results, recent audit records, and structured errors;
+- Memory Inspector: lists memories, searches with hybrid retrieval score explanations, previews context, explains, corrects, deletes, and shows audit, metrics, and dry-run maintenance reports through governed service APIs;
+- Turn Debugger: shows the memory context attached to `AgentTurnResponse`, captured event IDs, hot memory capsules, omitted-memory reasons, relation paths, token/capsule budget metadata, evidence event IDs, tool results, maintenance reports, recent audit records, metrics, and structured errors;
 - Lab Header: shows model, provider status, database path, caller, and source app.
 
 Default runtime configuration:
@@ -145,7 +145,7 @@ Default runtime configuration:
 - Database path: `.phone-mem-lab/memory.sqlite3`.
 - Caller/source app: `web_lab_agent` and `system_assistant`.
 
-The SQLite database is file-backed and cumulative by default. Resetting it means explicitly deleting `.phone-mem-lab/memory.sqlite3`; do that only when you intend to discard local lab memory. The UI and routes do not read or write SQL directly; all memory behavior comes from `PersonalMemoryService` and `MemoryToolRegistry`.
+The SQLite database is file-backed and cumulative by default. Resetting it means explicitly deleting `.phone-mem-lab/memory.sqlite3`; do that only when you intend to discard local lab memory. The UI and routes do not read or write SQL directly; all memory behavior comes from `PersonalMemoryService`, `AgentRuntime`, and `MemoryToolRegistry`. Stage 2 mobile runtime work remains deferred until a separate mobile plan is accepted.
 
 Default automated tests use `FakeLLMClient`, temporary SQLite files, and FastAPI `TestClient`, so they do not require network access or provider credentials:
 

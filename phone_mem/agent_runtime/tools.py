@@ -51,36 +51,7 @@ class MemoryToolRegistry:
             ),
             top_k=5,
         )
-        return {
-            "query": query,
-            "evidence_event_ids": list(bundle.evidence_event_ids),
-            "snippets": [
-                {
-                    "event_id": snippet.event_id,
-                    "text": snippet.text,
-                    "evidence_event_ids": list(snippet.evidence_event_ids),
-                }
-                for snippet in bundle.snippets
-            ],
-            "hot_memory_capsules": [
-                {
-                    "category": capsule.category,
-                    "text": capsule.text,
-                    "evidence_event_ids": list(capsule.evidence_event_ids),
-                    "confidence": capsule.confidence,
-                    "attribution": capsule.attribution,
-                    "lifecycle_state": capsule.lifecycle_state,
-                    "omitted_memory": list(capsule.omitted_memory),
-                }
-                for capsule in bundle.hot_memory_capsules
-            ],
-            "safety_metadata": dict(bundle.safety_metadata),
-            "token_budget": {
-                "max_tokens": bundle.token_budget.max_tokens,
-                "available_memory_tokens": bundle.token_budget.available_memory_tokens,
-                "used_tokens": bundle.token_budget.used_tokens,
-            },
-        }
+        return _serialize_context_bundle(query, bundle)
 
     def remember(
         self,
@@ -231,6 +202,62 @@ class MemoryToolRegistry:
                 reason=str(arguments["reason"]),
             )
         raise ValueError(f"unknown memory tool: {name}")
+
+
+def _serialize_context_bundle(query: str, bundle: Any) -> dict[str, Any]:
+    return {
+        "query": query,
+        "evidence_event_ids": list(bundle.evidence_event_ids),
+        "snippets": [
+            {
+                "event_id": snippet.event_id,
+                "text": snippet.text,
+                "evidence_event_ids": list(snippet.evidence_event_ids),
+            }
+            for snippet in bundle.snippets
+        ],
+        "hot_memory_capsules": [
+            {
+                "category": capsule.category,
+                "text": capsule.text,
+                "evidence_event_ids": list(capsule.evidence_event_ids),
+                "confidence": capsule.confidence,
+                "attribution": capsule.attribution,
+                "lifecycle_state": capsule.lifecycle_state,
+                "omitted_memory": list(capsule.omitted_memory),
+            }
+            for capsule in bundle.hot_memory_capsules
+        ],
+        "relation_paths": [_serialize_relation_path(path) for path in bundle.relation_paths],
+        "omitted_memory": list(bundle.omitted_memory),
+        "safety_metadata": dict(bundle.safety_metadata),
+        "token_budget": {
+            "max_tokens": bundle.token_budget.max_tokens,
+            "safety_reserve_tokens": bundle.token_budget.safety_reserve_tokens,
+            "output_reserve_tokens": bundle.token_budget.output_reserve_tokens,
+            "tool_reserve_tokens": bundle.token_budget.tool_reserve_tokens,
+            "available_memory_tokens": bundle.token_budget.available_memory_tokens,
+            "used_tokens": bundle.token_budget.used_tokens,
+        },
+    }
+
+
+def _serialize_relation_path(path: Any) -> dict[str, Any]:
+    nodes = list(path.nodes)
+    relation_types = list(path.edge_types)
+    return {
+        "nodes": nodes,
+        "relation_types": relation_types,
+        "edge_types": relation_types,
+        "source_label": nodes[0] if nodes else None,
+        "target_label": nodes[-1] if nodes else None,
+        "evidence_event_ids": list(path.evidence_event_ids),
+        "compression_score": path.compression_score,
+        "path_metadata": {
+            "node_count": len(nodes),
+            "edge_count": len(relation_types),
+        },
+    }
 
 
 def _object_schema(properties: dict[str, Any], required: list[str]) -> dict[str, Any]:

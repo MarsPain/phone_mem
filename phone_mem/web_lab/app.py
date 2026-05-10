@@ -66,6 +66,7 @@ def create_app(state: LabState | None = None) -> FastAPI:
         return ok_payload(
             text=response.text,
             evidence_event_ids=response.evidence_event_ids,
+            captured_event_ids=response.captured_event_ids,
             memory_context=response.memory_context,
             tool_results=response.tool_results,
             turn=lab_state.turn_snapshots[-1].to_dict(),
@@ -124,6 +125,18 @@ def create_app(state: LabState | None = None) -> FastAPI:
     @app.get("/api/metrics")
     def metrics() -> dict[str, Any]:
         return _inspector(lab_state).metrics()
+
+    @app.get("/api/maintenance/reflect")
+    def reflect() -> dict[str, Any]:
+        return _inspector(lab_state).reflect()
+
+    @app.get("/api/maintenance/defrag")
+    def defrag() -> dict[str, Any]:
+        return _inspector(lab_state).defrag()
+
+    @app.get("/api/maintenance/schema-diff")
+    def schema_diff() -> dict[str, Any]:
+        return _inspector(lab_state).schema_diff()
 
     return app
 

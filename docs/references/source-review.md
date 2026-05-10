@@ -1,6 +1,6 @@
 # Source PDF Review
 
-Source: [手机端Agent_Memory架构设计方案.pdf](../../手机端Agent_Memory架构设计方案.pdf)
+Source file reviewed locally: `手机端Agent_Memory架构设计方案.pdf`.
 
 This is the PDF-specific review. The broader v2 research-backed review is [research-review-2026.md](research-review-2026.md).
 

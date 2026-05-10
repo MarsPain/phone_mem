@@ -4,6 +4,10 @@ from datetime import UTC, datetime
 import unittest
 
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
+from phone_mem.context.assembler import ContextBundle, ContextTokenBudget
+from phone_mem.context.capsules import HotMemoryCapsule
+from phone_mem.personal_memory_service.relations import RelationPath
+from phone_mem.personal_memory_service.retrieval import MemorySnippet
 from phone_mem.governance.permissions import PermissionScope
 from phone_mem.personal_memory_service.errors import MemoryPermissionDenied
 from phone_mem.personal_memory_service.events import (
@@ -135,6 +139,72 @@ class AgentRuntimeMemoryToolsTest(unittest.TestCase):
         self.assertEqual(explanation["memory_layer"], "semantic")
         self.assertEqual(explanation["privacy"]["level"], "public")
 
+    def test_context_tool_serializes_stage_1_7_bundle_fields(self) -> None:
+        relation_path = RelationPath(
+            nodes=["Mira", "Project Atlas", "credential refresh"],
+            edge_types=["person_assigned_to_project", "solved_by"],
+            evidence_event_ids=["event-2", "event-3"],
+            compression_score=0.67,
+        )
+        service = _ContextBundleService(
+            ContextBundle(
+                task={"id": "agent-runtime-turn", "description": "planning"},
+                snippets=[
+                    MemorySnippet(
+                        event_id="event-1",
+                        text="User prefers morning planning sessions.",
+                        source_app=SOURCE_APP,
+                        attribution="user_stated",
+                        confidence=0.95,
+                        memory_layer="episodic",
+                        privacy_level="personal",
+                        evidence_event_ids=["event-1"],
+                    )
+                ],
+                hot_memory_capsules=[
+                    HotMemoryCapsule(
+                        category="stable_user_confirmed_fact",
+                        text="Fact.",
+                        evidence_event_ids=["event-1"],
+                        confidence=0.95,
+                        attribution="user_stated",
+                        omitted_memory=[{"event_id": "event-9", "reason": "budget_exhausted"}],
+                    )
+                ],
+                relation_paths=[relation_path],
+                evidence_event_ids=["event-1", "event-2", "event-3"],
+                token_budget=ContextTokenBudget(
+                    max_tokens=80,
+                    safety_reserve_tokens=10,
+                    output_reserve_tokens=30,
+                    tool_reserve_tokens=10,
+                    available_memory_tokens=30,
+                    used_tokens=12,
+                ),
+                omitted_memory=[{"event_id": "event-9", "reason": "budget_exhausted"}],
+                safety_metadata={
+                    "capsule_budget": {
+                        "separate_from_snippets": True,
+                        "budget_tokens": 30,
+                        "used_tokens": 4,
+                        "omitted_capsules": [],
+                    }
+                },
+            )
+        )
+        tools = MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP)
+
+        context = tools.build_memory_context("planning", max_tokens=80)
+
+        self.assertEqual(context["omitted_memory"], [{"event_id": "event-9", "reason": "budget_exhausted"}])
+        self.assertEqual(context["relation_paths"][0]["relation_types"], ["person_assigned_to_project", "solved_by"])
+        self.assertEqual(context["relation_paths"][0]["source_label"], "Mira")
+        self.assertEqual(context["relation_paths"][0]["target_label"], "credential refresh")
+        self.assertEqual(context["relation_paths"][0]["evidence_event_ids"], ["event-2", "event-3"])
+        self.assertEqual(context["relation_paths"][0]["path_metadata"]["node_count"], 3)
+        self.assertEqual(context["token_budget"]["safety_reserve_tokens"], 10)
+        self.assertEqual(context["safety_metadata"]["capsule_budget"]["used_tokens"], 4)
+
 
 def _service_with_grant() -> PersonalMemoryService:
     service = PersonalMemoryService.in_memory(clock=lambda: datetime(2026, 5, 3, 9, 0, tzinfo=UTC))
@@ -155,6 +225,14 @@ def _service_with_grant() -> PersonalMemoryService:
         duration_seconds=3_600,
     )
     return service
+
+
+class _ContextBundleService:
+    def __init__(self, bundle: ContextBundle) -> None:
+        self.bundle = bundle
+
+    def build_context(self, *args: object, **kwargs: object) -> ContextBundle:
+        return self.bundle
 
 
 if __name__ == "__main__":

@@ -42,6 +42,13 @@
           <button type="submit">Search</button>
           <button id="preview-context" type="button">Context</button>
         </form>
+        <div class="inspector-tools" aria-label="Memory inspector tools">
+          <span>Retrieval Explanation</span>
+          <button id="refresh-maintenance" type="button">Maintenance</button>
+          <button type="button" data-maintenance-report="reflect">Reflect</button>
+          <button type="button" data-maintenance-report="defrag">Defrag</button>
+          <button type="button" data-maintenance-report="schema-diff">Schema Diff</button>
+        </div>
         <form id="event-form" class="stack">
           <input id="event-id" name="event_id" placeholder="event id" />
           <textarea id="replacement-text" rows="3" placeholder="Replacement text for correction"></textarea>
@@ -65,17 +72,26 @@
         </div>
         <div id="debug-help" class="debug-help" hidden>
           <p>Turns shows each chat turn snapshot: user input, assistant text, evidence event IDs, memory context sent to the model, tool results, and errors.</p>
+          <p>Capture shows captured event IDs from turn-boundary runtime capture and the latest capture-producing turn.</p>
+          <p>Context shows hot capsules, omitted-memory reasons, relation paths, evidence IDs, and token budget metadata from the latest turn.</p>
           <p>Audit shows permissioned memory-service operations: who called the service, what operation ran, what scope was requested, affected event IDs, and whether it was allowed or denied.</p>
           <p>Metrics shows aggregate service counters: retrieval reads, permission denials, writes, deletion tombstones, context builds, and latest context token budget usage.</p>
+          <p>Maintenance shows dry-run reports for reflect, defrag, and schema-diff without mutating the memory store.</p>
         </div>
         <div class="debug-tabs" role="tablist" aria-label="Turn debugger views">
           <button id="debug-tab-turns" class="debug-tab active" type="button" role="tab" aria-selected="true" aria-controls="debug-panel-turns" data-debug-tab="turns">Turns</button>
+          <button id="debug-tab-capture" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-capture" data-debug-tab="capture">Capture</button>
+          <button id="debug-tab-context" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-context" data-debug-tab="context">Context</button>
           <button id="debug-tab-audit" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-audit" data-debug-tab="audit">Audit</button>
           <button id="debug-tab-metrics" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-metrics" data-debug-tab="metrics">Metrics</button>
+          <button id="debug-tab-maintenance" class="debug-tab" type="button" role="tab" aria-selected="false" aria-controls="debug-panel-maintenance" data-debug-tab="maintenance">Maintenance</button>
         </div>
         <pre id="debug-panel-turns" class="output debug-panel active" role="tabpanel" aria-labelledby="debug-tab-turns"></pre>
+        <pre id="debug-panel-capture" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-capture" hidden></pre>
+        <pre id="debug-panel-context" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-context" hidden></pre>
         <pre id="debug-panel-audit" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-audit" hidden></pre>
         <pre id="debug-panel-metrics" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-metrics" hidden></pre>
+        <pre id="debug-panel-maintenance" class="output debug-panel" role="tabpanel" aria-labelledby="debug-tab-maintenance" hidden></pre>
       </section>
     </main>
 

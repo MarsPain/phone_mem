@@ -2,7 +2,7 @@
 
 ## Source Resolution
 
-- Source: [OpenClaw及其Memory.pdf](../../OpenClaw及其Memory.pdf)
+- Source reviewed locally: `OpenClaw及其Memory.pdf`
 - Coverage: full local PDF text was extracted and reviewed, 17 pages.
 - Ambiguity: this is a secondary research document, not a primary OpenClaw specification. Its implementation claims should be treated as design inspiration unless later verified against primary OpenClaw source code or documentation.
 - Task type: single-document deep read plus architecture transfer for Smartphone Agent Memory.

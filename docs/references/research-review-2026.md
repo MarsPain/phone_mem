@@ -4,7 +4,7 @@ This review upgrades the repository from a PDF-derived design to a research-back
 
 ## Sources Reviewed
 
-- Source PDF: [手机端Agent_Memory架构设计方案.pdf](../../手机端Agent_Memory架构设计方案.pdf)
+- Source PDF reviewed locally: `手机端Agent_Memory架构设计方案.pdf`
 - MemGPT: OS-style virtual context and memory hierarchy for LLM agents. [arXiv:2310.08560](https://arxiv.org/abs/2310.08560)
 - Mem0: production-oriented long-term memory extraction, consolidation, graph memory, latency, and token-cost evaluation. [arXiv:2504.19413](https://arxiv.org/abs/2504.19413)
 - CAMPHOR: on-device SLM multi-agent architecture for personal context retrieval, tool interaction, dynamic planning, parameter sharing, and prompt compression. [arXiv:2410.09407](https://arxiv.org/abs/2410.09407)
