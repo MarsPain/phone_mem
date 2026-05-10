@@ -11,6 +11,7 @@ from phone_mem.agent_runtime.openai_client import (
     OpenAICompatibleConfigurationError,
 )
 from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
+from phone_mem.agent_runtime.session import AgentSession
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.governance.permissions import PermissionScope
 from phone_mem.personal_memory_service.events import (
@@ -43,6 +44,7 @@ class LabState:
     service: PersonalMemoryService
     tools: MemoryToolRegistry
     runtime: AgentRuntime
+    session: AgentSession
     db_path: Path
     caller: str = DEFAULT_CALLER
     source_app: str = DEFAULT_SOURCE_APP
@@ -76,10 +78,12 @@ class LabState:
             thinking=thinking,
             tools=tools,
         )
+        session = AgentSession(runtime)
         return cls(
             service=service,
             tools=tools,
             runtime=runtime,
+            session=session,
             db_path=resolved_db_path,
             caller=caller,
             source_app=source_app,
@@ -98,7 +102,7 @@ class LabState:
 
     def run_chat_turn(self, user_message: str) -> AgentTurnResponse:
         try:
-            response = self.runtime.run_turn(user_message)
+            response = self.session.run_turn(user_message)
         except Exception as exc:
             self.turn_snapshots.append(
                 TurnSnapshot(

@@ -78,6 +78,25 @@ class WebLabStateTest(unittest.TestCase):
                 response.captured_event_ids,
             )
 
+    def test_run_chat_turn_uses_session_scoped_conversation_history(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            client = FakeLLMClient(
+                [
+                    LLMResponse(text="We can prepare a checklist first."),
+                    LLMResponse(text="Continuing from the checklist."),
+                ]
+            )
+            state = LabState.create(db_path=Path(tmpdir) / "memory.sqlite3", client=client)
+            self.addCleanup(state.close)
+
+            state.run_chat_turn("Let's plan the launch review.")
+            state.run_chat_turn("Continue that.")
+
+            request_text = "\n".join(message.content for message in client.requests[1].messages)
+            self.assertIn("Transient conversation context", request_text)
+            self.assertIn("user: Let's plan the launch review.", request_text)
+            self.assertIn("assistant: We can prepare a checklist first.", request_text)
+
 
 if __name__ == "__main__":
     unittest.main()

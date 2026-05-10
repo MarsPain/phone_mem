@@ -96,7 +96,9 @@ Optional environment variables:
 - `PHONE_MEM_LLM_THINKING`: thinking config for LLM API calls; defaults to `disabled`, accepts `enabled`, or a JSON object such as `{"type":"disabled"}`.
 - `PHONE_MEM_LLM_THINKING_BUDGET_TOKENS`: optional integer budget used only when `PHONE_MEM_LLM_THINKING=enabled`.
 
-The demo creates an in-memory service, grants `llm_memory_agent` scoped read, write, update, delete, and context-build access to `system_assistant` personal episodic memory, then runs chat turns through `phone_mem.agent_runtime.AgentRuntime`.
+The demo creates an in-memory service, grants `llm_memory_agent` scoped read, write, update, delete, and context-build access to `system_assistant` personal episodic memory, then runs chat turns through `phone_mem.agent_runtime.AgentSession` over `AgentRuntime`. The session keeps a bounded in-process window of recent user and assistant messages so local chat is multi-turn by default.
+
+Recent conversation context is transient. It is sent to the provider to resolve the current turn, but it is not persisted as durable memory and is not treated as authorized retrieved memory. Durable memory writes, corrections, and deletions still go through governed tools and the audited `PersonalMemoryService`.
 
 Provider request failures are printed as `error: LLM API request failed ...` without terminating the chat loop. TLS errors such as `UNEXPECTED_EOF_WHILE_READING` happen before the provider returns an API response; check `PHONE_MEM_LLM_BASE_URL`, local proxy or VPN settings, and network access before debugging the memory runtime.
 
@@ -106,6 +108,7 @@ The runtime path is intentionally separate from the memory core:
 - `phone_mem.agent_runtime.tools`: governed memory tools backed only by `PersonalMemoryService`.
 - `phone_mem.agent_runtime.prompts`: prompt assembly that marks retrieved memory as data, not instruction.
 - `phone_mem.agent_runtime.runtime`: one-turn orchestration with optional memory tool execution.
+- `phone_mem.agent_runtime.session`: bounded in-process multi-turn conversation wrapper for local chat experiences.
 - `phone_mem.agent_runtime.openai_client`: OpenAI-compatible Chat Completions adapter using environment configuration.
 
 Default tests use `FakeLLMClient` or injected HTTP transports and do not call provider APIs:

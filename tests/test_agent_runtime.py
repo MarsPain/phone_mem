@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 import unittest
 
-from phone_mem.agent_runtime.client import FakeLLMClient, LLMResponse, ToolCall
+from phone_mem.agent_runtime.client import FakeLLMClient, LLMMessage, LLMResponse, ToolCall
 from phone_mem.agent_runtime.runtime import AgentRuntime
 from phone_mem.agent_runtime.session_capture import SessionCapture, SessionCaptureInput
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
@@ -83,6 +83,29 @@ class AgentRuntimeTest(unittest.TestCase):
         runtime.run_turn("Plan my day.")
 
         self.assertEqual(client.requests[0].thinking, {"type": "disabled"})
+
+    def test_chat_turn_forwards_recent_conversation_to_llm_request(self) -> None:
+        service = _service_with_grant()
+        self.addCleanup(service.close)
+        client = FakeLLMClient([LLMResponse(text="Continue from the checklist.")])
+        runtime = AgentRuntime(
+            client=client,
+            model="fake-memory-model",
+            tools=MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP),
+        )
+
+        runtime.run_turn(
+            "Continue that.",
+            conversation_messages=[
+                LLMMessage(role="user", content="Let's plan the launch review."),
+                LLMMessage(role="assistant", content="We can prepare a checklist first."),
+            ],
+        )
+
+        request_text = "\n".join(message.content for message in client.requests[0].messages)
+        self.assertIn("Transient conversation context", request_text)
+        self.assertIn("user: Let's plan the launch review.", request_text)
+        self.assertIn("assistant: We can prepare a checklist first.", request_text)
 
     def test_chat_turn_executes_memory_tool_then_requests_final_answer(self) -> None:
         service = _service_with_grant()

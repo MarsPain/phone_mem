@@ -5,9 +5,11 @@ import unittest
 from unittest.mock import patch
 
 from examples.llm_agent_chat import _runtime_from_env, run_chat
+from phone_mem.agent_runtime.client import FakeLLMClient, LLMResponse
 from phone_mem.agent_runtime.openai_client import OpenAICompatibleClient
 from phone_mem.agent_runtime.openai_client import OpenAICompatibleRequestError
-from phone_mem.agent_runtime.runtime import AgentTurnResponse
+from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
+from phone_mem.agent_runtime.tools import MemoryToolRegistry
 
 
 class ScriptedRuntime:
@@ -41,6 +43,36 @@ class LlmAgentChatExampleTest(unittest.TestCase):
         self.assertIn("evidence: ['event-1']", output)
         self.assertIn("bye", output)
         self.assertEqual(runtime.messages, ["Plan my morning planning session."])
+
+    def test_run_chat_default_runtime_uses_session_history(self) -> None:
+        client = FakeLLMClient(
+            [
+                LLMResponse(text="We can prepare a checklist first."),
+                LLMResponse(text="Continuing from the checklist."),
+            ]
+        )
+
+        def runtime_factory(service: object) -> AgentRuntime:
+            return AgentRuntime(
+                client=client,
+                model="fake-memory-model",
+                tools=MemoryToolRegistry(
+                    service=service,  # type: ignore[arg-type]
+                    caller="llm_memory_agent",
+                    source_app="system_assistant",
+                ),
+            )
+
+        input_stream = StringIO("Let's plan the launch review.\nContinue that.\nquit\n")
+        output_stream = StringIO()
+
+        with patch("examples.llm_agent_chat._runtime_from_env", side_effect=runtime_factory):
+            run_chat(input_stream=input_stream, output_stream=output_stream)
+
+        request_text = "\n".join(message.content for message in client.requests[1].messages)
+        self.assertIn("Transient conversation context", request_text)
+        self.assertIn("user: Let's plan the launch review.", request_text)
+        self.assertIn("assistant: We can prepare a checklist first.", request_text)
 
     def test_runtime_from_env_defaults_thinking_to_disabled(self) -> None:
         with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}, clear=True):

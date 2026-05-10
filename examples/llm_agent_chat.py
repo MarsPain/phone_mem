@@ -13,6 +13,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from phone_mem.agent_runtime.openai_client import OpenAICompatibleClient, OpenAICompatibleRequestError
 from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
+from phone_mem.agent_runtime.session import AgentSession
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.governance.permissions import PermissionScope
 from phone_mem.personal_memory_service.events import (
@@ -44,7 +45,7 @@ def run_chat(
     resolved_runtime = runtime
     if resolved_runtime is None:
         owned_service = _service_with_grant()
-        resolved_runtime = _runtime_from_env(owned_service)
+        resolved_runtime = AgentSession(_runtime_from_env(owned_service))
 
     try:
         print("Phone Memory LLM Agent", file=resolved_output)

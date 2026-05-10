@@ -27,11 +27,16 @@ class AgentRuntime:
     thinking: dict[str, Any] | None = None
     session_capture: SessionCapture = field(default_factory=SessionCapture)
 
-    def run_turn(self, user_message: str) -> AgentTurnResponse:
+    def run_turn(
+        self,
+        user_message: str,
+        conversation_messages: list[LLMMessage] | None = None,
+    ) -> AgentTurnResponse:
         memory_context = self.tools.build_memory_context(user_message)
         initial_messages = build_agent_messages(
             user_message=user_message,
             memory_context=memory_context,
+            recent_conversation=conversation_messages,
         )
         initial_response = self.client.complete(
             LLMRequest(

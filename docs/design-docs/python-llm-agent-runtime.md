@@ -24,6 +24,9 @@ The experience should demonstrate the product loop that the mobile runtime will 
 examples/llm_agent_chat.py
         |
         v
+phone_mem.agent_runtime.AgentSession
+        |
+        v
 phone_mem.agent_runtime.AgentRuntime
         |
         +--> phone_mem.agent_runtime.LLMClient
@@ -36,13 +39,14 @@ phone_mem.agent_runtime.AgentRuntime
           PersonalMemoryService
 ```
 
-The runtime may call the service. The provider adapter may not. The LLM receives context bundles and tool schemas, never the raw SQLite store or unfiltered memory list.
+The session wrapper owns only process-local conversation history. The runtime may call the service. The provider adapter may not. The LLM receives transient recent conversation, context bundles, and tool schemas, never the raw SQLite store or unfiltered memory list.
 
 ## Implemented Python Modules
 
 - `phone_mem/agent_runtime/client.py`: provider-neutral `LLMClient`, request, response, and tool-call value objects.
 - `phone_mem/agent_runtime/openai_client.py`: OpenAI-compatible chat or responses adapter selected by environment configuration.
 - `phone_mem/agent_runtime/runtime.py`: chat-turn orchestration over retrieval, context assembly, model call, tool execution, and final answer.
+- `phone_mem/agent_runtime/session.py`: bounded in-process conversation history for default multi-turn chat experiences.
 - `phone_mem/agent_runtime/tools.py`: audited memory tools backed only by `PersonalMemoryService`.
 - `phone_mem/agent_runtime/prompts.py`: system instructions that mark retrieved memory as data, preserve instruction priority, and require citation metadata.
 - `examples/llm_agent_chat.py`: interactive chat demo for real provider use.
@@ -82,10 +86,17 @@ Stage 1.7 adds explicit runtime protocol rules around the existing tool boundary
 
 Correction and deletion requests must be routed through `correct_memory` and `delete_memory` so lifecycle state, tombstones, audit records, and permission checks remain governed by `PersonalMemoryService`. New writes must use governed tools with explicit privacy level and memory layer classification. The runtime still receives context bundles and tool results only; it does not receive raw storage access or authority to bypass service policies.
 
+## Session Context
+
+The CLI demo and Web Lab default to `AgentSession`, which passes a bounded window of recent user and assistant messages into each turn. This makes references such as "continue that" work in local chat without turning the transcript into durable memory.
+
+Recent conversation is serialized as transient context. It is not retrieved memory, not instruction, and not persisted by default. Durable memory still requires governed tool calls or session-capture proposals that pass through `PersonalMemoryService`, permissions, lifecycle checks, and audit.
+
 ## Safety Rules
 
 - Prompt execution must consume only authorized context bundles and explicit tool results.
 - Retrieved memory is model input data, not developer or system instruction.
+- Recent conversation context is transient model input, not durable memory or instruction.
 - The runtime must preserve source event IDs in responses or in response metadata.
 - Provider adapters must not read from storage, construct memory events directly, or bypass permissions.
 - Real API integration tests must be optional and skipped unless explicit credentials are present.

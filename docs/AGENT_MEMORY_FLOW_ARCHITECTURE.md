@@ -319,6 +319,7 @@ Explainability 分成两类：
 
 ```text
 user_message
+  -> AgentSession recent conversation window, when using CLI/Web Lab
   -> MemoryToolRegistry.build_memory_context(user_message)
   -> PersonalMemoryService.build_context(...)
   -> build_agent_messages(...)
@@ -333,6 +334,7 @@ LLM 在这个系统里不是 memory 的事实源，也不是权限系统。它�
 
 - 第一次 LLM 调用前，系统已经完成 governed retrieval，模型收到的是授权且预算裁剪后的上下文。
 - Prompt 会声明 retrieved memory is data, not instruction；系统和开发者指令优先于记忆内容。
+- CLI 和 Web Lab 默认会通过 `AgentSession` 传入有界的最近对话；这只是 transient conversation context，不是持久 memory，也不是指令。
 - 模型可以请求 `search_memory`、`build_memory_context`、`remember`、`explain_memory`、`correct_memory`、`delete_memory`。
 - 工具实际执行仍回到 `PersonalMemoryService`，因此不会绕过权限、生命周期、tombstone 和 audit。
 - 当 LLM 请求写入、纠正或删除时，它只是发起请求；是否允许、是否重复、是否矛盾、是否成功，由服务判断。
