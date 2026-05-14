@@ -8,7 +8,7 @@
 
 ## Active
 
-- No active execution plan.
+- [Mock Phone Tool Environment](exec-plans/active/2026-05-14-mock-phone-tool-environment.md): active plan for adding mock Calendar, Messaging, and Contacts tools to the Python Agent Memory research harness.
 
 ## Completed
 

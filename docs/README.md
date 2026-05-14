@@ -19,6 +19,7 @@
 - [design-docs/memory-lifecycle-and-data-flow.md](design-docs/memory-lifecycle-and-data-flow.md): event lifecycle from ingestion through deletion.
 - [design-docs/retrieval-and-context-assembly.md](design-docs/retrieval-and-context-assembly.md): governed retrieval and runtime-neutral context bundles.
 - [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md): Stage 1.5 Python runtime plan for real LLM chat over governed memory APIs.
+- [design-docs/mock-phone-tool-environment.md](design-docs/mock-phone-tool-environment.md): Python research harness design for mock Calendar, Messaging, and Contacts tools in the full Agent Memory loop.
 - [design-docs/python-web-lab.md](design-docs/python-web-lab.md): Stage 1.6 local developer Web Lab for real Agent experience and memory inspection.
 - [design-docs/governance-permissions-audit.md](design-docs/governance-permissions-audit.md): grants, memory views, audit, explanation, correction, and abuse controls.
 

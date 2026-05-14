@@ -7,6 +7,7 @@
 - Memory ingestion: turns authorized app, voice, visual, and sensor signals into normalized memory events.
 - Memory service: owns canonical events, projections, permissions, audit, tombstones, and retrieval APIs.
 - Model runtime boundary: assembles token-budgeted context for on-device or private-cloud models without exposing the global memory store.
+- Mock phone tool environment: simulates selected phone app tools for Python research while keeping external app state separate from durable memory.
 - Retrieval and routing: fuses semantic, lexical, entity, metadata, context, and recency signals after permission projection.
 - Governance: enforces consent, memory views, source attribution, audit logs, deletion, and explanation.
 - SDK surface: exposes scoped read, write, subscription, and governance APIs for system agents first and third-party apps later.
@@ -20,6 +21,7 @@
 - [docs/design-docs/memory-lifecycle-and-data-flow.md](docs/design-docs/memory-lifecycle-and-data-flow.md): memory event lifecycle and data flow.
 - [docs/design-docs/retrieval-and-context-assembly.md](docs/design-docs/retrieval-and-context-assembly.md): retrieval and context assembly boundary.
 - [docs/design-docs/python-llm-agent-runtime.md](docs/design-docs/python-llm-agent-runtime.md): Python LLM runtime spike over governed memory APIs.
+- [docs/design-docs/mock-phone-tool-environment.md](docs/design-docs/mock-phone-tool-environment.md): mock Calendar, Messaging, and Contacts tool environment for full-loop Python Agent Memory research.
 - [docs/design-docs/governance-permissions-audit.md](docs/design-docs/governance-permissions-audit.md): permissions, memory views, audit, and explanation.
 - [docs/DATA.md](docs/DATA.md): canonical memory event model, lifecycle, and storage rules.
 - [docs/SECURITY.md](docs/SECURITY.md): privacy, permission, sync, deletion, and abuse boundaries.
