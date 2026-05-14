@@ -75,6 +75,31 @@ h2 {
   font-size: 12px;
 }
 
+.auth-box {
+  flex: none;
+}
+
+.login-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-form input {
+  width: 160px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.user-info span {
+  font-weight: 600;
+}
+
 .lab-grid {
   display: grid;
   grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1fr) minmax(420px, 1.15fr);

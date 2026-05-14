@@ -14,11 +14,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--reload", action="store_true")
+    parser.add_argument("--delete-user", metavar="USERNAME", help="Delete a user's data and exit.")
     return parser
 
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
+
+    if args.delete_user:
+        from phone_mem.web_lab.users import UserLabStateManager
+
+        manager = UserLabStateManager()
+        ok = manager.delete_user(args.delete_user)
+        if ok:
+            print(f"Deleted user '{args.delete_user}' and all associated data.")
+        else:
+            print(f"User '{args.delete_user}' not found or could not be deleted.")
+        return
+
     import uvicorn
 
     uvicorn.run(

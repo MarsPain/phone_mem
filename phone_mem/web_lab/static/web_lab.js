@@ -3,6 +3,7 @@ const json = (value) => JSON.stringify(value, null, 2);
 const requestJson = async (url, options = {}) => {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     ...options,
   });
   const payload = await response.json();
@@ -16,7 +17,75 @@ const setOutput = (id, value) => {
   document.getElementById(id).textContent = json(value);
 };
 
+let currentUser = null;
+
+const updateAuthUI = () => {
+  const loginForm = document.getElementById("login-form");
+  const userInfo = document.getElementById("user-info");
+  const userName = document.getElementById("user-name");
+  if (currentUser) {
+    loginForm.hidden = true;
+    userInfo.hidden = false;
+    userName.textContent = currentUser;
+  } else {
+    loginForm.hidden = false;
+    userInfo.hidden = true;
+    userName.textContent = "";
+  }
+};
+
+const checkAuth = async () => {
+  const payload = await requestJson("/api/me");
+  if (payload.authenticated) {
+    currentUser = payload.username;
+  } else {
+    currentUser = null;
+  }
+  updateAuthUI();
+  return currentUser;
+};
+
+const login = async (username) => {
+  const payload = await requestJson("/api/login", {
+    method: "POST",
+    body: JSON.stringify({ username }),
+  });
+  if (payload.ok) {
+    currentUser = username;
+    updateAuthUI();
+    clearChatLog();
+    await refreshMemory();
+    await refreshDebugger();
+    addMessage("System", `Logged in as ${username}. Your memory is isolated.`, "system");
+  } else {
+    addMessage("Error", payload.error?.message || "Login failed", "error");
+  }
+};
+
+const logout = async () => {
+  await requestJson("/api/logout", { method: "POST" });
+  currentUser = null;
+  updateAuthUI();
+  clearChatLog();
+  addMessage("System", "Logged out. Please login to continue.", "system");
+};
+
+document.getElementById("login-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = document.getElementById("login-username");
+  const username = input.value.trim();
+  if (!username) return;
+  input.value = "";
+  await login(username);
+});
+
+document.getElementById("logout-btn").addEventListener("click", logout);
+
 const refreshMemory = async () => {
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   setOutput("memory-output", await requestJson("/api/memories"));
 };
 
@@ -60,6 +129,16 @@ const maintenancePayload = async () => ({
 });
 
 const refreshDebugger = async () => {
+  if (!currentUser) {
+    const msg = { message: "Please login first." };
+    setOutput("debug-panel-turns", msg);
+    setOutput("debug-panel-capture", msg);
+    setOutput("debug-panel-context", msg);
+    setOutput("debug-panel-audit", msg);
+    setOutput("debug-panel-metrics", msg);
+    setOutput("debug-panel-maintenance", msg);
+    return;
+  }
   const turns = await requestJson("/api/turns");
   const audit = await requestJson("/api/audit");
   setOutput("debug-panel-turns", turns);
@@ -109,6 +188,10 @@ const clearChatLog = () => {
 };
 
 const refreshChat = async () => {
+  if (!currentUser) {
+    addMessage("Error", "Please login first.", "error");
+    return;
+  }
   const payload = await requestJson("/api/chat/refresh", { method: "POST" });
   if (payload.ok === false) {
     addMessage("Error", payload.error.message, "error");
@@ -120,6 +203,10 @@ const refreshChat = async () => {
 
 document.getElementById("chat-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!currentUser) {
+    addMessage("Error", "Please login first.", "error");
+    return;
+  }
   const input = document.getElementById("chat-message");
   const message = input.value.trim();
   if (!message) return;
@@ -140,16 +227,28 @@ document.getElementById("chat-form").addEventListener("submit", async (event) =>
 
 document.getElementById("search-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   const query = document.getElementById("search-query").value.trim();
   if (query) setOutput("memory-output", await requestJson(`/api/search?query=${encodeURIComponent(query)}`));
 });
 
 document.getElementById("preview-context").addEventListener("click", async () => {
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   const query = document.getElementById("search-query").value.trim();
   if (query) setOutput("memory-output", await requestJson(`/api/context?query=${encodeURIComponent(query)}`));
 });
 
 document.getElementById("refresh-maintenance").addEventListener("click", async () => {
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   const payload = await maintenancePayload();
   setOutput("memory-output", payload);
   setOutput("debug-panel-maintenance", payload);
@@ -157,6 +256,10 @@ document.getElementById("refresh-maintenance").addEventListener("click", async (
 
 document.querySelectorAll("[data-maintenance-report]").forEach((button) => {
   button.addEventListener("click", async () => {
+    if (!currentUser) {
+      setOutput("memory-output", { message: "Please login first." });
+      return;
+    }
     const report = button.dataset.maintenanceReport;
     const path = report === "schema-diff" ? "schema-diff" : report;
     setOutput("memory-output", await requestJson(`/api/maintenance/${path}`));
@@ -164,11 +267,19 @@ document.querySelectorAll("[data-maintenance-report]").forEach((button) => {
 });
 
 document.getElementById("explain-event").addEventListener("click", async () => {
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   const eventId = document.getElementById("event-id").value.trim();
   if (eventId) setOutput("memory-output", await requestJson(`/api/explain/${encodeURIComponent(eventId)}`));
 });
 
 document.getElementById("correct-event").addEventListener("click", async () => {
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   const eventId = document.getElementById("event-id").value.trim();
   const replacementText = document.getElementById("replacement-text").value.trim();
   if (!eventId || !replacementText) return;
@@ -182,6 +293,10 @@ document.getElementById("correct-event").addEventListener("click", async () => {
 });
 
 document.getElementById("delete-event").addEventListener("click", async () => {
+  if (!currentUser) {
+    setOutput("memory-output", { message: "Please login first." });
+    return;
+  }
   const eventId = document.getElementById("event-id").value.trim();
   const reason = document.getElementById("delete-reason").value.trim();
   if (!eventId || !reason) return;
@@ -202,5 +317,12 @@ document.querySelectorAll("[data-debug-tab]").forEach((tab) => {
   tab.addEventListener("click", () => selectDebuggerTab(tab.dataset.debugTab));
 });
 
-refreshMemory();
-refreshDebugger();
+(async () => {
+  await checkAuth();
+  if (currentUser) {
+    refreshMemory();
+    refreshDebugger();
+  } else {
+    addMessage("System", "Welcome! Please enter a username to login. First login auto-registers.", "system");
+  }
+})();

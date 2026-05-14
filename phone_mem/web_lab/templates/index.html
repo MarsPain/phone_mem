@@ -17,6 +17,16 @@
         <div><dt>Caller</dt><dd>{{ caller }}</dd></div>
         <div><dt>Source</dt><dd>{{ source_app }}</dd></div>
       </dl>
+      <div class="auth-box" id="auth-box">
+        <form id="login-form" class="login-form">
+          <input id="login-username" type="text" placeholder="Username" autocomplete="username" required />
+          <button type="submit">Login</button>
+        </form>
+        <div id="user-info" class="user-info" hidden>
+          <span id="user-name"></span>
+          <button id="logout-btn" type="button">Logout</button>
+        </div>
+      </div>
     </header>
 
     <main class="lab-grid">
