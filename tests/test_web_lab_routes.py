@@ -28,6 +28,8 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertIn("web_lab_agent", html.text)
         self.assertEqual(metadata.json()["model"], state.model)
         self.assertEqual(metadata.json()["provider_status"], "fake")
+        self.assertIn('/static/web_lab.css?v=', html.text)
+        self.assertIn('/static/web_lab.js?v=', html.text)
 
     def test_html_renders_turn_debugger_tabs(self) -> None:
         state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
@@ -81,6 +83,27 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertIn('data-maintenance-report="reflect"', html.text)
         self.assertIn('data-maintenance-report="defrag"', html.text)
         self.assertIn('data-maintenance-report="schema-diff"', html.text)
+
+    def test_memory_inspector_outputs_are_separated_into_tabs(self) -> None:
+        state = self._state(FakeLLMClient([LLMResponse(text="ok")]))
+        self.addCleanup(state.close)
+
+        with TestClient(create_app(state)) as client:
+            html = client.get("/")
+
+        css = (Path(__file__).parents[1] / "phone_mem/web_lab/static/web_lab.css").read_text()
+        js = (Path(__file__).parents[1] / "phone_mem/web_lab/static/web_lab.js").read_text()
+        self.assertEqual(html.status_code, 200)
+        self.assertIn('aria-label="Memory inspector views"', html.text)
+        self.assertIn('data-inspector-tab="memory"', html.text)
+        self.assertIn('data-inspector-tab="phone-state"', html.text)
+        self.assertIn('id="memory-output" class="output inspector-output active"', html.text)
+        self.assertIn('id="phone-state-output" class="output inspector-output"', html.text)
+        self.assertNotIn("phone-state-title", html.text)
+        self.assertIn(".inspector-tabs", css)
+        self.assertIn(".inspector-output", css)
+        self.assertIn("min-height: 260px", css)
+        self.assertIn("selectInspectorTab", js)
 
     def test_chat_route_returns_turn_debugger_payload_and_records_snapshot(self) -> None:
         state = self._state(

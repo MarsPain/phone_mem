@@ -119,6 +119,10 @@ h2 {
   padding: 12px;
 }
 
+.inspector-panel {
+  overflow-y: auto;
+}
+
 .panel-title,
 .row,
 .inspector-tools {
@@ -187,25 +191,36 @@ button[type="button"] {
   color: #174ea6;
 }
 
-.debug-tabs {
+.debug-tabs,
+.inspector-tabs {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
 }
 
-.debug-tab {
+.debug-tabs {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.inspector-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.debug-tab,
+.inspector-tab {
   min-height: 32px;
   background: #eef3ff;
   color: #174ea6;
 }
 
-.debug-tab.active {
+.debug-tab.active,
+.inspector-tab.active {
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;
 }
 
-.debug-panel {
+.debug-panel,
+.inspector-output {
   flex: 1;
 }
 
@@ -256,6 +271,7 @@ button[type="button"] {
 
 .output {
   flex: 1;
+  min-height: 0;
   margin: 0;
   padding: 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -265,21 +281,8 @@ button[type="button"] {
   overflow-wrap: anywhere;
 }
 
-.phone-state-title {
-  margin-top: 6px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
-
-.phone-state-title h3 {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.phone-output {
-  max-height: 220px;
-  flex: none;
+.inspector-output {
+  min-height: 260px;
 }
 
 .error {

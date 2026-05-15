@@ -83,6 +83,7 @@ document.getElementById("login-form").addEventListener("submit", async (event) =
 document.getElementById("logout-btn").addEventListener("click", logout);
 
 const refreshMemory = async () => {
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -96,6 +97,19 @@ const refreshPhoneState = async () => {
     return;
   }
   setOutput("phone-state-output", await requestJson("/api/phone-state"));
+};
+
+const selectInspectorTab = (selectedTab) => {
+  document.querySelectorAll("[data-inspector-tab]").forEach((tab) => {
+    const isSelected = tab.dataset.inspectorTab === selectedTab;
+    tab.classList.toggle("active", isSelected);
+    tab.setAttribute("aria-selected", String(isSelected));
+  });
+  document.querySelectorAll(".inspector-output").forEach((panel) => {
+    const isSelected = panel.id === (selectedTab === "memory" ? "memory-output" : "phone-state-output");
+    panel.classList.toggle("active", isSelected);
+    panel.hidden = !isSelected;
+  });
 };
 
 const latestTurn = (turnsPayload) => {
@@ -236,6 +250,7 @@ document.getElementById("chat-form").addEventListener("submit", async (event) =>
 
 document.getElementById("search-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -245,6 +260,7 @@ document.getElementById("search-form").addEventListener("submit", async (event) 
 });
 
 document.getElementById("preview-context").addEventListener("click", async () => {
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -254,6 +270,7 @@ document.getElementById("preview-context").addEventListener("click", async () =>
 });
 
 document.getElementById("refresh-maintenance").addEventListener("click", async () => {
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -265,6 +282,7 @@ document.getElementById("refresh-maintenance").addEventListener("click", async (
 
 document.querySelectorAll("[data-maintenance-report]").forEach((button) => {
   button.addEventListener("click", async () => {
+    selectInspectorTab("memory");
     if (!currentUser) {
       setOutput("memory-output", { message: "Please login first." });
       return;
@@ -276,6 +294,7 @@ document.querySelectorAll("[data-maintenance-report]").forEach((button) => {
 });
 
 document.getElementById("explain-event").addEventListener("click", async () => {
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -285,6 +304,7 @@ document.getElementById("explain-event").addEventListener("click", async () => {
 });
 
 document.getElementById("correct-event").addEventListener("click", async () => {
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -302,6 +322,7 @@ document.getElementById("correct-event").addEventListener("click", async () => {
 });
 
 document.getElementById("delete-event").addEventListener("click", async () => {
+  selectInspectorTab("memory");
   if (!currentUser) {
     setOutput("memory-output", { message: "Please login first." });
     return;
@@ -319,10 +340,17 @@ document.getElementById("delete-event").addEventListener("click", async () => {
 });
 
 document.getElementById("refresh-memory").addEventListener("click", refreshMemory);
-document.getElementById("refresh-phone-state").addEventListener("click", refreshPhoneState);
 document.getElementById("refresh-debugger").addEventListener("click", refreshDebugger);
 document.getElementById("refresh-chat").addEventListener("click", refreshChat);
 document.getElementById("debug-help-toggle").addEventListener("click", toggleDebuggerHelp);
+document.querySelectorAll("[data-inspector-tab]").forEach((tab) => {
+  tab.addEventListener("click", async () => {
+    selectInspectorTab(tab.dataset.inspectorTab);
+    if (tab.dataset.inspectorTab === "phone-state") {
+      await refreshPhoneState();
+    }
+  });
+});
 document.querySelectorAll("[data-debug-tab]").forEach((tab) => {
   tab.addEventListener("click", () => selectDebuggerTab(tab.dataset.debugTab));
 });

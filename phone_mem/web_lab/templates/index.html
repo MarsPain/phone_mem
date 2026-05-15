@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Python Web Lab</title>
-    <link rel="stylesheet" href="/static/web_lab.css" />
+    <link rel="stylesheet" href="/static/web_lab.css?v=20260515-inspector-tabs" />
   </head>
   <body>
     <header class="lab-header">
@@ -69,12 +69,12 @@
             <button id="delete-event" type="button">Delete</button>
           </div>
         </form>
-        <pre id="memory-output" class="output"></pre>
-        <div class="panel-title phone-state-title">
-          <h3>Phone State</h3>
-          <button id="refresh-phone-state" type="button">Refresh</button>
+        <div class="inspector-tabs" role="tablist" aria-label="Memory inspector views">
+          <button id="inspector-tab-memory" class="inspector-tab active" type="button" role="tab" aria-selected="true" aria-controls="memory-output" data-inspector-tab="memory">Memory</button>
+          <button id="inspector-tab-phone-state" class="inspector-tab" type="button" role="tab" aria-selected="false" aria-controls="phone-state-output" data-inspector-tab="phone-state">Phone State</button>
         </div>
-        <pre id="phone-state-output" class="output phone-output"></pre>
+        <pre id="memory-output" class="output inspector-output active" role="tabpanel" aria-labelledby="inspector-tab-memory"></pre>
+        <pre id="phone-state-output" class="output inspector-output" role="tabpanel" aria-labelledby="inspector-tab-phone-state" hidden></pre>
       </section>
 
       <section class="panel debugger-panel">
@@ -110,6 +110,6 @@
       </section>
     </main>
 
-    <script src="/static/web_lab.js"></script>
+    <script src="/static/web_lab.js?v=20260515-inspector-tabs"></script>
   </body>
 </html>
