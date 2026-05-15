@@ -121,6 +121,22 @@ class WebLabStateTest(unittest.TestCase):
             self.assertEqual(state.turn_snapshots[0].index, 1)
             self.assertEqual(state.turn_snapshots[0].user_message, "Start over.")
 
+    def test_phone_tools_are_initialized_and_seeded(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "memory.sqlite3"
+            state = LabState.create(db_path=db_path, client=FakeLLMClient([LLMResponse(text="ok")]))
+            self.addCleanup(state.close)
+
+            self.assertIsNotNone(state.phone_tools)
+            self.assertIsNotNone(state.phone_store)
+            names = {d.name for d in state.runtime.tools.tool_definitions()}
+            self.assertIn("create_calendar_event", names)
+            self.assertIn("search_contacts", names)
+
+            contacts = state.phone_store.search_contacts("Alice")
+            self.assertEqual(len(contacts), 1)
+            self.assertEqual(contacts[0].display_name, "Alice Chen")
+
 
 if __name__ == "__main__":
     unittest.main()

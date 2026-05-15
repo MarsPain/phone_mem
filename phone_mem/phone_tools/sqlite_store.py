@@ -309,6 +309,10 @@ class SQLitePhoneToolStore:
         rows = self._conn.execute(sql, params).fetchall()
         return [self._row_to_message(row) for row in rows]
 
+    def list_message_threads(self) -> list[MessageThread]:
+        rows = self._conn.execute("SELECT * FROM phone_message_threads").fetchall()
+        return [self._row_to_message_thread(row) for row in rows]
+
     def _row_to_message_thread(self, row: sqlite3.Row) -> MessageThread:
         thread_id = row["thread_id"]
         message_rows = self._conn.execute(

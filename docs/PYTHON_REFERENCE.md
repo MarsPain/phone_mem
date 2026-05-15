@@ -119,6 +119,31 @@ uv run python -m unittest tests.test_agent_runtime_client tests.test_agent_runti
 
 The demo is the first real Agent experience for the Python reference. It is still a developer-machine runtime spike, not the production mobile runtime.
 
+## Mock Phone Tools
+
+The Python reference includes a mock phone tool environment under `phone_mem.phone_tools/`. These are research harness tools, not real mobile OS APIs. They simulate Contacts, Calendar, and Messaging state so the LLM Agent runtime can exercise tool execution and observation capture before Stage 2 mobile integration.
+
+Seven phone tools are exposed to the LLM through `PhoneToolRegistry`:
+
+- `search_contacts` — case-insensitive substring search over display names and aliases;
+- `get_contact` — retrieve a single contact by ID;
+- `search_calendar` — search calendar events by keyword or date range;
+- `create_calendar_event` — create a new calendar event;
+- `search_messages` — search messages by keyword or sender contact ID;
+- `get_message_thread` — retrieve a message thread by ID;
+- `draft_message` — draft a message in an existing thread.
+
+Read tools (`search_contacts`, `get_contact`, `search_calendar`, `search_messages`, `get_message_thread`) are trace-only: they return results to the model but do not produce capture-worthy observations.
+
+`create_calendar_event` and `draft_message` are capture-worthy. When the Agent runtime executes these tools, their observations are passed to `SessionCapture` and can become governed memory candidates through `PersonalMemoryService`. This keeps durable memory writes behind the service boundary; phone tool state never writes directly to memory tables.
+
+Two store implementations are available:
+
+- `InMemoryPhoneToolStore` — deterministic in-memory store for tests and demos;
+- `SQLitePhoneToolStore` — persistent SQLite store that can share the same file as `SQLiteMemoryStore`.
+
+The Web Lab initializes a persistent `SQLitePhoneToolStore` alongside the memory store and seeds default fixture data when the phone tables are empty.
+
 ## Python Web Lab
 
 Run the local browser Web Lab:

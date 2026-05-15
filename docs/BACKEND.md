@@ -65,11 +65,11 @@ The track adds:
 
 This track may add projections and runtime hooks, but it must not create another canonical memory store. `PersonalMemoryService` and SQLite canonical events remain the source of truth, and all projections must be rebuildable from events, lineage, permissions, and tombstones.
 
-### Proposed Track 2.8: Mock Phone Tool Environment
+### Track 2.8: Mock Phone Tool Environment
 
-Use Python to simulate selected phone app tools before real mobile integration. The proposed design is documented in [design-docs/mock-phone-tool-environment.md](design-docs/mock-phone-tool-environment.md).
+Use Python to simulate selected phone app tools before real mobile integration. The design is documented in [design-docs/mock-phone-tool-environment.md](design-docs/mock-phone-tool-environment.md) and the implementation is tracked by [exec-plans/completed/2026-05-14-mock-phone-tool-environment.md](exec-plans/completed/2026-05-14-mock-phone-tool-environment.md).
 
-This track would add a separate `phone_mem.phone_tools` bounded context for mock Contacts, Calendar, and Messaging state. The Agent runtime may expose these phone tools alongside memory tools through a combined provider, but phone tool state remains separate from durable memory. Only action observations such as created calendar events and drafted messages should enter governed session capture as memory candidates; read-only phone lookups remain trace-only.
+This track adds a separate `phone_mem.phone_tools` bounded context for mock Contacts, Calendar, and Messaging state. The Agent runtime exposes these phone tools alongside memory tools through a combined provider, while phone tool state remains separate from durable memory. Only action observations such as created calendar events and drafted messages enter governed session capture as memory candidates; read-only phone lookups remain trace-only.
 
 ### Track 3: Real Mobile Runtime Prototype
 

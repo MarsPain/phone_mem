@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from phone_mem.web_lab.inspector import MemoryInspector
+from phone_mem.web_lab.inspector import MemoryInspector, PhoneInspector
 from phone_mem.web_lab.schemas import error_payload, ok_payload
 from phone_mem.web_lab.state import LabState
 from phone_mem.web_lab.users import UserLabStateManager, get_session_secret
@@ -318,6 +318,16 @@ def create_app(
                 status_code=401,
             )
 
+    @app.get("/api/phone-state")
+    def phone_state(request: Request) -> Any:
+        try:
+            return _phone_inspector(_current_state(request)).phone_state()
+        except RuntimeError as exc:
+            return JSONResponse(
+                {"ok": False, "error": {"type": "AuthenticationError", "message": str(exc)}},
+                status_code=401,
+            )
+
     return app
 
 
@@ -447,11 +457,19 @@ def _create_single_user_app(state: LabState) -> FastAPI:
     def schema_diff() -> dict[str, Any]:
         return _inspector(lab_state).schema_diff()
 
+    @app.get("/api/phone-state")
+    def phone_state() -> dict[str, Any]:
+        return _phone_inspector(lab_state).phone_state()
+
     return app
 
 
 def _inspector(state: LabState) -> MemoryInspector:
     return MemoryInspector(state)
+
+
+def _phone_inspector(state: LabState) -> PhoneInspector:
+    return PhoneInspector(state)
 
 
 def _route_payload(payload: dict[str, Any]) -> Any:

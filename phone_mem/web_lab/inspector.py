@@ -9,6 +9,26 @@ from phone_mem.web_lab.schemas import error_payload, ok_payload, to_jsonable
 from phone_mem.web_lab.state import LabState
 
 
+class PhoneInspector:
+    def __init__(self, state: LabState) -> None:
+        self._state = state
+
+    def phone_state(self) -> dict[str, Any]:
+        store = self._state.phone_store
+        if store is None:
+            return ok_payload(contacts=[], calendar_events=[], message_threads=[], drafts=[])
+        contacts = [c.to_dict() for c in store.search_contacts("")]
+        calendar_events = [e.to_dict() for e in store.search_calendar()]
+        message_threads = [t.to_dict() for t in store.list_message_threads()]
+        drafts = [d.to_dict() for d in store.list_message_drafts()]
+        return ok_payload(
+            contacts=contacts,
+            calendar_events=calendar_events,
+            message_threads=message_threads,
+            drafts=drafts,
+        )
+
+
 class MemoryInspector:
     def __init__(self, state: LabState) -> None:
         self._state = state

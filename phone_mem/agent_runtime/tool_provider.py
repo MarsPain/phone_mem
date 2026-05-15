@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from phone_mem.agent_runtime.client import ToolDefinition
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.phone_tools.observations import ToolObservation
-from phone_mem.phone_tools.registry import PhoneToolRegistry, PhoneToolResult
+
+if TYPE_CHECKING:
+    from phone_mem.phone_tools.registry import PhoneToolRegistry, PhoneToolResult
 
 
 @dataclass(frozen=True)
@@ -43,6 +45,7 @@ class CombinedToolProvider:
         return definitions
 
     def execute(self, call_id: str, name: str, arguments: dict[str, Any]) -> ToolExecutionRecord:
+        from phone_mem.phone_tools.registry import PhoneToolRegistry, PhoneToolResult
         try:
             result = self.memory_tools.execute(name, arguments)
             return ToolExecutionRecord(

@@ -55,6 +55,7 @@ const login = async (username) => {
     updateAuthUI();
     clearChatLog();
     await refreshMemory();
+    await refreshPhoneState();
     await refreshDebugger();
     addMessage("System", `Logged in as ${username}. Your memory is isolated.`, "system");
   } else {
@@ -87,6 +88,14 @@ const refreshMemory = async () => {
     return;
   }
   setOutput("memory-output", await requestJson("/api/memories"));
+};
+
+const refreshPhoneState = async () => {
+  if (!currentUser) {
+    setOutput("phone-state-output", { message: "Please login first." });
+    return;
+  }
+  setOutput("phone-state-output", await requestJson("/api/phone-state"));
 };
 
 const latestTurn = (turnsPayload) => {
@@ -310,6 +319,7 @@ document.getElementById("delete-event").addEventListener("click", async () => {
 });
 
 document.getElementById("refresh-memory").addEventListener("click", refreshMemory);
+document.getElementById("refresh-phone-state").addEventListener("click", refreshPhoneState);
 document.getElementById("refresh-debugger").addEventListener("click", refreshDebugger);
 document.getElementById("refresh-chat").addEventListener("click", refreshChat);
 document.getElementById("debug-help-toggle").addEventListener("click", toggleDebuggerHelp);
@@ -321,6 +331,7 @@ document.querySelectorAll("[data-debug-tab]").forEach((tab) => {
   await checkAuth();
   if (currentUser) {
     refreshMemory();
+    refreshPhoneState();
     refreshDebugger();
   } else {
     addMessage("System", "Welcome! Please enter a username to login. First login auto-registers.", "system");

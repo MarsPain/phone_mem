@@ -135,5 +135,8 @@ class InMemoryPhoneToolStore:
         self._message_drafts[draft_id] = draft
         return draft
 
+    def list_message_threads(self) -> list[MessageThread]:
+        return list(self._message_threads.values())
+
     def list_message_drafts(self) -> list[MessageDraft]:
         return list(self._message_drafts.values())

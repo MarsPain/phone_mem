@@ -8,9 +8,11 @@
 
 ## Active
 
-- [Mock Phone Tool Environment](exec-plans/active/2026-05-14-mock-phone-tool-environment.md): active plan for adding mock Calendar, Messaging, and Contacts tools to the Python Agent Memory research harness.
+_None._
 
 ## Completed
+
+- [Mock Phone Tool Environment](exec-plans/completed/2026-05-14-mock-phone-tool-environment.md): completed 2026-05-15. Added deterministic Python mock Contacts, Calendar, and Messaging tools; combined runtime provider; Web Lab phone state inspector; SQLite persistence; and capture-worthy observation policy before Stage 2 mobile integration.
 
 - [Documentation bootstrap](exec-plans/completed/2026-05-01-docs-bootstrap.md)
 - [MVP local Personal Memory Service](exec-plans/completed/2026-05-04-mvp-local-memory-core.md): Stage 1 umbrella plan.

@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from phone_mem.agent_runtime.openai_client import OpenAICompatibleClient, OpenAICompatibleRequestError
 from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
 from phone_mem.agent_runtime.session import AgentSession
+from phone_mem.agent_runtime.tool_provider import CombinedToolProvider
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.governance.permissions import PermissionScope
 from phone_mem.personal_memory_service.events import (
@@ -22,6 +23,9 @@ from phone_mem.personal_memory_service.events import (
     PrivacyLevel,
 )
 from phone_mem.personal_memory_service.service import PersonalMemoryService
+from phone_mem.phone_tools.in_memory_store import InMemoryPhoneToolStore
+from phone_mem.phone_tools.registry import PhoneToolRegistry
+from phone_mem.phone_tools.seed import seed_research_phone_state
 
 
 CALLER = "llm_memory_agent"
@@ -71,11 +75,15 @@ def run_chat(
 
 def _runtime_from_env(service: PersonalMemoryService) -> AgentRuntime:
     model = os.environ.get("PHONE_MEM_LLM_MODEL", "gpt-4.1")
+    memory_tools = MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP)
+    phone_store = InMemoryPhoneToolStore()
+    seed_research_phone_state(phone_store)
+    phone_tools = PhoneToolRegistry(phone_store)
     return AgentRuntime(
         client=OpenAICompatibleClient.from_env(),
         model=model,
         thinking=_thinking_from_env(),
-        tools=MemoryToolRegistry(service=service, caller=CALLER, source_app=SOURCE_APP),
+        tools=CombinedToolProvider(memory_tools=memory_tools, phone_tools=phone_tools),
     )
 
 

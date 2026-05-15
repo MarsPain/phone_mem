@@ -12,6 +12,7 @@ from phone_mem.agent_runtime.openai_client import (
 )
 from phone_mem.agent_runtime.runtime import AgentRuntime, AgentTurnResponse
 from phone_mem.agent_runtime.session import AgentSession
+from phone_mem.agent_runtime.tool_provider import CombinedToolProvider
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 from phone_mem.governance.permissions import PermissionScope
 from phone_mem.personal_memory_service.events import (
@@ -21,6 +22,9 @@ from phone_mem.personal_memory_service.events import (
 )
 from phone_mem.personal_memory_service.service import PersonalMemoryService
 from phone_mem.personal_memory_service.storage import SQLiteMemoryStore
+from phone_mem.phone_tools.registry import PhoneToolRegistry
+from phone_mem.phone_tools.seed import seed_research_phone_state
+from phone_mem.phone_tools.sqlite_store import SQLitePhoneToolStore
 from phone_mem.web_lab.schemas import TurnSnapshot, serialize_error
 
 
@@ -51,6 +55,8 @@ class LabState:
     model: str = DEFAULT_MODEL
     provider_status: str = "real"
     turn_snapshots: list[TurnSnapshot] = field(default_factory=list)
+    phone_store: SQLitePhoneToolStore | None = None
+    phone_tools: PhoneToolRegistry | None = None
 
     @classmethod
     def create(
@@ -70,13 +76,21 @@ class LabState:
         service = PersonalMemoryService.from_store(store)
         _ensure_lab_grant(service, caller=caller, source_app=source_app)
         tools = MemoryToolRegistry(service=service, caller=caller, source_app=source_app)
+
+        phone_store = SQLitePhoneToolStore.connect(str(resolved_db_path))
+        phone_store.initialize_schema()
+        if not phone_store.search_contacts(""):
+            seed_research_phone_state(phone_store)
+        phone_tools = PhoneToolRegistry(phone_store)
+        combined_tools = CombinedToolProvider(memory_tools=tools, phone_tools=phone_tools)
+
         resolved_model = model or os.environ.get("PHONE_MEM_LLM_MODEL", DEFAULT_MODEL)
         resolved_client, provider_status = _resolve_client(client)
         runtime = AgentRuntime(
             client=resolved_client,
             model=resolved_model,
             thinking=thinking,
-            tools=tools,
+            tools=combined_tools,
         )
         session = AgentSession(runtime)
         return cls(
@@ -89,6 +103,8 @@ class LabState:
             source_app=source_app,
             model=resolved_model,
             provider_status=provider_status,
+            phone_store=phone_store,
+            phone_tools=phone_tools,
         )
 
     def metadata(self) -> dict[str, Any]:
@@ -142,6 +158,8 @@ class LabState:
 
     def close(self) -> None:
         self.service.close()
+        if self.phone_store is not None:
+            self.phone_store.close()
 
 
 def _resolve_client(client: LLMClient | None) -> tuple[LLMClient, str]:

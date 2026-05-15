@@ -265,6 +265,23 @@ button[type="button"] {
   overflow-wrap: anywhere;
 }
 
+.phone-state-title {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.phone-state-title h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.phone-output {
+  max-height: 220px;
+  flex: none;
+}
+
 .error {
   color: var(--danger);
 }
