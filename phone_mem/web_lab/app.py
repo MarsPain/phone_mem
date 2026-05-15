@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -78,20 +79,22 @@ def create_app(
                     "provider_status": "unknown",
                     "db_path": "",
                 }
-            rendered = (
-                html.replace("{{ model }}", metadata.get("model", "unknown"))
-                .replace("{{ provider_status }}", metadata.get("provider_status", "unknown"))
-                .replace("{{ db_path }}", metadata.get("db_path", ""))
-                .replace("{{ caller }}", metadata.get("caller", username))
-                .replace("{{ source_app }}", metadata.get("source_app", "web_lab"))
+            rendered = _render_template(
+                html,
+                model=metadata.get("model", "unknown"),
+                provider_status=metadata.get("provider_status", "unknown"),
+                db_path=metadata.get("db_path", ""),
+                caller=metadata.get("caller", username),
+                source_app=metadata.get("source_app", "web_lab"),
             )
         else:
-            rendered = (
-                html.replace("{{ model }}", "—")
-                .replace("{{ provider_status }}", "—")
-                .replace("{{ db_path }}", "—")
-                .replace("{{ caller }}", "—")
-                .replace("{{ source_app }}", "—")
+            rendered = _render_template(
+                html,
+                model="-",
+                provider_status="-",
+                db_path="-",
+                caller="-",
+                source_app="-",
             )
         return HTMLResponse(rendered)
 
@@ -353,12 +356,13 @@ def _create_single_user_app(state: LabState) -> FastAPI:
     def index() -> HTMLResponse:
         html = TEMPLATE_PATH.read_text(encoding="utf-8")
         metadata = lab_state.metadata()
-        rendered = (
-            html.replace("{{ model }}", metadata["model"])
-            .replace("{{ provider_status }}", metadata["provider_status"])
-            .replace("{{ db_path }}", metadata["db_path"])
-            .replace("{{ caller }}", metadata["caller"])
-            .replace("{{ source_app }}", metadata["source_app"])
+        rendered = _render_template(
+            html,
+            model=metadata["model"],
+            provider_status=metadata["provider_status"],
+            db_path=metadata["db_path"],
+            caller=metadata["caller"],
+            source_app=metadata["source_app"],
         )
         return HTMLResponse(rendered)
 
@@ -476,3 +480,21 @@ def _route_payload(payload: dict[str, Any]) -> Any:
     if payload.get("ok") is False:
         return JSONResponse(payload, status_code=404)
     return payload
+
+
+def _render_template(
+    html: str,
+    *,
+    model: str,
+    provider_status: str,
+    db_path: str,
+    caller: str,
+    source_app: str,
+) -> str:
+    return (
+        html.replace("{{ model }}", escape(str(model)))
+        .replace("{{ provider_status }}", escape(str(provider_status)))
+        .replace("{{ db_path }}", escape(str(db_path)))
+        .replace("{{ caller }}", escape(str(caller)))
+        .replace("{{ source_app }}", escape(str(source_app)))
+    )

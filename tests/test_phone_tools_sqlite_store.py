@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from phone_mem.phone_tools.models import Contact
+from phone_mem.phone_tools.seed import seed_research_phone_state
 from phone_mem.phone_tools.sqlite_store import SQLitePhoneToolStore
 
 
@@ -50,6 +51,25 @@ class SQLitePhoneToolStoreTest(unittest.TestCase):
             self.assertEqual(reopened.get_contact("contact-alice").display_name, "Alice Chen")
             self.assertEqual(reopened.get_calendar_event(event.event_id).title, "Planning")
             self.assertEqual(reopened.list_message_drafts()[0].draft_id, draft.draft_id)
+
+    def test_search_matches_contact_metadata_and_calendar_overlap(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "phone.sqlite3"
+            store = SQLitePhoneToolStore.connect(str(db_path))
+            store.initialize_schema()
+            self.addCleanup(store.close)
+            seed_research_phone_state(store)
+
+            self.assertEqual(store.search_contacts("atlas")[0].display_name, "Alice Chen")
+            self.assertEqual(store.search_contacts("friend")[0].display_name, "Alice Chen")
+            self.assertEqual(
+                store.search_calendar(
+                    start_at=datetime(2026, 5, 15, 15, 30, tzinfo=UTC),
+                    end_at=datetime(2026, 5, 15, 15, 45, tzinfo=UTC),
+                )[0].event_id,
+                "cal-dentist-1",
+            )
+            self.assertTrue(store.search_messages(contact_id="self"))
 
 
 if __name__ == "__main__":

@@ -32,7 +32,9 @@ class PhoneToolRegistryTest(unittest.TestCase):
         self.assertEqual(result.result["contacts"][0]["display_name"], "Alice Chen")
 
     def test_create_calendar_event_is_capture_worthy(self) -> None:
-        registry = PhoneToolRegistry(InMemoryPhoneToolStore())
+        store = InMemoryPhoneToolStore()
+        seed_research_phone_state(store)
+        registry = PhoneToolRegistry(store)
 
         result = registry.execute(
             "create_calendar_event",
@@ -51,12 +53,14 @@ class PhoneToolRegistryTest(unittest.TestCase):
         self.assertEqual(result.result["event"]["title"], "Review mock phone tools")
 
     def test_draft_message_is_capture_worthy(self) -> None:
-        registry = PhoneToolRegistry(InMemoryPhoneToolStore())
+        store = InMemoryPhoneToolStore()
+        seed_research_phone_state(store)
+        registry = PhoneToolRegistry(store)
 
         result = registry.execute(
             "draft_message",
             {
-                "thread_id": "thread-alice",
+                "thread_id": "thread-dinner-1",
                 "recipient_contact_ids": ["contact-alice"],
                 "text": "Friday afternoon works.",
             },
@@ -65,6 +69,44 @@ class PhoneToolRegistryTest(unittest.TestCase):
         self.assertTrue(result.observation.capture_worthy)
         self.assertIn("drafted a message", result.observation.text)
         self.assertEqual(result.result["draft"]["text"], "Friday afternoon works.")
+
+    def test_create_calendar_event_rejects_invalid_time_order(self) -> None:
+        registry = PhoneToolRegistry(InMemoryPhoneToolStore())
+
+        with self.assertRaisesRegex(ValueError, "end_at must be after start_at"):
+            registry.execute(
+                "create_calendar_event",
+                {
+                    "title": "Impossible event",
+                    "start_at": "2026-05-15T16:00:00+00:00",
+                    "end_at": "2026-05-15T15:00:00+00:00",
+                },
+            )
+
+    def test_draft_message_rejects_unknown_thread_and_recipient(self) -> None:
+        store = InMemoryPhoneToolStore()
+        seed_research_phone_state(store)
+        registry = PhoneToolRegistry(store)
+
+        with self.assertRaisesRegex(ValueError, "Thread not found"):
+            registry.execute(
+                "draft_message",
+                {
+                    "thread_id": "missing-thread",
+                    "recipient_contact_ids": ["contact-alice"],
+                    "text": "Friday afternoon works.",
+                },
+            )
+
+        with self.assertRaisesRegex(ValueError, "Recipient not found"):
+            registry.execute(
+                "draft_message",
+                {
+                    "thread_id": "thread-dinner-1",
+                    "recipient_contact_ids": ["missing-contact"],
+                    "text": "Friday afternoon works.",
+                },
+            )
 
 
 if __name__ == "__main__":

@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from phone_mem.agent_runtime.client import ToolDefinition
 from phone_mem.phone_tools.models import CalendarEvent, Contact, MessageDraft, MessageThread
 from phone_mem.phone_tools.observations import ToolObservation
 from phone_mem.phone_tools.store import PhoneToolStore
+from phone_mem.tool_schema import ToolDefinition
 
 
 def _object_schema(properties: dict[str, Any], required: list[str]) -> dict[str, Any]:
@@ -21,7 +21,28 @@ def _object_schema(properties: dict[str, Any], required: list[str]) -> dict[str,
 def _parse_iso(value: str) -> datetime:
     # Python 3.11+ supports fromisoformat with Z suffix, but we normalize anyway.
     normalized = value.replace("Z", "+00:00")
-    return datetime.fromisoformat(normalized)
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise ValueError(f"invalid ISO datetime: {value}") from exc
+
+
+def _required_str(arguments: dict[str, Any], name: str) -> str:
+    value = arguments.get(name)
+    if value is None:
+        raise ValueError(f"{name} is required")
+    text = str(value).strip()
+    if not text:
+        raise ValueError(f"{name} is required")
+    return text
+
+
+def _string_list(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise ValueError("expected a list of strings")
+    return [str(item) for item in value]
 
 
 @dataclass(frozen=True)
@@ -190,10 +211,13 @@ class PhoneToolRegistry:
         return PhoneToolResult(name="search_calendar", arguments=arguments, result=result, observation=observation)
 
     def _create_calendar_event(self, arguments: dict[str, Any]) -> PhoneToolResult:
-        title = str(arguments["title"])
-        start_at = _parse_iso(str(arguments["start_at"]))
-        end_at = _parse_iso(str(arguments["end_at"]))
-        participant_contact_ids = list(arguments.get("participant_contact_ids", []))
+        title = _required_str(arguments, "title")
+        start_at = _parse_iso(_required_str(arguments, "start_at"))
+        end_at = _parse_iso(_required_str(arguments, "end_at"))
+        if end_at <= start_at:
+            raise ValueError("end_at must be after start_at")
+        participant_contact_ids = _string_list(arguments.get("participant_contact_ids", []))
+        self._require_contacts(participant_contact_ids, label="Participant")
         location = str(arguments.get("location", ""))
         notes = str(arguments.get("notes", ""))
         event = self._store.create_calendar_event(
@@ -255,9 +279,14 @@ class PhoneToolRegistry:
         )
 
     def _draft_message(self, arguments: dict[str, Any]) -> PhoneToolResult:
-        thread_id = str(arguments["thread_id"])
-        recipient_contact_ids = list(arguments.get("recipient_contact_ids", []))
-        text = str(arguments["text"])
+        thread_id = _required_str(arguments, "thread_id")
+        if self._store.get_message_thread(thread_id) is None:
+            raise ValueError(f"Thread not found: {thread_id}")
+        recipient_contact_ids = _string_list(arguments.get("recipient_contact_ids", []))
+        if not recipient_contact_ids:
+            raise ValueError("recipient_contact_ids is required")
+        self._require_contacts(recipient_contact_ids, label="Recipient")
+        text = _required_str(arguments, "text")
         draft = self._store.draft_message(
             thread_id=thread_id,
             recipient_contact_ids=recipient_contact_ids,
@@ -270,3 +299,10 @@ class PhoneToolRegistry:
             capture_worthy=True,
         )
         return PhoneToolResult(name="draft_message", arguments=arguments, result=result, observation=observation)
+
+    def _require_contacts(self, contact_ids: list[str], *, label: str) -> None:
+        for contact_id in contact_ids:
+            if contact_id == "self":
+                continue
+            if self._store.get_contact(contact_id) is None:
+                raise ValueError(f"{label} not found: {contact_id}")

@@ -15,6 +15,21 @@ class ArchitectureBoundaryTest(unittest.TestCase):
 
         self.assertNotIn("phone_mem.governance.permissions", storage_source)
 
+    def test_phone_tools_do_not_import_agent_runtime(self) -> None:
+        phone_tools_dir = ROOT / "phone_mem" / "phone_tools"
+        sources = {
+            path: path.read_text(encoding="utf-8")
+            for path in phone_tools_dir.glob("*.py")
+        }
+
+        offenders = [
+            str(path.relative_to(ROOT))
+            for path, source in sources.items()
+            if "phone_mem.agent_runtime" in source
+        ]
+
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()

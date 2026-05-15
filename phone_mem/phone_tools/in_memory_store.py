@@ -34,6 +34,15 @@ class InMemoryPhoneToolStore:
             if lower in contact.display_name.lower():
                 results.append(contact)
                 continue
+            if lower in contact.company.lower():
+                results.append(contact)
+                continue
+            if lower in contact.relationship.lower():
+                results.append(contact)
+                continue
+            if lower in contact.notes.lower():
+                results.append(contact)
+                continue
             for alias in contact.aliases:
                 if lower in alias.lower():
                     results.append(contact)
@@ -55,9 +64,9 @@ class InMemoryPhoneToolStore:
     ) -> list[CalendarEvent]:
         results: list[CalendarEvent] = []
         for event in self._calendar_events.values():
-            if start_at is not None and event.start_at < start_at:
+            if start_at is not None and event.end_at <= start_at:
                 continue
-            if end_at is not None and event.end_at > end_at:
+            if end_at is not None and event.start_at >= end_at:
                 continue
             if keyword is not None:
                 lower = keyword.lower()
@@ -105,9 +114,9 @@ class InMemoryPhoneToolStore:
     ) -> list[Message]:
         results: list[Message] = []
         for thread in self._message_threads.values():
+            if contact_id is not None and contact_id not in thread.participant_contact_ids:
+                continue
             for message in thread.messages:
-                if contact_id is not None and message.sender_contact_id != contact_id:
-                    continue
                 if keyword is not None:
                     lower = keyword.lower()
                     if lower not in message.text.lower():

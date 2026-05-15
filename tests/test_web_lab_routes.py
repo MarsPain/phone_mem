@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 import json
 import unittest
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -220,6 +221,24 @@ class WebLabRoutesTest(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()["ok"], False)
         self.assertEqual(response.json()["error"]["type"], "MemoryEventNotFound")
+
+    def test_multi_user_html_escapes_session_metadata(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            from phone_mem.web_lab.users import UserLabStateManager
+
+            manager = UserLabStateManager(users_dir=Path(tmpdir), model="fake")
+            self.addCleanup(manager.close_all)
+
+            with patch("phone_mem.web_lab.app.UserLabStateManager", return_value=manager):
+                app = create_app()
+
+            with TestClient(app) as client:
+                client.post("/api/login", json={"username": "<script>alert(1)</script>"})
+                response = client.get("/")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertNotIn("<script>alert(1)</script>", response.text)
+            self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", response.text)
 
     def test_launch_wrapper_parser_accepts_host_port_and_reload(self) -> None:
         args = build_parser().parse_args(["--host", "0.0.0.0", "--port", "9000", "--reload"])

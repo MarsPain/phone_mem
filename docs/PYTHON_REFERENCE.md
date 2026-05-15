@@ -111,6 +111,8 @@ The runtime path is intentionally separate from the memory core:
 - `phone_mem.agent_runtime.session`: bounded in-process multi-turn conversation wrapper for local chat experiences.
 - `phone_mem.agent_runtime.openai_client`: OpenAI-compatible Chat Completions adapter using environment configuration.
 
+When a model returns tool calls, `AgentRuntime` executes them and can continue through bounded follow-up tool-call rounds before returning a final answer. Tool execution failures are serialized as tool results instead of aborting the whole turn, so the model can recover by asking for missing information or correcting arguments.
+
 Default tests use `FakeLLMClient` or injected HTTP transports and do not call provider APIs:
 
 ```bash
@@ -126,16 +128,19 @@ The Python reference includes a mock phone tool environment under `phone_mem.pho
 Seven phone tools are exposed to the LLM through `PhoneToolRegistry`:
 
 - `search_contacts` — case-insensitive substring search over display names and aliases;
+- contact search also checks company, relationship, and notes metadata;
 - `get_contact` — retrieve a single contact by ID;
-- `search_calendar` — search calendar events by keyword or date range;
+- `search_calendar` — search calendar events by keyword or overlapping date range;
 - `create_calendar_event` — create a new calendar event;
-- `search_messages` — search messages by keyword or sender contact ID;
+- `search_messages` — search messages by keyword or thread participant contact ID;
 - `get_message_thread` — retrieve a message thread by ID;
 - `draft_message` — draft a message in an existing thread.
 
 Read tools (`search_contacts`, `get_contact`, `search_calendar`, `search_messages`, `get_message_thread`) are trace-only: they return results to the model but do not produce capture-worthy observations.
 
 `create_calendar_event` and `draft_message` are capture-worthy. When the Agent runtime executes these tools, their observations are passed to `SessionCapture` and can become governed memory candidates through `PersonalMemoryService`. This keeps durable memory writes behind the service boundary; phone tool state never writes directly to memory tables.
+
+Write-lite phone tools validate basic app-state invariants before mutating mock state: calendar events require `end_at` after `start_at`, contact references must resolve, and message drafts must target an existing thread with known recipients.
 
 Two store implementations are available:
 

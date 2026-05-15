@@ -13,8 +13,22 @@ class InMemoryPhoneToolStoreTest(unittest.TestCase):
         seed_research_phone_state(store)
 
         self.assertEqual(store.search_contacts("alice")[0].display_name, "Alice Chen")
+        self.assertEqual(store.search_contacts("atlas")[0].display_name, "Alice Chen")
+        self.assertEqual(store.search_contacts("friend")[0].display_name, "Alice Chen")
         self.assertTrue(store.search_calendar(keyword="dentist"))
         self.assertTrue(store.search_messages(keyword="dinner"))
+        self.assertTrue(store.search_messages(contact_id="self"))
+
+    def test_calendar_search_returns_events_overlapping_requested_window(self) -> None:
+        store = InMemoryPhoneToolStore()
+        seed_research_phone_state(store)
+
+        events = store.search_calendar(
+            start_at=datetime(2026, 5, 15, 15, 30, tzinfo=UTC),
+            end_at=datetime(2026, 5, 15, 15, 45, tzinfo=UTC),
+        )
+
+        self.assertEqual(events[0].event_id, "cal-dentist-1")
 
     def test_create_calendar_event_persists_event(self) -> None:
         store = InMemoryPhoneToolStore()

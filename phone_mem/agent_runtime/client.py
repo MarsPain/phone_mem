@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
+from phone_mem.tool_schema import ToolDefinition
+
 
 @dataclass(frozen=True)
 class LLMMessage:
@@ -11,20 +13,6 @@ class LLMMessage:
 
     def to_dict(self) -> dict[str, str]:
         return {"role": self.role, "content": self.content}
-
-
-@dataclass(frozen=True)
-class ToolDefinition:
-    name: str
-    description: str
-    parameters: dict[str, Any]
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            "name": self.name,
-            "description": self.description,
-            "parameters": dict(self.parameters),
-        }
 
 
 @dataclass(frozen=True)

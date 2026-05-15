@@ -153,8 +153,11 @@ class SQLitePhoneToolStore:
             SELECT * FROM phone_contacts
             WHERE LOWER(display_name) LIKE LOWER(?)
                OR LOWER(aliases) LIKE LOWER(?)
+               OR LOWER(company) LIKE LOWER(?)
+               OR LOWER(relationship) LIKE LOWER(?)
+               OR LOWER(notes) LIKE LOWER(?)
             """,
-            (lower, lower),
+            (lower, lower, lower, lower, lower),
         ).fetchall()
         return [self._row_to_contact(row) for row in rows]
 
@@ -211,10 +214,10 @@ class SQLitePhoneToolStore:
         sql = "SELECT * FROM phone_calendar_events WHERE 1=1"
         params: list[Any] = []
         if start_at is not None:
-            sql += " AND start_at >= ?"
+            sql += " AND end_at > ?"
             params.append(self._iso(start_at))
         if end_at is not None:
-            sql += " AND end_at <= ?"
+            sql += " AND start_at < ?"
             params.append(self._iso(end_at))
         if keyword is not None:
             sql += " AND (LOWER(title) LIKE LOWER(?) OR LOWER(notes) LIKE LOWER(?))"
@@ -301,8 +304,13 @@ class SQLitePhoneToolStore:
         sql = "SELECT * FROM phone_messages WHERE 1=1"
         params: list[Any] = []
         if contact_id is not None:
-            sql += " AND sender_contact_id = ?"
-            params.append(contact_id)
+            sql += """
+                AND thread_id IN (
+                    SELECT thread_id FROM phone_message_threads
+                    WHERE LOWER(participant_contact_ids) LIKE LOWER(?)
+                )
+            """
+            params.append(f"%{contact_id}%")
         if keyword is not None:
             sql += " AND LOWER(text) LIKE LOWER(?)"
             params.append(f"%{keyword}%")
