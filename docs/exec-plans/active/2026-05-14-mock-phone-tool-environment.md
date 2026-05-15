@@ -93,7 +93,7 @@ Modify:
 - Create: `phone_mem/phone_tools/observations.py`
 - Test: `tests/test_phone_tools_models.py`
 
-- [ ] **Step 1: Write failing model and observation tests**
+- [x] **Step 1: Write failing model and observation tests**
 
 Create `tests/test_phone_tools_models.py` with focused tests:
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run failing tests**
+- [x] **Step 2: Run failing tests**
 
 Run:
 
@@ -188,7 +188,7 @@ uv run python -m unittest tests.test_phone_tools_models
 
 Expected: fail with `ModuleNotFoundError: No module named 'phone_mem.phone_tools'`.
 
-- [ ] **Step 3: Implement model dataclasses and observations**
+- [x] **Step 3: Implement model dataclasses and observations**
 
 Create `phone_mem/phone_tools/models.py` with immutable dataclasses for `Contact`, `CalendarEvent`, `Message`, `MessageThread`, and `MessageDraft`. Each class should expose `to_dict()` and should use strings, lists, booleans, and ISO datetime strings only in serialized output.
 
@@ -219,7 +219,7 @@ class ToolObservation:
 
 Create `phone_mem/phone_tools/__init__.py` exporting the public model and observation classes.
 
-- [ ] **Step 4: Run model tests**
+- [x] **Step 4: Run model tests**
 
 Run:
 
@@ -238,7 +238,7 @@ Expected: `OK`.
 - Create: `phone_mem/phone_tools/seed.py`
 - Test: `tests/test_phone_tools_store.py`
 
-- [ ] **Step 1: Write failing store tests**
+- [x] **Step 1: Write failing store tests**
 
 Create `tests/test_phone_tools_store.py` with tests for seeded search and controlled writes:
 
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run failing store tests**
+- [x] **Step 2: Run failing store tests**
 
 Run:
 
@@ -302,7 +302,7 @@ uv run python -m unittest tests.test_phone_tools_store
 
 Expected: fail because `store.py`, `in_memory_store.py`, and `seed.py` do not exist.
 
-- [ ] **Step 3: Implement store protocol and in-memory store**
+- [x] **Step 3: Implement store protocol and in-memory store**
 
 Create `phone_mem/phone_tools/store.py` with a `PhoneToolStore` protocol covering:
 
@@ -323,7 +323,7 @@ Create `phone_mem/phone_tools/in_memory_store.py` using dictionaries keyed by ID
 
 Create `phone_mem/phone_tools/seed.py` with `seed_research_phone_state(store)` that inserts Alice contact data, one dentist calendar event, one dinner-related thread, and one message.
 
-- [ ] **Step 4: Run store tests**
+- [x] **Step 4: Run store tests**
 
 Run:
 
@@ -341,7 +341,7 @@ Expected: `OK`.
 - Modify: `phone_mem/phone_tools/__init__.py`
 - Test: `tests/test_phone_tools_registry.py`
 
-- [ ] **Step 1: Write failing registry tests**
+- [x] **Step 1: Write failing registry tests**
 
 Create `tests/test_phone_tools_registry.py`:
 
@@ -419,7 +419,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run failing registry tests**
+- [x] **Step 2: Run failing registry tests**
 
 Run:
 
@@ -429,7 +429,7 @@ uv run python -m unittest tests.test_phone_tools_registry
 
 Expected: fail because `PhoneToolRegistry` does not exist.
 
-- [ ] **Step 3: Implement registry and result object**
+- [x] **Step 3: Implement registry and result object**
 
 In `phone_mem/phone_tools/registry.py`, define:
 
@@ -441,7 +441,7 @@ In `phone_mem/phone_tools/registry.py`, define:
 
 Reuse the same `_object_schema(...)` shape as `MemoryToolRegistry` rather than introducing a new schema builder style.
 
-- [ ] **Step 4: Run registry tests**
+- [x] **Step 4: Run registry tests**
 
 Run:
 
@@ -458,7 +458,7 @@ Expected: `OK`.
 - Create: `phone_mem/phone_tools/sqlite_store.py`
 - Test: `tests/test_phone_tools_sqlite_store.py`
 
-- [ ] **Step 1: Write failing SQLite persistence tests**
+- [x] **Step 1: Write failing SQLite persistence tests**
 
 Create `tests/test_phone_tools_sqlite_store.py`:
 
@@ -517,7 +517,7 @@ class SQLitePhoneToolStoreTest(unittest.TestCase):
             self.assertEqual(reopened.list_message_drafts()[0].draft_id, draft.draft_id)
 ```
 
-- [ ] **Step 2: Run failing SQLite tests**
+- [x] **Step 2: Run failing SQLite tests**
 
 Run:
 
@@ -527,7 +527,7 @@ uv run python -m unittest tests.test_phone_tools_sqlite_store
 
 Expected: fail because `SQLitePhoneToolStore` does not exist.
 
-- [ ] **Step 3: Implement SQLite store**
+- [x] **Step 3: Implement SQLite store**
 
 Create `SQLitePhoneToolStore` with:
 
@@ -540,7 +540,7 @@ Create `SQLitePhoneToolStore` with:
 
 Keep SQL localized in `sqlite_store.py`. Do not reuse or modify `SQLiteMemoryStore`.
 
-- [ ] **Step 4: Run SQLite tests**
+- [x] **Step 4: Run SQLite tests**
 
 Run:
 
@@ -560,7 +560,7 @@ Expected: `OK`.
 - Modify: `phone_mem/agent_runtime/__init__.py`
 - Test: `tests/test_agent_runtime_combined_tools.py`
 
-- [ ] **Step 1: Write failing combined-provider tests**
+- [x] **Step 1: Write failing combined-provider tests**
 
 Create `tests/test_agent_runtime_combined_tools.py` with two tests:
 
@@ -662,7 +662,7 @@ def _service_with_grant() -> PersonalMemoryService:
     return service
 ```
 
-- [ ] **Step 2: Run failing combined-provider tests**
+- [x] **Step 2: Run failing combined-provider tests**
 
 Run:
 
@@ -672,7 +672,7 @@ uv run python -m unittest tests.test_agent_runtime_combined_tools
 
 Expected: fail because `CombinedToolProvider` does not exist and `AgentRuntime.tools` does not accept it yet.
 
-- [ ] **Step 3: Implement combined provider**
+- [x] **Step 3: Implement combined provider**
 
 Create `phone_mem/agent_runtime/tool_provider.py`:
 
@@ -683,7 +683,7 @@ Create `phone_mem/agent_runtime/tool_provider.py`:
 - `tool_definitions()` concatenates memory and phone definitions.
 - `execute(call_id, name, arguments)` dispatches to memory first, then phone, and returns `ToolExecutionRecord`.
 
-- [ ] **Step 4: Modify runtime to consume execution records**
+- [x] **Step 4: Modify runtime to consume execution records**
 
 Update `AgentRuntime.run_turn(...)` so it:
 
@@ -695,7 +695,7 @@ Update `AgentRuntime.run_turn(...)` so it:
 
 For compatibility, either update all runtime constructors to pass `CombinedToolProvider`, or add a small normalization helper that wraps a plain `MemoryToolRegistry` into `CombinedToolProvider`.
 
-- [ ] **Step 5: Run combined-provider tests**
+- [x] **Step 5: Run combined-provider tests**
 
 Run:
 
