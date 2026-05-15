@@ -7,6 +7,7 @@ from typing import Any
 from phone_mem.agent_runtime.client import LLMClient, LLMMessage, LLMRequest
 from phone_mem.agent_runtime.prompts import build_agent_messages
 from phone_mem.agent_runtime.session_capture import SessionCapture, SessionCaptureInput
+from phone_mem.agent_runtime.tool_provider import CombinedToolProvider, normalize_tools
 from phone_mem.agent_runtime.tools import MemoryToolRegistry
 
 
@@ -23,7 +24,7 @@ class AgentTurnResponse:
 class AgentRuntime:
     client: LLMClient
     model: str
-    tools: MemoryToolRegistry
+    tools: MemoryToolRegistry | CombinedToolProvider
     thinking: dict[str, Any] | None = None
     session_capture: SessionCapture = field(default_factory=SessionCapture)
 
@@ -32,7 +33,8 @@ class AgentRuntime:
         user_message: str,
         conversation_messages: list[LLMMessage] | None = None,
     ) -> AgentTurnResponse:
-        memory_context = self.tools.build_memory_context(user_message)
+        tools = normalize_tools(self.tools)
+        memory_context = tools.build_memory_context(user_message)
         initial_messages = build_agent_messages(
             user_message=user_message,
             memory_context=memory_context,
@@ -43,7 +45,7 @@ class AgentRuntime:
                 model=self.model,
                 messages=initial_messages,
                 thinking=self.thinking,
-                tools=self.tools.tool_definitions(),
+                tools=tools.tool_definitions(),
             )
         )
         if not initial_response.has_tool_calls:
@@ -51,6 +53,7 @@ class AgentRuntime:
                 user_message=user_message,
                 assistant_text=initial_response.text,
                 tool_results=[],
+                tools=tools,
             )
             return AgentTurnResponse(
                 text=initial_response.text,
@@ -64,14 +67,11 @@ class AgentRuntime:
                 captured_event_ids=captured_event_ids,
             )
 
-        tool_results = [
-            {
-                "call_id": call.call_id,
-                "name": call.name,
-                "result": self.tools.execute(call.name, call.arguments),
-            }
+        execution_records = [
+            tools.execute(call.call_id, call.name, call.arguments)
             for call in initial_response.tool_calls
         ]
+        tool_results = [_serialize_execution_record(record) for record in execution_records]
         final_response = self.client.complete(
             LLMRequest(
                 model=self.model,
@@ -81,13 +81,14 @@ class AgentRuntime:
                     LLMMessage(role="user", content="Use the tool results to answer the user."),
                 ],
                 thinking=self.thinking,
-                tools=self.tools.tool_definitions(),
+                tools=tools.tool_definitions(),
             )
         )
         captured_event_ids = self._flush_session_capture(
             user_message=user_message,
             assistant_text=final_response.text,
             tool_results=tool_results,
+            tools=tools,
         )
         return AgentTurnResponse(
             text=final_response.text,
@@ -109,6 +110,7 @@ class AgentRuntime:
         user_message: str,
         assistant_text: str,
         tool_results: list[dict[str, Any]],
+        tools: CombinedToolProvider,
     ) -> list[str]:
         return self.session_capture.flush(
             SessionCaptureInput(
@@ -117,8 +119,19 @@ class AgentRuntime:
                 assistant_text=assistant_text,
                 tool_observations=_tool_observations(tool_results),
             ),
-            tools=self.tools,
+            tools=tools,
         )
+
+
+def _serialize_execution_record(record: Any) -> dict[str, Any]:
+    return {
+        "call_id": record.call_id,
+        "name": record.name,
+        "result": record.result,
+        "observation": record.observation.to_dict(),
+        "capture_worthy": record.capture_worthy,
+        "evidence_event_ids": list(record.evidence_event_ids),
+    }
 
 
 def _tool_call_summary(tool_results: list[dict[str, Any]]) -> str:
@@ -139,9 +152,12 @@ def _tool_evidence_event_ids(tool_results: list[dict[str, Any]]) -> list[str]:
 def _tool_observations(tool_results: list[dict[str, Any]]) -> list[str]:
     observations: list[str] = []
     for tool_result in tool_results:
-        result = tool_result["result"]
+        result = tool_result.get("result", {})
         if "error" in result:
             observations.append(f"{tool_result['name']} error: {result['error']}")
+        observation = tool_result.get("observation")
+        if observation and observation.get("capture_worthy"):
+            observations.append(observation["text"])
     return observations
 
 

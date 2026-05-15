@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from phone_mem.agent_runtime.tools import MemoryToolRegistry
+from typing import Any
 from phone_mem.personal_memory_service.constructor import MemoryCandidate
 from phone_mem.personal_memory_service.events import Actor, Attribution, MemoryLayer, Modality
 
@@ -27,7 +27,7 @@ class SessionCapture:
     def __init__(self) -> None:
         self._seen_fingerprints: set[tuple[str, tuple[str, ...]]] = set()
 
-    def flush(self, capture_input: SessionCaptureInput, *, tools: MemoryToolRegistry) -> list[str]:
+    def flush(self, capture_input: SessionCaptureInput, *, tools: Any) -> list[str]:
         captured_event_ids: list[str] = []
         for candidate in self.propose(capture_input, source_app=tools.source_app):
             fingerprint = self._fingerprint(candidate)
