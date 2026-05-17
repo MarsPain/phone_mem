@@ -263,6 +263,37 @@ class WebLabRoutesTest(unittest.TestCase):
             self.assertNotIn("<script>alert(1)</script>", response.text)
             self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", response.text)
 
+    def test_multi_user_state_paths_do_not_collide_after_username_sanitization(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            from phone_mem.web_lab.users import UserLabStateManager
+
+            manager = UserLabStateManager(users_dir=Path(tmpdir), model="fake")
+            self.addCleanup(manager.close_all)
+
+            alice_upper = manager.get_or_create("Alice")
+            alice_lower = manager.get_or_create("alice")
+            alice_upper.tools.remember("Alice uppercase prefers private labs.")
+
+            lower_results = alice_lower.tools.search_memory("uppercase private", top_k=5)
+
+            self.assertNotEqual(alice_upper.db_path, alice_lower.db_path)
+            self.assertEqual(lower_results["results"], [])
+
+    def test_debug_session_route_is_not_exposed_by_default(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            from phone_mem.web_lab.users import UserLabStateManager
+
+            manager = UserLabStateManager(users_dir=Path(tmpdir), model="fake")
+            self.addCleanup(manager.close_all)
+
+            with patch("phone_mem.web_lab.app.UserLabStateManager", return_value=manager):
+                app = create_app()
+
+            with TestClient(app) as client:
+                response = client.get("/api/debug/session")
+
+            self.assertEqual(response.status_code, 404)
+
     def test_launch_wrapper_parser_accepts_host_port_and_reload(self) -> None:
         args = build_parser().parse_args(["--host", "0.0.0.0", "--port", "9000", "--reload"])
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from phone_mem.phone_tools.models import (
@@ -108,7 +108,9 @@ class SQLitePhoneToolStore:
         return json.loads(value)
 
     def _iso(self, dt: datetime) -> str:
-        return dt.isoformat()
+        if dt.tzinfo is None or dt.utcoffset() is None:
+            raise ValueError("phone tool datetimes must include timezone information")
+        return dt.astimezone(UTC).isoformat()
 
     def _parse_iso(self, value: str | None) -> datetime | None:
         if value is None:
@@ -214,10 +216,10 @@ class SQLitePhoneToolStore:
         sql = "SELECT * FROM phone_calendar_events WHERE 1=1"
         params: list[Any] = []
         if start_at is not None:
-            sql += " AND end_at > ?"
+            sql += " AND julianday(end_at) > julianday(?)"
             params.append(self._iso(start_at))
         if end_at is not None:
-            sql += " AND start_at < ?"
+            sql += " AND julianday(start_at) < julianday(?)"
             params.append(self._iso(end_at))
         if keyword is not None:
             sql += " AND (LOWER(title) LIKE LOWER(?) OR LOWER(notes) LIKE LOWER(?))"
@@ -307,10 +309,14 @@ class SQLitePhoneToolStore:
             sql += """
                 AND thread_id IN (
                     SELECT thread_id FROM phone_message_threads
-                    WHERE LOWER(participant_contact_ids) LIKE LOWER(?)
+                    WHERE EXISTS (
+                        SELECT 1
+                        FROM json_each(phone_message_threads.participant_contact_ids)
+                        WHERE json_each.value = ?
+                    )
                 )
             """
-            params.append(f"%{contact_id}%")
+            params.append(contact_id)
         if keyword is not None:
             sql += " AND LOWER(text) LIKE LOWER(?)"
             params.append(f"%{keyword}%")

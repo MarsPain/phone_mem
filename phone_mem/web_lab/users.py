@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import hashlib
 import os
 import secrets
 import shutil
@@ -42,8 +43,9 @@ class UserLabStateManager:
     def _user_db_path(self, username: str) -> Path:
         safe_name = "".join(c for c in username if c.isalnum() or c in "-_").lower()
         if not safe_name:
-            safe_name = "default"
-        return self.users_dir / safe_name / "memory.sqlite3"
+            safe_name = "user"
+        digest = hashlib.sha256(username.encode("utf-8")).hexdigest()[:12]
+        return self.users_dir / f"{safe_name}-{digest}" / "memory.sqlite3"
 
     def get_or_create(self, username: str) -> LabState:
         if username in self._states:

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -102,15 +102,6 @@ def create_app(
     def me(request: Request) -> dict[str, Any]:
         username = request.session.get("username")
         return {"ok": True, "username": username, "authenticated": bool(username)}
-
-    @app.get("/api/debug/session")
-    def debug_session(request: Request) -> dict[str, Any]:
-        return {
-            "ok": True,
-            "raw_cookies": dict(request.cookies),
-            "session_data": dict(request.session),
-            "username": request.session.get("username"),
-        }
 
     @app.post("/api/login")
     async def login(request: Request) -> Any:

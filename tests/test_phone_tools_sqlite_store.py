@@ -71,6 +71,36 @@ class SQLitePhoneToolStoreTest(unittest.TestCase):
             )
             self.assertTrue(store.search_messages(contact_id="self"))
 
+    def test_calendar_overlap_matches_equivalent_instants_across_offsets(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "phone.sqlite3"
+            store = SQLitePhoneToolStore.connect(str(db_path))
+            store.initialize_schema()
+            self.addCleanup(store.close)
+
+            event = store.create_calendar_event(
+                title="Offset event",
+                start_at=datetime.fromisoformat("2026-05-15T10:00:00-05:00"),
+                end_at=datetime.fromisoformat("2026-05-15T11:00:00-05:00"),
+            )
+
+            results = store.search_calendar(
+                start_at=datetime.fromisoformat("2026-05-15T14:30:00+00:00"),
+                end_at=datetime.fromisoformat("2026-05-15T15:30:00+00:00"),
+            )
+
+            self.assertEqual([item.event_id for item in results], [event.event_id])
+
+    def test_search_messages_matches_participant_contact_id_exactly(self) -> None:
+        with TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "phone.sqlite3"
+            store = SQLitePhoneToolStore.connect(str(db_path))
+            store.initialize_schema()
+            self.addCleanup(store.close)
+            seed_research_phone_state(store)
+
+            self.assertEqual(store.search_messages(contact_id="contact-ali"), [])
+
 
 if __name__ == "__main__":
     unittest.main()
