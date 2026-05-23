@@ -10,23 +10,25 @@ Agent memory 在本项目里是一套受治理的本地记忆生命周期系统�
 
 ```text
 用户或 App 信号
+  -> Runtime memory protocol / Session capture
   -> MemoryCandidate
   -> Canonical MemoryEvent
   -> 权限检查
-  -> 去重 / 矛盾 / 生命周期判断
+  -> 去重 / 矛盾 / promotion gate / 生命周期判断
   -> SQLite 本地事实源
-  -> 权限投影后的检索
-  -> token 预算内的 ContextBundle
+  -> 可重建投影: FTS/BM25, relation graph, tombstone-aware indexes
+  -> 权限投影后的 hybrid retrieval
+  -> token 预算内的 ContextBundle + hot capsules + bounded relation paths
   -> Agent / LLM 使用
-  -> 解释、纠正、删除、审计
+  -> 解释、纠正、删除、审计、维护指标
 ```
 
 也可以把它理解为三条相互连接的流：
 
 ```text
-写入流: 输入信号 -> 候选记忆 -> 事件落库 -> 生命周期治理
-读取流: 查询任务 -> 权限视图 -> 检索排序 -> 可解释结果
-使用流: 检索结果 -> ContextBundle -> LLM / Agent -> 工具调用与证据
+写入流: 输入信号 / session capture -> 候选记忆 -> promotion gate -> 事件落库 -> 生命周期治理
+读取流: 查询任务 -> 权限视图 -> hybrid retrieval -> 可解释结果
+使用流: 检索结果 -> snippets / capsules / relation paths -> ContextBundle -> LLM / Agent -> 工具调用与证据
 ```
 
 这条链路里的关键判断是：记忆不是随手塞进 prompt 的文本，而是一个有来源、权限、置信度、生命周期、血缘关系和审计记录的事件。
@@ -35,8 +37,8 @@ Agent memory 在本项目里是一套受治理的本地记忆生命周期系统�
 
 - [../phone_mem/personal_memory_service/](../phone_mem/personal_memory_service/): 记忆事件、构造、存储、检索、生命周期和服务门面。
 - [../phone_mem/governance/](../phone_mem/governance/): 权限 grant、memory view 投影和审计日志。
-- [../phone_mem/context/](../phone_mem/context/): 模型无关的上下文组装和 token 预算。
-- [../phone_mem/agent_runtime/](../phone_mem/agent_runtime/): Python LLM Agent runtime spike，用服务 API 和 memory tools 连接真实或 fake LLM。
+- [../phone_mem/context/](../phone_mem/context/): 模型无关的上下文组装、hot memory capsules、relation path 注入和 token 预算。
+- [../phone_mem/agent_runtime/](../phone_mem/agent_runtime/): Python LLM Agent runtime spike，用 runtime memory protocol、session capture 和 memory tools 连接真实或 fake LLM。
 - [../phone_mem/web_lab/](../phone_mem/web_lab/): 本地 Web Lab，用于观察聊天、记忆、上下文、审计和指标。
 
 ## 2. 贯穿案例：从一句偏好到受治理记忆
@@ -79,7 +81,7 @@ safety_metadata:
   memory_is_data_not_instruction: true
 ```
 
-于是 LLM 可以回答“建议把每周规划放在早上”，但这个建议有 evidence event ID，可解释、可纠正、可删除。
+如果这条偏好同时满足 capsule 规则，它还可能作为 `stable_user_confirmed_fact` 进入 hot memory capsule；如果相关事件带有 project、decision、task 或 tool 关系，ContextBundle 也可以包含有界 relation path。无论是 snippet、capsule 还是 relation path，都必须保留 evidence event ID。于是 LLM 可以回答“建议把每周规划放在早上”，但这个建议有证据链，可解释、可纠正、可删除。
 
 再过一段时间，用户纠正：
 
@@ -105,10 +107,11 @@ safety_metadata:
   -> 权限治理
   -> 本地事实源
   -> active-only 检索
+  -> snippets / capsules / relation paths
   -> ContextBundle
   -> LLM 使用但不拥有
   -> correction / deletion
-  -> lineage / tombstone / audit
+  -> lineage / tombstone / audit / metrics
 ```
 
 ## 3. 架构分层
@@ -119,13 +122,23 @@ safety_metadata:
 App / Agent / Web Lab / Future Mobile UI
                 |
                 v
+        Agent Runtime / Memory Tools
+                |
+        Runtime Protocol + Session Capture
+                |
+                v
         PersonalMemoryService
                 |
      +----------+----------+-----------+-----------+
      |          |          |           |           |
  Constructor  Storage  Governance  Retrieval  Context
      |          |          |           |           |
- MemoryEvent  SQLite   Grants/Audit  Results  ContextBundle
+ MemoryEvent  SQLite   Grants/Audit  Hybrid    ContextBundle
+                |                    Retrieval   + Capsules
+                |                       |         + Relation Paths
+                v                       v
+        Rebuildable Projections   Metrics / Audit
+        FTS/BM25 + Relations
                 |
                 v
         Agent Runtime / LLM Runtime
@@ -135,10 +148,11 @@ App / Agent / Web Lab / Future Mobile UI
 
 各层职责可以概括为：
 
-- `PersonalMemoryService`: 编排 record、search、explain、correct、delete、grant、revoke、audit、build_context 等服务 API。实现见 [../phone_mem/personal_memory_service/service.py](../phone_mem/personal_memory_service/service.py)。
+- `PersonalMemoryService`: 编排 record、search、explain、correct、delete、grant、revoke、audit、build_context、reflect、defrag、schema_diff、metrics 等服务 API。实现见 [../phone_mem/personal_memory_service/service.py](../phone_mem/personal_memory_service/service.py)。
 - `Governance`: 决定 caller 能对哪些 memory scope 执行 read、write、update、delete、context_build。权限检查见 [../phone_mem/governance/permissions.py](../phone_mem/governance/permissions.py)，memory view 投影见 [../phone_mem/governance/views.py](../phone_mem/governance/views.py)，审计见 [../phone_mem/governance/audit.py](../phone_mem/governance/audit.py)。
-- `Context Assembler`: 把检索结果变成模型可消费的 `ContextBundle`，负责 token 预算、evidence event IDs、omitted memory 和 `memory_is_data_not_instruction`。实现见 [../phone_mem/context/assembler.py](../phone_mem/context/assembler.py)。
-- `Agent Runtime`: 外层消费者。它先通过 memory tools 构建授权上下文，再调用 LLM；如果模型请求工具，仍通过服务 API 执行。实现见 [../phone_mem/agent_runtime/runtime.py](../phone_mem/agent_runtime/runtime.py) 和 [../phone_mem/agent_runtime/tools.py](../phone_mem/agent_runtime/tools.py)。
+- `Retrieval`: 在权限投影之后合并 lexical、CJK n-gram、SQLite FTS5/BM25、可替换 vector ranker、entity、recency、confidence、importance 和 MMR diversity。实现见 [../phone_mem/personal_memory_service/retrieval.py](../phone_mem/personal_memory_service/retrieval.py)。
+- `Context Assembler`: 把检索结果变成模型可消费的 `ContextBundle`，负责 token 预算、evidence event IDs、omitted memory、hot memory capsules、bounded relation paths 和 `memory_is_data_not_instruction`。实现见 [../phone_mem/context/assembler.py](../phone_mem/context/assembler.py) 和 [../phone_mem/context/capsules.py](../phone_mem/context/capsules.py)。
+- `Agent Runtime`: 外层消费者。它先通过 memory tools 构建授权上下文，再调用 LLM；如果模型请求工具，仍通过服务 API 执行。它还通过 session capture 把 transcript summary、user correction、tool observation 和 task state 转为 governed candidates。实现见 [../phone_mem/agent_runtime/runtime.py](../phone_mem/agent_runtime/runtime.py)、[../phone_mem/agent_runtime/tools.py](../phone_mem/agent_runtime/tools.py) 和 [../phone_mem/agent_runtime/session_capture.py](../phone_mem/agent_runtime/session_capture.py)。
 
 这里的核心安全顺序是：权限投影发生在检索打分之前。未授权记忆不进入排序、不进入 prompt，也不会通过聚合结果泄漏。
 
@@ -168,7 +182,14 @@ Semantic memory   从事件中抽象出的稳定事实
 Procedural memory 可复用的做事方法和工作流偏好
 ```
 
-当前 Python reference 中，working memory 更多体现在 Agent Runtime 的 turn state 和 `ContextBundle` 中；默认写入的用户文本记忆多进入 episodic 层；semantic memory 主要通过显式 candidate 或 derived attribution 表达；procedural layer 已有类型位置，但完整技能学习和触发系统仍未实现。
+当前 Python reference 中，四层已经不只是枚举占位。Stage 1.7 后更精确的实现边界是：
+
+- `working`: 主要是 runtime/session state、recent conversation window、loaded snippets、ContextBundle、hot capsules 和 relation paths 这类 transient 或 projection state。它可以在 `MemoryLayer` 中表达，但当前不是独立的持久 working-memory 数据库。
+- `episodic`: 默认持久写入层。直接记忆、session capture、用户纠正、tool observations 和 task state 默认先成为 episodic event，保留来源、时间、实体、关系和审计链。
+- `semantic`: 稳定事实和用户画像的 durable 表达。显式 derived candidate 可以进入 semantic；auto-capture 请求 semantic 或 procedural 时必须经过 promotion gate，除非带有 review policy 且置信度足够高，否则会降回 episodic。
+- `procedural`: 工作流、工具模式和可复用习惯的 durable 表达。当前已有 procedural candidate、capsule 分类和 dry-run reflection proposal，但还没有自动执行技能、触发器或自治行动 runtime。
+
+因此，四层是 canonical event 的语义轴，不是四个物理存储层。Hot capsule、relation graph、FTS/BM25 和 metrics 都是从 canonical events 派生的投影或观测，不应被当作第五层记忆。
 
 无论进入哪一层，只要持久化到事实源，就必须有 event ID、source、privacy、quality、lineage 和 lifecycle。差别只在稳定性、抽象程度和使用方式。
 
@@ -179,24 +200,27 @@ Procedural memory 可复用的做事方法和工作流偏好
 ```text
 MemoryCandidate
   -> MemoryConstructor.construct
+       -> default layer / promotion gate / capture metadata
   -> PermissionService.can_access(WRITE)
   -> MemoryLifecycleValidator.find_duplicate
   -> MemoryLifecycleValidator.quarantine_if_contradictory
-  -> transaction: insert event + indexes + lineage + audit
+  -> transaction: insert event + entity index + lineage + relation projection + FTS projection + audit
   -> event_id
 ```
 
-这条流程有四个关键点。
+这条流程有五个关键点。
 
-第一，构造阶段只把输入变成 canonical event，不直接落库。`MemoryConstructor` 会校验文本、生成 event ID 和 timestamp，设置 event type、memory layer、source、privacy、quality、lineage 和初始 lifecycle。
+第一，构造阶段只把输入变成 canonical event，不直接落库。`MemoryConstructor` 会校验文本、生成 event ID 和 timestamp，设置 event type、memory layer、source、privacy、quality、lineage、relations 和初始 lifecycle。
 
-第二，写权限先于持久化。如果 caller 没有匹配 grant，服务写 denied audit，抛出 `MemoryPermissionDenied`，并且不保存该记忆。
+第二，capture metadata 会影响 memory layer。普通用户文本默认进入 episodic；derived attribution 默认可以进入 semantic；带 `capture_triggers` 的 auto-capture 如果请求 semantic 或 procedural，必须带 review policy 且 confidence >= 0.9，否则会被降回 episodic。这个 promotion gate 防止 transient 会话摘要静默变成稳定画像或自动化习惯。
 
-第三，去重是保守且确定性的。当前实现只在同 source app、同 entity scope、同 memory layer、active lifecycle 中比较归一化文本；重复时返回既有 event ID，并写 audit，而不是插入新行。
+第三，写权限先于持久化。如果 caller 没有匹配 grant，服务写 denied audit，抛出 `MemoryPermissionDenied`，并且不保存该记忆。
 
-第四，矛盾不被静默覆盖。当前 Stage 1 算法只识别很小一类英文偏好冲突，但原则已经明确：如果新事实与旧 active event 冲突，新事件进入 `quarantined`，并通过 lineage 指向相关旧事件。后续可以解释、纠正或删除。
+第四，去重是保守且确定性的。当前实现只在同 source app、同 entity scope、同 memory layer、active lifecycle 中比较归一化文本；重复时返回既有 event ID，并写 audit，而不是插入新行。
 
-所有实际写入都在 `SQLiteMemoryStore.transaction()` 中完成，事件、实体索引、lineage edge 和 audit record 保持一致。对于 correction、selector deletion 等多行操作，也使用同样的事务边界。
+第五，矛盾不被静默覆盖。当前矛盾检测仍是窄范围的 deterministic preference parser，但它先用 source、entity scope 和 active lifecycle 缩小候选，再识别偏好冲突；如果新事实与旧 active event 冲突，新事件进入 `quarantined`，并通过 lineage 指向相关旧事件。后续可以解释、纠正或删除。
+
+所有实际写入都在 `SQLiteMemoryStore.transaction()` 中完成，事件、实体索引、lineage edge、relation projection、FTS projection 和 audit record 保持一致。对于 correction、selector deletion 等多行操作，也使用同样的事务边界。
 
 套回案例：第一次保存“早上做每周规划”的偏好时，成功路径是 active event；重复说同一句时，返回旧 ID；如果后续出现“下午更适合”的冲突或纠正，系统不应把旧事实原地抹掉，而应进入 quarantine 或 supersession 这类显式生命周期关系。
 
@@ -209,7 +233,9 @@ MemoryCandidate
 - `permissions`: caller、operation、scope、expiry、revoke；
 - `audit_log`: append-only 操作记录；
 - `tombstones`: 删除记录；
-- `lineage_edges`: correction、derived、supersession 的可查询边。
+- `lineage_edges`: correction、derived、supersession 的可查询边；
+- `relation_nodes` 和 `relation_edges`: 从 canonical event `relations` 与 lineage 派生的可重建关系图投影；
+- `memory_event_fts`: SQLite FTS5/BM25 投影，用于 hybrid retrieval 的文本候选信号。
 
 Storage 是基础设施适配器，不拥有访问策略。它可以保存 permission grant value object，但不导入 `PermissionService`。
 
@@ -220,8 +246,13 @@ query + caller + selector
   -> force lifecycle_states = [active]
   -> SQLiteMemoryStore.query_events(selector)
   -> MemoryViewProjector.project(caller, READ, candidate_events)
-  -> score only allowed events
-  -> sort by score desc, event_id asc
+  -> score only allowed events:
+       lexical + CJK n-gram + term expansion
+       BM25 over FTS projection
+       optional vector-ranker interface
+       entity + recency + confidence + importance
+  -> weighted union
+  -> MMR diversity selection
   -> write read audit
   -> RetrievalResult[]
 ```
@@ -232,9 +263,9 @@ query + caller + selector
 - 权限投影先于 ranking；未授权事件不参与打分。
 - 结果必须带 event ID、evidence ID、匹配项和解释元数据。
 
-当前 ranking 是确定性词法检索，而不是 embedding 检索。英文和数字按 token 切分，中文用 2 到 4 字符 n-gram，并把 entity 作为额外 term。基础打分综合 lexical match、entity match、confidence、importance 和 recency。
+当前 ranking 是 permission-first hybrid retrieval，而不是单纯词法检索。英文和数字按 token 切分，中文用 2 到 4 字符 n-gram，并支持小型确定性 query expansion；SQLite FTS5/BM25 是 canonical event text 与 entities 的可重建投影；vector ranker 是可替换接口，只接收已经授权的 events；entity、recency、confidence 和 importance 继续参与加权。最终选择会应用 bounded MMR diversity，并在 explanation metadata 中记录 matched terms、expanded terms、BM25/vector 分数、score components、weights 和 diversity penalty。
 
-这样做不是宣称词法检索足够好，而是让 reference 能稳定验证权限、生命周期、审计、证据 ID 和上下文预算这些核心不变量。未来可以叠加 embedding、graph 或 reranker，但它们应是可重建投影，不能改变 permission-before-ranking 的边界。
+这样做不是把 BM25、vector-style score 或 MMR 当作最终产品算法，而是让 reference 能稳定验证权限、生命周期、审计、证据 ID、上下文预算和 score explanation 这些核心不变量。未来可以替换 vector ranker、加入更重的 semantic reranker 或 graph ranking，但它们仍必须是可重建投影或受控适配器，不能改变 permission-before-ranking 的边界。
 
 在案例里，当用户问“帮我安排下周的规划时间”时，系统可以通过 `planning`、`weekly planning`、`morning` 等词法和实体线索召回偏好。但只有 caller 有 READ 权限、事件仍是 active，它才会进入排序和结果。
 
@@ -246,15 +277,24 @@ query + caller + selector
 query
   -> governed search
   -> ranked RetrievalResult[]
+  -> optional bounded relation paths
   -> ContextAssembler
        -> include snippets within available_memory_tokens
        -> record omitted_memory
+       -> build hot memory capsules within separate capsule budget
+       -> attach relation path evidence
        -> collect evidence_event_ids
        -> write context_build audit
   -> ContextBundle
 ```
 
-`ContextBundle` 不是 canonical memory。它只是某次任务、某个 caller、某个 token budget 下的授权投影。它必须保留 evidence event IDs，让之后的解释、纠正、删除仍能追溯到事实源。
+`ContextBundle` 不是 canonical memory。它只是某次任务、某个 caller、某个 token budget 下的授权投影。它可以包含三类模型可消费材料：
+
+- `snippets`: 检索结果中的具体记忆文本；
+- `hot_memory_capsules`: 从已选授权 snippets 压缩出的启动上下文，覆盖 stable user-confirmed facts、active constraints、recent decisions 和 procedural candidates；
+- `relation_paths`: 从关系图投影中选出的有界路径，用来把 person、project、decision、task、tool、error 等关系放入上下文。
+
+三者都必须保留 evidence event IDs，让之后的解释、纠正、删除仍能追溯到事实源。
 
 默认 token budget 会预留 safety、output 和 tool 空间：
 
@@ -266,24 +306,25 @@ available_memory_tokens =
   - tool_reserve_tokens
 ```
 
-Context Assembler 宁愿少放一些记忆，也不冒险挤爆模型上下文。它还会明确标记 `memory_is_data_not_instruction`，提醒下游 runtime：检索到的记忆是数据，不是高优先级指令。
+Context Assembler 宁愿少放一些记忆，也不冒险挤爆模型上下文。普通 snippets 和 hot capsules 有独立预算记录，capsule 不能掩盖 context-window pressure；relation projection metadata 会记录路径数量和证据 ID。它还会明确标记 `memory_is_data_not_instruction`，提醒下游 runtime：检索到的记忆是数据，不是高优先级指令。
 
-在案例里，LLM 看到的不是整张 `memory_events` 表，而是一条类似“用户偏好早上做每周规划”的 snippet 加 event ID。模型可以用它生成建议，但不能把这条记忆当作系统指令，也不能据此越权读取其他偏好。
+在案例里，LLM 看到的不是整张 `memory_events` 表，而是一条类似“用户偏好早上做每周规划”的 snippet、可能存在的 stable fact capsule，以及相关 relation path 的证据 ID。模型可以用它生成建议，但不能把这条记忆当作系统指令，也不能据此越权读取其他偏好。
 
 ## 8. 生命周期：纠正、删除、解释与审计
 
 Memory 的生命周期不是简单的 create-read-delete，而是从候选信号到可治理事实，再到检索使用、纠正、删除和派生投影失效的一整条链：
 
 ```text
-Observe / Input
+Observe / Input / Session Capture
   -> Construct canonical event
-  -> Validate permission, duplicate, contradiction
+  -> Validate permission, duplicate, contradiction, promotion policy
   -> Store as MemoryEvent
+  -> Update rebuildable projections
   -> Retrieve through MemoryView
-  -> Assemble ContextBundle
+  -> Assemble ContextBundle with snippets, capsules, relation paths
   -> Use in Agent / LLM
   -> Explain / Correct / Delete
-  -> Propagate lifecycle through lineage and tombstones
+  -> Propagate lifecycle through lineage, tombstones, projections, metrics
 ```
 
 生命周期状态可以这样理解：
@@ -304,12 +345,21 @@ Correction 不是原地改写历史。`PersonalMemoryService.correct(...)` 会�
 
 Deletion 也不是单纯隐藏一行。删除会先对所有匹配事件做 DELETE 权限 preflight；只要有一个 denied，就不做任何 mutation。全部允许后，服务在事务中把事件标记为 `deleted`，写 tombstone，并写 delete audit。未来如果存在 embedding、summary、graph、sync queue 或 cloud archive，tombstone 就是这些派生投影的失效信号。
 
+Relation projection、FTS/BM25 projection、capsule 和 metrics 都从 canonical event 与 tombstone 派生。删除、supersession 或 quarantine 后，普通检索只看 active events；active relation reads 也必须排除 source event 已经变成 deleted、superseded 或 quarantined 的边。
+
 Explainability 分成两类：
 
 - `explain(event_id, caller=...)`: 解释一条记忆的 source、privacy、quality、lineage、lifecycle 和相关事件 ID。
 - `audit_log`: 记录 grant、read、write、update、delete、context_build 的 caller、operation、scope、affected event IDs、outcome 和 denial reason。
 
 前者回答“这条记忆为什么是当前状态”，后者回答“谁在什么时候如何使用或尝试使用过记忆”。
+
+Stage 1.7 还增加了 dry-run maintenance 视角：
+
+- `reflect()`: 从 eligible episodic clusters 生成 semantic/procedural candidates，但不自动提升；
+- `defrag()`: 报告重复、过长 superseded chain、missing lineage 和 orphaned projection edges；
+- `schema_diff()`: 对比实际 event fields / relation types 与 `docs/DATA.md` 的预期；
+- `metrics`: 观测 retrieval score distribution、context compression、capsule token use、capture triggers、reflection acceptance、deletion propagation 和 audit completeness。
 
 在案例里，用户可以追问“为什么你建议早上规划？”系统应能通过 `explain` 指回那条偏好记忆及其来源。如果用户改成“下午更适合”，旧事件被 superseded 后仍可解释；如果用户删除偏好，tombstone 则说明删除意图已经进入生命周期链。
 
@@ -320,6 +370,7 @@ Explainability 分成两类：
 ```text
 user_message
   -> AgentSession recent conversation window, when using CLI/Web Lab
+  -> Runtime Memory Protocol decides when memory should be searched or updated
   -> MemoryToolRegistry.build_memory_context(user_message)
   -> PersonalMemoryService.build_context(...)
   -> build_agent_messages(...)
@@ -327,6 +378,7 @@ user_message
   -> optional memory tool calls
   -> execute tools through PersonalMemoryService
   -> LLMClient.complete(...) again
+  -> SessionCapture proposes governed MemoryCandidate records when configured
   -> AgentTurnResponse(text, evidence_event_ids, tool_results, memory_context)
 ```
 
@@ -338,6 +390,8 @@ LLM 在这个系统里不是 memory 的事实源，也不是权限系统。它�
 - 模型可以请求 `search_memory`、`build_memory_context`、`remember`、`explain_memory`、`correct_memory`、`delete_memory`。
 - 工具实际执行仍回到 `PersonalMemoryService`，因此不会绕过权限、生命周期、tombstone 和 audit。
 - 当 LLM 请求写入、纠正或删除时，它只是发起请求；是否允许、是否重复、是否矛盾、是否成功，由服务判断。
+- Runtime memory protocol 要求在回答过去偏好、决策、日期、人物、未完成任务或重复工具失败相关问题前先搜索记忆。
+- Session capture 是候选生成机制，不是自动信任机制。它可以在 turn/task 边界、用户纠正、context pressure 或 tool observation 后生成 episodic candidates；semantic/procedural promotion 仍受 review policy 和 confidence gate 约束。
 
 可以把边界压缩成三句话：
 
@@ -359,8 +413,11 @@ profile 字段容易被静默覆盖，难以解释来源。事件模型保留时
 **为什么 permission before ranking？**
 如果先 ranking 再过滤，未授权记忆可能通过分数、结果数量、解释文本或耗时侧信道泄漏。当前实现先投影 memory view，再对 allowed events 打分。
 
-**为什么当前检索不用 embedding？**
-Embedding 对产品有价值，但不是 canonical memory，也不应该成为 MVP 正确性的前提。当前确定性词法检索便于测试核心不变量。未来向量检索应作为可重建投影加入。
+**为什么 hybrid retrieval 仍然 permission-first？**
+BM25、vector-style ranking、MMR 和未来 reranker 都能改善召回或排序，但它们不能先于授权视图运行。否则未授权记忆可能通过 embedding 请求、分数解释、候选数量或耗时侧信道泄漏。当前实现先投影 authorized events，再对 allowed events 调用 BM25 和可替换 vector ranker。
+
+**为什么 embedding / graph / capsule 不是 canonical memory？**
+它们对检索和上下文压缩有价值，但都应该从 canonical events、lineage 和 tombstones 重建。事实源仍是 `MemoryEvent`；投影只负责加速、压缩或解释，不能绕过 deletion、correction 和 permission。
 
 **为什么 correction 创建新事件？**
 用户纠正记忆时，系统既要尊重新事实，又不能丢失历史解释性。新 event 加 superseded lifecycle 能同时满足当前检索正确性和审计链完整性。
@@ -368,16 +425,22 @@ Embedding 对产品有价值，但不是 canonical memory，也不应该成为 M
 **为什么 deletion 需要 tombstone？**
 删除意图需要传播到本地缓存、图谱、摘要、embedding、同步队列和可能的云端归档。tombstone 是跨投影失效的统一信号。
 
+**为什么 semantic/procedural promotion 要 gate？**
+会话摘要和工具观察容易混入临时状态、模型推断或低置信信号。把它们直接提升为稳定画像或自动化习惯会造成 memory poisoning 和行为漂移。当前 constructor 对 auto-capture 的 semantic/procedural 请求要求 review policy 和高 confidence；maintenance 也只提出 dry-run candidates。
+
 ## 11. 当前边界与阅读入口
 
-这些边界是 Stage 1 reference 的范围，不是最终产品能力：
+这些边界是 Stage 1.7 Python reference 的范围，不是最终产品能力：
 
 - 矛盾检测只覆盖很小的英文偏好句式。
-- topic selector 当前没有真正参与 SQLite 过滤。
-- retrieval 仍是词法和 metadata 打分，还没有 embedding、graph、semantic reranker。
-- consolidation 尚未实现，semantic memory 主要依赖显式 candidate。
+- topic selector 当前仍没有真正参与 SQLite 过滤。
+- retrieval 已经是 hybrid pipeline，但 vector ranker 仍是可替换接口，不是生产 embedding 系统；BM25/FTS 和 MMR 是本地 reference 投影，不代表最终手机端检索栈。
+- relation graph projection 已实现为 bounded、tombstone-aware、可重建投影，但还没有 personalized PageRank、全局 graph ranking 或复杂图推理。
+- consolidation 仍没有自动 durable promotion；当前是 dry-run reflection proposal、constructor promotion gate 和 reviewed semantic/procedural candidates。
 - privacy classification 默认较粗，缺少真实手机端敏感数据分类器。
-- context assembly 只选择 snippets，没有摘要压缩。
+- context assembly 已包含 snippets、hot capsules 和 relation paths，但还没有复杂摘要压缩器或 provider-specific tokenizer。
+- procedural memory 已有候选、capsule 和 reflection 报告，但还没有自动技能执行、触发器或自治行动 runtime。
+- session capture 能把摘要、纠正、工具观察和任务状态变成 governed candidates，但不保留 raw transcript dump，也不代表持续手机传感器采集。
 - Web Lab 和 LLM runtime 是开发机体验，不是生产手机运行时。
 - Stage 2 mobile 当前不保留 TypeScript boundary、完整运行时、SQLite adapter 或测试工具链；未来应基于 Stage 1.7 后稳定的 Python oracle 重新创建。
 
@@ -389,10 +452,12 @@ Embedding 对产品有价值，但不是 canonical memory，也不应该成为 M
 4. [../phone_mem/personal_memory_service/storage.py](../phone_mem/personal_memory_service/storage.py): SQLite 事实源和投影。
 5. [../phone_mem/personal_memory_service/lifecycle.py](../phone_mem/personal_memory_service/lifecycle.py): 去重和矛盾隔离。
 6. [../phone_mem/personal_memory_service/retrieval.py](../phone_mem/personal_memory_service/retrieval.py): permission-filtered retrieval。
-7. [../phone_mem/context/assembler.py](../phone_mem/context/assembler.py): ContextBundle。
-8. [../phone_mem/personal_memory_service/service.py](../phone_mem/personal_memory_service/service.py): 端到端服务编排。
-9. [../phone_mem/agent_runtime/runtime.py](../phone_mem/agent_runtime/runtime.py): 外部 Agent 如何消费记忆。
-10. [../tests/](../tests/): 行为契约和边界条件。
+7. [../phone_mem/personal_memory_service/relations.py](../phone_mem/personal_memory_service/relations.py): relation graph projection。
+8. [../phone_mem/context/assembler.py](../phone_mem/context/assembler.py) 和 [../phone_mem/context/capsules.py](../phone_mem/context/capsules.py): ContextBundle、capsules 和 relation paths。
+9. [../phone_mem/personal_memory_service/maintenance.py](../phone_mem/personal_memory_service/maintenance.py) 和 [../phone_mem/personal_memory_service/metrics.py](../phone_mem/personal_memory_service/metrics.py): reflection、defrag、schema drift 和质量指标。
+10. [../phone_mem/personal_memory_service/service.py](../phone_mem/personal_memory_service/service.py): 端到端服务编排。
+11. [../phone_mem/agent_runtime/runtime.py](../phone_mem/agent_runtime/runtime.py) 和 [../phone_mem/agent_runtime/session_capture.py](../phone_mem/agent_runtime/session_capture.py): 外部 Agent 如何消费记忆，以及 transient state 如何变成 governed candidates。
+12. [../tests/](../tests/): 行为契约和边界条件。
 
 ## 总结
 
@@ -400,7 +465,8 @@ Embedding 对产品有价值，但不是 canonical memory，也不应该成为 M
 
 - canonical event: 任何持久化记忆都必须有结构、来源、隐私、质量、血缘和生命周期。
 - governance: 任何读写都必须匹配 grant，并且读取必须先投影 memory view 再检索。
-- context assembly: 模型只拿到预算内、带证据 ID、标记为 data 的上下文 bundle。
+- projections: FTS/BM25、relation graph、capsules 和 metrics 都从 canonical events 派生，必须保留 evidence IDs 并服从 tombstone。
+- context assembly: 模型只拿到预算内、带证据 ID、标记为 data 的 snippets、capsules 和 relation paths。
 - lifecycle: active 可检索，quarantined 可解释但不默认检索，superseded 保留历史，deleted 通过 tombstone 传播删除意图。
 
 这套设计的价值在于把“记忆能力”从单个 Agent 的 prompt 技巧提升为手机本地的受控基础设施。外部 Agent 得到的是经过治理的记忆视图，而不是裸露的全局个人数据库。

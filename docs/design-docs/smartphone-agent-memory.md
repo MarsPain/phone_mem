@@ -52,13 +52,15 @@ The canonical data event schema remains in [../DATA.md](../DATA.md). Security an
 The MVP proves the local service boundary as the Stage 1 Python reference implementation:
 
 - text and app-event ingestion;
-- local SQLite-backed episodic store;
-- simple semantic profile store;
-- lexical retrieval with a replaceable vector-style interface;
+- local SQLite-backed canonical event store with episodic-first capture;
+- reviewed semantic and procedural promotion gates;
+- permission-first hybrid retrieval with deterministic lexical/CJK fallback, SQLite FTS5/BM25 projection, replaceable vector-style interface, score explanations, and bounded MMR diversity;
 - permission-scoped memory views;
-- model-runtime-neutral context assembly;
-- correction, deletion, tombstone, and audit primitives;
-- deterministic lifecycle tests.
+- rebuildable relation graph projection for bounded context paths;
+- model-runtime-neutral context assembly with snippets, hot memory capsules, relation paths, evidence IDs, omitted-memory notes, and token budget accounting;
+- correction, deletion, tombstone, lineage, and audit primitives;
+- dry-run reflection, defrag, schema drift, and quality metrics;
+- deterministic lifecycle, retrieval, governance, projection, and context tests.
 
 The completed execution records are [../exec-plans/completed/2026-05-04-mvp-local-memory-core.md](../exec-plans/completed/2026-05-04-mvp-local-memory-core.md), [../exec-plans/completed/2026-05-05-python-reference-maturation.md](../exec-plans/completed/2026-05-05-python-reference-maturation.md), and [../exec-plans/completed/2026-05-05-python-llm-agent-runtime.md](../exec-plans/completed/2026-05-05-python-llm-agent-runtime.md); mobile prototype planning remains deferred in [../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md](../exec-plans/tech-debt/deferred-stage2-mobile-runtime-prototype.md).
 

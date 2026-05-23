@@ -50,13 +50,15 @@ The system should behave like an agentic memory manager for the smartphone: it o
 
 ## MVP Boundary
 
-The MVP must not attempt continuous always-on multimodal sensing, graph memory, cloud sync, or open third-party ecosystem access. It should prove the local service boundary:
+The MVP and completed Stage 1.7 Python reference prove the local service boundary without attempting continuous always-on multimodal sensing, production graph memory, cloud sync, or open third-party ecosystem access. The current Python oracle covers:
 
 - text and app-event ingestion;
-- local SQLite-backed episodic store;
-- simple semantic profile store;
-- lexical plus vector-style retrieval abstraction;
+- local SQLite-backed canonical event store;
+- episodic-first capture with reviewed semantic and procedural promotion gates;
 - permission-scoped memory views;
-- model-runtime-neutral context assembly;
-- correction/deletion/audit primitives;
-- deterministic tests for write, read, deletion, permission behavior, audit completeness, and context budget adherence.
+- permission-first hybrid retrieval with deterministic lexical/CJK fallback, SQLite FTS5/BM25 projection, replaceable vector-style ranker interface, score explanations, and bounded MMR diversity;
+- rebuildable relation graph projection for bounded context paths, not a separate graph-memory source of truth;
+- model-runtime-neutral context assembly with snippets, hot memory capsules, relation paths, evidence IDs, omitted-memory notes, and token budget accounting;
+- correction, deletion, tombstone, lineage, and audit primitives;
+- dry-run reflection, defrag, schema drift, and quality metrics;
+- deterministic tests for write, read, deletion, permission behavior, audit completeness, retrieval explanations, relation projection, lifecycle propagation, and context budget adherence.

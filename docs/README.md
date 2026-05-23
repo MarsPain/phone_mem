@@ -18,6 +18,7 @@
 - [design-docs/personal-memory-service.md](design-docs/personal-memory-service.md): service boundary, operations, module ownership, and MVP storage responsibilities.
 - [design-docs/memory-lifecycle-and-data-flow.md](design-docs/memory-lifecycle-and-data-flow.md): event lifecycle from ingestion through deletion.
 - [design-docs/retrieval-and-context-assembly.md](design-docs/retrieval-and-context-assembly.md): governed retrieval and runtime-neutral context bundles.
+- [design-docs/architecture-explainers.md](design-docs/architecture-explainers.md): 算法与架构核心概念详解（Context Window 压缩、Snippet 与 Capsule 区别、Token 估算策略等）。
 - [design-docs/python-llm-agent-runtime.md](design-docs/python-llm-agent-runtime.md): Stage 1.5 Python runtime plan for real LLM chat over governed memory APIs.
 - [design-docs/mock-phone-tool-environment.md](design-docs/mock-phone-tool-environment.md): Python research harness design for mock Calendar, Messaging, and Contacts tools in the full Agent Memory loop.
 - [design-docs/python-web-lab.md](design-docs/python-web-lab.md): Stage 1.6 local developer Web Lab for real Agent experience and memory inspection.
